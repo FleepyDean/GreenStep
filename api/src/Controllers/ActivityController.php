@@ -129,18 +129,20 @@ class ActivityController
      * Query parameters:
      * - start_date: YYYY-MM-DD (optional)
      * - end_date: YYYY-MM-DD (optional)
+     * - category: Transport|Diet|Energy|Recycling (optional)
      */
     public function index(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
         $startDate = $queryParams['start_date'] ?? null;
         $endDate = $queryParams['end_date'] ?? null;
+        $category = $queryParams['category'] ?? null;
 
         // Get user ID from JWT token
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? null;
 
-        $activities = $this->activityLogModel->getByUser($userId, $startDate, $endDate);
+        $activities = $this->activityLogModel->getByUser($userId, $startDate, $endDate, $category);
 
         $response->getBody()->write(json_encode([
             'success' => true,

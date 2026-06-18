@@ -15,7 +15,7 @@
         </router-link>
         <router-link to="/activity" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">📝</span>
-          <span class="nav-text-label">Log</span>
+          <span class="nav-text-label">Activity</span>
         </router-link>
         <router-link to="/challenges" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">🏆</span>

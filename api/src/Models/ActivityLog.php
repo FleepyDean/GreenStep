@@ -54,14 +54,15 @@ class ActivityLog
     }
 
     /**
-     * Get all activities for a user with optional date filtering
+     * Get all activities for a user with optional date and category filtering
      * 
      * @param int $userId User ID
      * @param string|null $startDate Start date (YYYY-MM-DD)
      * @param string|null $endDate End date (YYYY-MM-DD)
+     * @param string|null $category Category filter (Transport, Diet, Energy, Recycling)
      * @return array Array of activity logs
      */
-    public function getByUser(int $userId, ?string $startDate = null, ?string $endDate = null): array
+    public function getByUser(int $userId, ?string $startDate = null, ?string $endDate = null, ?string $category = null): array
     {
         $sql = "SELECT 
                     al.id,
@@ -87,6 +88,11 @@ class ActivityLog
         if ($endDate) {
             $sql .= " AND al.logged_on <= :end_date";
             $params[':end_date'] = $endDate;
+        }
+
+        if ($category) {
+            $sql .= " AND at.category = :category";
+            $params[':category'] = $category;
         }
         
         $sql .= " ORDER BY al.logged_on DESC, al.created_at DESC";
