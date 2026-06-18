@@ -143,7 +143,6 @@ CREATE TABLE Friendship (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES User(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES User(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_friendship (LEAST(sender_id, receiver_id), GREATEST(sender_id, receiver_id)),
     INDEX idx_sender (sender_id),
     INDEX idx_receiver (receiver_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
