@@ -896,12 +896,22 @@ onMounted(async () => {
   }
   
   .date-range-row {
-    flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .date-range-row input {
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .date-range-row input::-webkit-calendar-picker-indicator {
+    transform: scale(0.8);
   }
   
   .dash {
-    display: none;
+    font-size: 14px;
   }
   
   .category-options {
