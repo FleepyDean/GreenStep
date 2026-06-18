@@ -133,7 +133,7 @@
           <!-- Action Buttons -->
           <div class="filter-actions">
             <button class="btn-reset" @click="clearFilters" :disabled="historyLoading">Reset</button>
-            <button class="btn-apply" @click="applyFilters" :disabled="historyLoading">Apply</button>
+            <button class="btn-apply" @click="handleApplyFilters" :disabled="historyLoading">Apply</button>
           </div>
         </div>
       </section>
@@ -421,7 +421,10 @@ async function applyFilters() {
   if (filters.category) params.category = filters.category
   
   await loadHistory(params)
-  toast.info('Filters applied')
+}
+
+async function handleApplyFilters() {
+  await applyFilters()
 }
 
 function clearFilters() {
@@ -429,7 +432,6 @@ function clearFilters() {
   filters.endDate = ''
   filters.category = ''
   loadHistory()
-  toast.info('Filters reset')
 }
 
 async function removeHistoryLog(id) {
