@@ -210,9 +210,11 @@ import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { activityAPI } from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { toast } = useToast()
 
 // Tab state
 const activeTab = ref('log')
@@ -300,6 +302,7 @@ async function loadTodayActivities() {
 async function submitActivity() {
   if (!form.activityTypeId || !form.amount) {
     error.value = 'Please fill in all fields'
+    toast.error('Please fill in all fields')
     return
   }
 
@@ -322,10 +325,12 @@ async function submitActivity() {
       
       await loadTodayActivities()
       await loadHistory()
+      toast.success('Activity logged successfully!')
     }
   } catch (err) {
     console.error('Failed to log activity:', err)
     error.value = err.response?.data?.message || 'Failed to log activity'
+    toast.error('Failed to log activity')
   } finally {
     loading.value = false
   }
@@ -339,9 +344,11 @@ async function removeLog(id) {
     await activityAPI.deleteActivity(id)
     await loadTodayActivities()
     await loadHistory()
+    toast.success('Activity deleted')
   } catch (err) {
     console.error('Failed to delete activity:', err)
     error.value = 'Failed to delete activity'
+    toast.error('Failed to delete activity')
   } finally {
     loading.value = false
   }
@@ -414,6 +421,7 @@ async function applyFilters() {
   if (filters.category) params.category = filters.category
   
   await loadHistory(params)
+  toast.info('Filters applied')
 }
 
 function clearFilters() {
@@ -421,6 +429,7 @@ function clearFilters() {
   filters.endDate = ''
   filters.category = ''
   loadHistory()
+  toast.info('Filters reset')
 }
 
 async function removeHistoryLog(id) {
@@ -431,9 +440,11 @@ async function removeHistoryLog(id) {
     await activityAPI.deleteActivity(id)
     // Reload current filtered view
     await applyFilters()
+    toast.success('Activity deleted')
   } catch (err) {
     console.error('Failed to delete activity:', err)
     historyError.value = 'Failed to delete activity'
+    toast.error('Failed to delete activity')
   } finally {
     historyLoading.value = false
   }

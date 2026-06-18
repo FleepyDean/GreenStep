@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <ToastNotification />
     <header class="app-header">
       <div class="brand-wrapper">
         <div class="brand-logo">🌱</div>
@@ -37,6 +38,10 @@
     </main>
   </div>
 </template>
+
+<script setup>
+import ToastNotification from '@/components/ToastNotification.vue'
+</script>
 
 <style scoped>
 /* Hidden on desktop views, visible on mobile bars through inheritance layout modifications */

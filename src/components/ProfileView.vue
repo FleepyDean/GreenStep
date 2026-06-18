@@ -93,8 +93,10 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 
 const authStore = useAuthStore()
+const { toast } = useToast()
 const authMode = ref('login')
 const error = ref(null)
 const loading = ref(false)
@@ -143,8 +145,10 @@ const handleLogin = async () => {
   if (result.success) {
     loginForm.email = ''
     loginForm.password = ''
+    toast.success('Welcome back!')
   } else {
     error.value = result.message
+    toast.error(result.message)
   }
   
   loading.value = false
@@ -164,8 +168,10 @@ const handleRegister = async () => {
     registerForm.name = ''
     registerForm.email = ''
     registerForm.password = ''
+    toast.success('Account created successfully!')
   } else {
     error.value = result.message
+    toast.error(result.message)
   }
   
   loading.value = false
@@ -175,6 +181,7 @@ const handleLogout = () => {
   authStore.logout()
   loginForm.email = ''
   loginForm.password = ''
+  toast.info('Logged out successfully')
 }
 
 onMounted(async () => {
