@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use Dotenv\Dotenv;
 use Slim\Factory\AppFactory;
+use Slim\Middleware\BodyParsingMiddleware;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -13,10 +14,16 @@ $dotenv->safeLoad();
 // Create Slim app
 $app = AppFactory::create();
 
-// Add Error Middleware
+// Add Error Middleware (catches all errors)
 $app->addErrorMiddleware(true, true, true);
 
-// Add CORS Middleware for frontend integration
+// Load routes FIRST
+require __DIR__ . '/../src/routes.php';
+
+// Add middleware in order of execution (first added runs last)
+// Execution order: CORS -> BodyParsing -> Routes
+
+// 1. Add CORS first (runs LAST before routes)
 $app->add(function ($request, $handler) {
     $response = $handler->handle($request);
     return $response
@@ -25,7 +32,7 @@ $app->add(function ($request, $handler) {
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
-// Load routes
-require __DIR__ . '/../src/routes.php';
+// 2. Add Body Parsing Middleware LAST (runs FIRST to parse JSON)
+$app->add(new BodyParsingMiddleware());
 
 $app->run();

@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 use App\Controllers\ActivityController;
 use App\Controllers\ActivityTypeController;
+use App\Controllers\AuthController;
 use App\Controllers\HealthController;
+use App\Middleware\JwtMiddleware;
 use Slim\App;
 
 /** @var App $app */
@@ -18,6 +20,12 @@ $app->group('/api', function ($group) {
     $group->get('/health', [HealthController::class, 'check']);
     
     // ============================================
+    // Authentication Routes (Public)
+    // ============================================
+    $group->post('/auth/register', [AuthController::class, 'register']);
+    $group->post('/auth/login', [AuthController::class, 'login']);
+    
+    // ============================================
     // Activity Types (Public - for dropdown selection)
     // ============================================
     $group->get('/activity-types', [ActivityTypeController::class, 'index']);
@@ -25,19 +33,23 @@ $app->group('/api', function ($group) {
     $group->get('/activity-types/category/{category}', [ActivityTypeController::class, 'byCategory']);
     
     // ============================================
-    // Activity Logging (Protected - require auth)
+    // Protected Routes (Require JWT Token)
     // ============================================
-    $group->get('/activities', [ActivityController::class, 'index']);
-    $group->get('/activities/today', [ActivityController::class, 'today']);
-    $group->get('/activities/stats', [ActivityController::class, 'stats']);
-    $group->post('/activities', [ActivityController::class, 'create']);
-    $group->delete('/activities/{id}', [ActivityController::class, 'delete']);
     
-    // Authentication routes (public)
-    // $group->post('/auth/register', [AuthController::class, 'register']);
-    // $group->post('/auth/login', [AuthController::class, 'login']);
+    // Auth - Get current user
+    $group->get('/auth/me', [AuthController::class, 'me'])
+        ->add(new JwtMiddleware());
     
-    // Protected routes (require JWT)
-    // $group->get('/users/profile', [UserController::class, 'profile']);
+    // Activity Logging (Protected)
+    $group->get('/activities', [ActivityController::class, 'index'])
+        ->add(new JwtMiddleware());
+    $group->get('/activities/today', [ActivityController::class, 'today'])
+        ->add(new JwtMiddleware());
+    $group->get('/activities/stats', [ActivityController::class, 'stats'])
+        ->add(new JwtMiddleware());
+    $group->post('/activities', [ActivityController::class, 'create'])
+        ->add(new JwtMiddleware());
+    $group->delete('/activities/{id}', [ActivityController::class, 'delete'])
+        ->add(new JwtMiddleware());
     
 });

@@ -81,9 +81,9 @@ class ActivityController
         $emissionFactor = (float) $activityType['kg_co2_per_unit'];
         $carbonFootprint = CarbonCalculator::calculate($amount, $emissionFactor);
 
-        // Get user ID from request (will be from JWT later)
-        // For now, hardcoded as 1 for testing
-        $userId = 1;
+        // Get user ID from JWT token (set by JwtMiddleware)
+        $user = $request->getAttribute('user');
+        $userId = $user['id'] ?? null;
 
         // Create activity log
         $logId = $this->activityLogModel->create(
@@ -136,8 +136,9 @@ class ActivityController
         $startDate = $queryParams['start_date'] ?? null;
         $endDate = $queryParams['end_date'] ?? null;
 
-        // Get user ID from request (will be from JWT later)
-        $userId = 1;
+        // Get user ID from JWT token
+        $user = $request->getAttribute('user');
+        $userId = $user['id'] ?? null;
 
         $activities = $this->activityLogModel->getByUser($userId, $startDate, $endDate);
 
@@ -156,8 +157,9 @@ class ActivityController
      */
     public function today(Request $request, Response $response): Response
     {
-        // Get user ID from request (will be from JWT later)
-        $userId = 1;
+        // Get user ID from JWT token
+        $user = $request->getAttribute('user');
+        $userId = $user['id'] ?? null;
 
         $activities = $this->activityLogModel->getToday($userId);
         
@@ -192,8 +194,9 @@ class ActivityController
         $startDate = $queryParams['start_date'] ?? null;
         $endDate = $queryParams['end_date'] ?? null;
 
-        // Get user ID from request (will be from JWT later)
-        $userId = 1;
+        // Get user ID from JWT token
+        $user = $request->getAttribute('user');
+        $userId = $user['id'] ?? null;
 
         $stats = $this->activityLogModel->getStats($userId, $startDate, $endDate);
 
@@ -221,8 +224,9 @@ class ActivityController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
-        // Get user ID from request (will be from JWT later)
-        $userId = 1;
+        // Get user ID from JWT token
+        $user = $request->getAttribute('user');
+        $userId = $user['id'] ?? null;
 
         // Check if activity exists and belongs to user
         $activity = $this->activityLogModel->getById($id);
