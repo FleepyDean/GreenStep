@@ -5,6 +5,10 @@
         <h3>Welcome Back</h3>
         <p class="auth-subtitle">Sign in to sync your local footprint metrics securely</p>
         
+        <div v-if="error" style="padding: 10px; margin-bottom: 15px; background: #ff6b6b; color: white; border-radius: 5px;">
+          {{ error }}
+        </div>
+        
         <form @submit.prevent="handleLogin">
           <div class="form-group" style="text-align: left;">
             <label>Email Address</label>
@@ -14,7 +18,9 @@
             <label>Secure Password</label>
             <input type="password" v-model="loginForm.password" placeholder="••••••••" required />
           </div>
-          <button type="submit" class="submit-btn" style="margin-top: 1rem;">Authenticate Identity</button>
+          <button type="submit" class="submit-btn" style="margin-top: 1rem;" :disabled="loading">
+            {{ loading ? 'Logging in...' : 'Login' }}
+          </button>
         </form>
         
         <p class="auth-toggle-link">
@@ -25,6 +31,10 @@
       <div v-else>
         <h3>Create Profile</h3>
         <p class="auth-subtitle">Join GreenStep to protect daily tracking milestones</p>
+        
+        <div v-if="error" style="padding: 10px; margin-bottom: 15px; background: #ff6b6b; color: white; border-radius: 5px;">
+          {{ error }}
+        </div>
         
         <form @submit.prevent="handleRegister">
           <div class="form-group" style="text-align: left;">
@@ -39,7 +49,9 @@
             <label>Password (Encrypted using Bcrypt via API)</label>
             <input type="password" v-model="registerForm.password" placeholder="••••••••" required />
           </div>
-          <button type="submit" class="submit-btn" style="margin-top: 1rem;">Complete Registration</button>
+          <button type="submit" class="submit-btn" style="margin-top: 1rem;" :disabled="loading">
+            {{ loading ? 'Registering...' : 'Complete Registration' }}
+          </button>
         </form>
         
         <p class="auth-toggle-link">
@@ -54,7 +66,7 @@
         <h3>{{ userProfile.name }}</h3>
         <p class="user-email-text">{{ userProfile.email }}</p>
         <span class="user-role-badge">{{ userProfile.role }}</span>
-        <button class="logout-trigger-btn" @click="handleLogout">Disconnect JWT Session</button>
+        <button class="logout-trigger-btn" @click="handleLogout">Logout</button>
       </section>
 
       <section class="gamification-showcase-panel">
@@ -79,19 +91,24 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 
-// Session authentication mock bindings
-const isAuthenticated = ref(true) 
+const authStore = useAuthStore()
+const { toast } = useToast()
 const authMode = ref('login')
+const error = ref(null)
+const loading = ref(false)
 
 const loginForm = reactive({ email: '', password: '' })
 const registerForm = reactive({ name: '', email: '', password: '' })
 
-const userProfile = ref({
-  name: 'Farish Danial',
-  email: 'farish.danial@utm.my',
-  role: 'Eco Contributor'
+const isAuthenticated = computed(() => authStore.isAuthenticated)
+const userProfile = computed(() => authStore.user || {
+  name: 'Guest',
+  email: '',
+  role: 'end-user'
 })
 
 // Gamification Logic Engine Payload Mappings (FR-iv)
@@ -119,25 +136,57 @@ const userBadges = ref([
   }
 ])
 
-const handleLogin = () => {
-  // Front-end wrapper logic to bind to your Slim API JWT handlers later
-  if (loginForm.email && loginForm.password) {
-    isAuthenticated.value = true
+const handleLogin = async () => {
+  error.value = null
+  loading.value = true
+  
+  const result = await authStore.login(loginForm.email, loginForm.password)
+  
+  if (result.success) {
+    loginForm.email = ''
+    loginForm.password = ''
+    toast.success('Welcome back!')
+  } else {
+    error.value = result.message
+    toast.error(result.message)
   }
+  
+  loading.value = false
 }
 
-const handleRegister = () => {
-  if (registerForm.name && registerForm.email && registerForm.password) {
-    userProfile.value.name = registerForm.name
-    userProfile.value.email = registerForm.email
-    isAuthenticated.value = true
+const handleRegister = async () => {
+  error.value = null
+  loading.value = true
+  
+  const result = await authStore.register(
+    registerForm.name,
+    registerForm.email,
+    registerForm.password
+  )
+  
+  if (result.success) {
+    registerForm.name = ''
+    registerForm.email = ''
+    registerForm.password = ''
+    toast.success('Account created successfully!')
+  } else {
+    error.value = result.message
+    toast.error(result.message)
   }
+  
+  loading.value = false
 }
 
 const handleLogout = () => {
-  // Clears active sessions
-  isAuthenticated.value = false
+  authStore.logout()
   loginForm.email = ''
   loginForm.password = ''
+  toast.info('Logged out successfully')
 }
+
+onMounted(async () => {
+  if (authStore.isAuthenticated) {
+    await authStore.fetchProfile()
+  }
+})
 </script>

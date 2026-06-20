@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <ToastNotification />
     <header class="app-header">
       <div class="brand-wrapper">
         <div class="brand-logo">🌱</div>
@@ -15,7 +16,7 @@
         </router-link>
         <router-link to="/activity" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">📝</span>
-          <span class="nav-text-label">Log</span>
+          <span class="nav-text-label">Activity</span>
         </router-link>
         <router-link to="/challenges" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">🏆</span>
@@ -37,6 +38,10 @@
     </main>
   </div>
 </template>
+
+<script setup>
+import ToastNotification from '@/components/ToastNotification.vue'
+</script>
 
 <style scoped>
 /* Hidden on desktop views, visible on mobile bars through inheritance layout modifications */
