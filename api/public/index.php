@@ -13,7 +13,7 @@ $dotenv->safeLoad();
 
 // Create Slim app
 $app = AppFactory::create();
-$app->setBasePath('/GreenStep/api/public');
+// $app->setBasePath('/GreenStep/api/public');
 $app->addRoutingMiddleware();
 
 // Add Error Middleware (catches all errors)
