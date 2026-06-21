@@ -26,7 +26,7 @@
           <span class="nav-icon-wrapper">💡</span>
           <span class="nav-text-label">Tips</span>
         </router-link>
-        <router-link to="/friends" class="nav-link-btn" active-class="active">
+        <router-link v-if="!isAdmin" to="/friends" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">🤝</span>
           <span class="nav-text-label">Friends</span>
         </router-link>
@@ -48,7 +48,12 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import ToastNotification from '@/components/ToastNotification.vue'
+
+const authStore = useAuthStore()
+const isAdmin = computed(() => authStore.user?.role === 'admin')
 </script>
 
 <style scoped>

@@ -81,6 +81,15 @@ class SocialController
     {
         $user = $request->getAttribute('user');
         $senderId = (int) ($user['id'] ?? 0);
+        $senderRole = $user['role'] ?? '';
+
+        if ($senderRole === 'admin') {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Admins cannot send friend requests'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
 
         $body = $request->getParsedBody() ?? [];
         $identifier = trim($body['identifier'] ?? '');
@@ -162,6 +171,15 @@ class SocialController
     {
         $user = $request->getAttribute('user');
         $userId = (int) ($user['id'] ?? 0);
+        $userRole = $user['role'] ?? '';
+
+        if ($userRole === 'admin') {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Admins cannot accept friend requests'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
 
         $requestId = (int) ($args['id'] ?? 0);
         $body = $request->getParsedBody() ?? [];
@@ -279,7 +297,7 @@ class SocialController
                     COALESCE(SUM(al.carbon_footprint), 0) as total_footprint
                 FROM User u
                 LEFT JOIN ActivityLog al ON u.id = al.user_id
-                WHERE 1=1";
+                WHERE u.role != 'admin'";
 
         $params = [];
 

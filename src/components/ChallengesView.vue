@@ -14,10 +14,10 @@
     </button>
 
     <div class="filter-tab-bar">
-      <button :class="['tab-btn', currentTab === 'all' ? 'active-tab' : '']" @click="currentTab = 'all'">
+      <button v-if="!isAdmin" :class="['tab-btn', currentTab === 'all' ? 'active-tab' : '']" @click="currentTab = 'all'">
         All Challenges
       </button>
-      <button :class="['tab-btn', currentTab === 'joined' ? 'active-tab' : '']" @click="currentTab = 'joined'">
+      <button v-if="!isAdmin" :class="['tab-btn', currentTab === 'joined' ? 'active-tab' : '']" @click="currentTab = 'joined'">
         Joined ({{ joinedCount }})
       </button>
     </div>
@@ -34,9 +34,15 @@
     <div v-else class="challenges-grid">
       <div class="challenge-card" v-for="item in filteredChallenges" :key="item.id">
         <div class="status-badge-row">
-          <span class="active-pill">Active</span>
+          <span :class="['status-pill', item.is_active ? 'active-pill' : item.is_upcoming ? 'upcoming-pill' : 'completed-pill']">
+            {{ item.is_active ? 'Active' : item.is_upcoming ? 'Upcoming' : 'Completed' }}
+          </span>
           <span v-if="item.has_joined" class="joined-pill">✓ Joined</span>
           <span class="member-count">👥 {{ item.member_count }} members</span>
+          <div v-if="isAdmin" class="admin-card-actions">
+            <button class="icon-btn edit-icon-btn" @click.stop="openEditModal(item)" title="Edit">✏️</button>
+            <button class="icon-btn delete-icon-btn" @click.stop="deleteItem(item)" title="Delete">🗑️</button>
+          </div>
         </div>
 
         <h4>{{ item.name }}</h4>
@@ -58,7 +64,7 @@
         </div>
 
         <div class="action-btn-group">
-          <button class="secondary-action-btn">View Details</button>
+          <button class="secondary-action-btn" @click="viewDetails(item.id)">View Details</button>
           <button
             v-if="!isAdmin"
             :class="['primary-action-btn', item.has_joined ? 'leave-action-btn' : '']"
@@ -72,18 +78,22 @@
 
     <CreateChallengeModal
       :show="showCreateModal"
-      @close="showCreateModal = false"
-      @submit="handleCreate"
+      :challenge="editingChallenge"
+      @close="closeModal"
+      @submit="handleModalSubmit"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useChallengeStore } from '@/stores/challengeStore'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import CreateChallengeModal from './CreateChallengeModal.vue'
+
+const router = useRouter()
 
 const challengeStore = useChallengeStore()
 const authStore = useAuthStore()
@@ -91,6 +101,7 @@ const { toast } = useToast()
 
 const currentTab = ref('all')
 const showCreateModal = ref(false)
+const editingChallenge = ref(null)
 
 const isAdmin = computed(() => authStore.user?.role === 'admin')
 
@@ -111,6 +122,10 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+function viewDetails(id) {
+  router.push(`/challenges/${id}`)
+}
+
 async function toggleJoin(item) {
   if (item.has_joined) {
     const result = await challengeStore.leaveChallenge(item.id)
@@ -129,11 +144,41 @@ async function toggleJoin(item) {
   }
 }
 
-async function handleCreate(challengeData) {
-  const result = await challengeStore.createChallenge(challengeData)
+function closeModal() {
+  showCreateModal.value = false
+  editingChallenge.value = null
+}
+
+async function handleModalSubmit(challengeData) {
+  if (editingChallenge.value) {
+    const result = await challengeStore.updateChallenge(editingChallenge.value.id, challengeData)
+    if (result.success) {
+      toast.success(result.message)
+      closeModal()
+    } else {
+      toast.error(result.message)
+    }
+  } else {
+    const result = await challengeStore.createChallenge(challengeData)
+    if (result.success) {
+      toast.success(result.message)
+      closeModal()
+    } else {
+      toast.error(result.message)
+    }
+  }
+}
+
+function openEditModal(item) {
+  editingChallenge.value = item
+  showCreateModal.value = true
+}
+
+async function deleteItem(item) {
+  if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return
+  const result = await challengeStore.deleteChallenge(item.id)
   if (result.success) {
     toast.success(result.message)
-    showCreateModal.value = false
   } else {
     toast.error(result.message)
   }
@@ -145,6 +190,65 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.status-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.status-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-card-actions {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.delete-icon-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.active-pill {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.upcoming-pill {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.completed-pill {
+  background: rgba(94, 100, 110, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(94, 100, 110, 0.25);
+}
+
 .create-challenge-btn {
   width: 100%;
   padding: 0.85rem 1.5rem;
