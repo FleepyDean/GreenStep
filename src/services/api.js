@@ -59,4 +59,11 @@ export const tipAPI = {
   delete: (id) => api.delete(`/tips/${id}`)
 }
 
+export const socialAPI = {
+  getFriends: () => api.get('/friends'),
+  sendFriendRequest: (data) => api.post('/friends/request', data),
+  updateFriendRequest: (id, data) => api.put(`/friends/request/${id}`, data),
+  getLeaderboard: (filter = 'global') => api.get('/leaderboard', { params: { filter } })
+}
+
 export default api
