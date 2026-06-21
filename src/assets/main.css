@@ -1048,7 +1048,7 @@ input, select, .submit-btn, .primary-action-btn, .secondary-action-btn, .tab-btn
     background-color: #112620;
     border-top: 1px solid #1c3830;
     display: grid !important;
-    grid-template-columns: repeat(5, 1fr); /* Generates 5 even columns for your 5 screens */
+    grid-template-columns: repeat(7, 1fr); /* Generates 7 even columns for all screens */
     gap: 0 !important;
     padding-bottom: env(safe-area-inset-bottom, 0px); /* Respects virtual home indicator bars */
     height: calc(65px + env(safe-area-inset-bottom, 0px));
@@ -1078,4 +1078,30 @@ input, select, .submit-btn, .primary-action-btn, .secondary-action-btn, .tab-btn
 .logs-list {
   max-height: 280px;
   -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   SOCIAL & LEADERBOARD VIEW SHARED STYLES
+   ============================================ */
+.friends-container,
+.leaderboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+ 
+.friends-card,
+.leaderboard-card {
+  background: #112620;
+  border: 1px solid #1c3830;
+  border-radius: 14px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+ 
+.friends-card h3 {
+  font-size: 1.25rem;
+  color: #34d399;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
 }

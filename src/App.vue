@@ -26,6 +26,14 @@
           <span class="nav-icon-wrapper">💡</span>
           <span class="nav-text-label">Tips</span>
         </router-link>
+        <router-link to="/friends" class="nav-link-btn" active-class="active">
+          <span class="nav-icon-wrapper">🤝</span>
+          <span class="nav-text-label">Friends</span>
+        </router-link>
+        <router-link to="/leaderboard" class="nav-link-btn" active-class="active">
+          <span class="nav-icon-wrapper">🏅</span>
+          <span class="nav-text-label">Board</span>
+        </router-link>
         <router-link to="/profile" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">👤</span>
           <span class="nav-text-label">Profile</span>
