@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Controllers\ActivityController;
 use App\Controllers\ActivityTypeController;
 use App\Controllers\AuthController;
+use App\Controllers\ChallengeController;
 use App\Controllers\HealthController;
 use App\Controllers\SocialController;
 use App\Controllers\TipController;
@@ -72,5 +73,15 @@ $app->group('/api', function ($group) {
     
     // Leaderboard (Protected)
     $group->get('/leaderboard', [SocialController::class, 'getLeaderboard'])
+        ->add(new JwtMiddleware());
+    
+    // Eco Challenges (Protected)
+    $group->get('/challenges', [ChallengeController::class, 'index'])
+        ->add(new JwtMiddleware());
+    $group->post('/challenges', [ChallengeController::class, 'create'])
+        ->add(new JwtMiddleware());
+    $group->post('/challenges/{id}/join', [ChallengeController::class, 'join'])
+        ->add(new JwtMiddleware());
+    $group->delete('/challenges/{id}/leave', [ChallengeController::class, 'leave'])
         ->add(new JwtMiddleware());
 });

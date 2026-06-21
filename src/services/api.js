@@ -66,4 +66,11 @@ export const socialAPI = {
   getLeaderboard: (filter = 'global') => api.get('/leaderboard', { params: { filter } })
 }
 
+export const challengeAPI = {
+  getChallenges: () => api.get('/challenges'),
+  createChallenge: (data) => api.post('/challenges', data),
+  joinChallenge: (id) => api.post(`/challenges/${id}/join`),
+  leaveChallenge: (id) => api.delete(`/challenges/${id}/leave`)
+}
+
 export default api
