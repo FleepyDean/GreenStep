@@ -85,9 +85,10 @@ CREATE TABLE Challenge (
     id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description VARCHAR(1000) NOT NULL,
+    target_co2_reduction DECIMAL(10, 2) NOT NULL,
+    duration_days INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    target_co2_reduction DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_dates (start_date, end_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
