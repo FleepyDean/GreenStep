@@ -4,6 +4,8 @@ import ActivityLogView from '../components/ActivityLogView.vue'
 import ChallengesView from '../components/ChallengesView.vue'
 import TipsView from '../components/TipsView.vue'
 import ProfileView from '../components/ProfileView.vue'
+import FriendsView from '../components/FriendsView.vue'
+import LeaderboardView from '../components/LeaderboardView.vue'
 
 const routes = [
   {
@@ -34,6 +36,16 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: ProfileView
+  },
+  {
+    path: '/friends',
+    name: 'Friends',
+    component: FriendsView
+  },
+  {
+    path: '/leaderboard',
+    name: 'Leaderboard',
+    component: LeaderboardView
   }
 ]
 
