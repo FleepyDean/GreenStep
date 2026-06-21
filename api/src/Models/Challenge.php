@@ -88,8 +88,8 @@ class Challenge
      */
     public function create(array $data): int|false
     {
-        $sql = "INSERT INTO Challenge (name, description, target_co2_reduction, duration_days, start_date, end_date)
-                VALUES (:name, :description, :target_co2_reduction, :duration_days, :start_date, :end_date)";
+        $sql = "INSERT INTO Challenge (name, description, target_co2_reduction, target_category, target_activity_type_id, duration_days, start_date, end_date)
+                VALUES (:name, :description, :target_co2_reduction, :target_category, :target_activity_type_id, :duration_days, :start_date, :end_date)";
 
         try {
             $stmt = $this->db->prepare($sql);
@@ -97,6 +97,8 @@ class Challenge
                 ':name' => $data['name'],
                 ':description' => $data['description'],
                 ':target_co2_reduction' => (float) $data['target_co2_reduction'],
+                ':target_category' => $data['target_category'] ?? 'All',
+                ':target_activity_type_id' => !empty($data['target_activity_type_id']) ? (int) $data['target_activity_type_id'] : null,
                 ':duration_days' => (int) $data['duration_days'],
                 ':start_date' => $data['start_date'],
                 ':end_date' => $data['end_date']
@@ -104,6 +106,73 @@ class Challenge
             return (int) $this->db->lastInsertId();
         } catch (PDOException $e) {
             error_log("Challenge::create error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update an existing challenge
+     *
+     * @param int $id Challenge ID
+     * @param array $data Challenge data (name, description, target_co2_reduction, duration_days, start_date, end_date)
+     * @return bool True on success
+     */
+    public function update(int $id, array $data): bool
+    {
+        $sql = "UPDATE Challenge
+                SET name = :name,
+                    description = :description,
+                    target_co2_reduction = :target_co2_reduction,
+                    target_category = :target_category,
+                    target_activity_type_id = :target_activity_type_id,
+                    duration_days = :duration_days,
+                    start_date = :start_date,
+                    end_date = :end_date
+                WHERE id = :id";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':id' => $id,
+                ':name' => $data['name'],
+                ':description' => $data['description'],
+                ':target_co2_reduction' => (float) $data['target_co2_reduction'],
+                ':target_category' => $data['target_category'] ?? 'All',
+                ':target_activity_type_id' => !empty($data['target_activity_type_id']) ? (int) $data['target_activity_type_id'] : null,
+                ':duration_days' => (int) $data['duration_days'],
+                ':start_date' => $data['start_date'],
+                ':end_date' => $data['end_date']
+            ]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Challenge::update error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete a challenge and its memberships
+     *
+     * @param int $id Challenge ID
+     * @return bool True on success
+     */
+    public function delete(int $id): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("DELETE FROM ChallengeMember WHERE challenge_id = :challenge_id");
+            $stmt->execute([':challenge_id' => $id]);
+
+            $stmt = $this->db->prepare("DELETE FROM Challenge WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            $deleted = $stmt->rowCount() > 0;
+
+            $this->db->commit();
+            return $deleted;
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            error_log("Challenge::delete error: " . $e->getMessage());
             return false;
         }
     }
@@ -181,6 +250,90 @@ class Challenge
         } catch (PDOException $e) {
             error_log("Challenge::isMember error: " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Get all members of a challenge with their user details
+     *
+     * @param int $challengeId Challenge ID
+     * @return array List of member records with user_id, name, email, joined_at
+     */
+    public function getMembers(int $challengeId): array
+    {
+        $sql = "SELECT 
+                    cm.user_id,
+                    u.name,
+                    u.email,
+                    cm.joined_at
+                FROM ChallengeMember cm
+                JOIN User u ON cm.user_id = u.id
+                WHERE cm.challenge_id = :challenge_id
+                ORDER BY cm.joined_at ASC";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':challenge_id' => $challengeId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Challenge::getMembers error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get the total CO2 reduction by challenge members during the challenge timeframe
+     *
+     * Calculates SUM(ActivityLog.amount * ActivityType.kg_co2_per_unit) for all members
+     * Optionally filtered by ActivityType.category or a specific ActivityType.id.
+     *
+     * @param int $challengeId Challenge ID
+     * @param string $startDate Challenge start date (Y-m-d)
+     * @param string $endDate Challenge end date (Y-m-d)
+     * @param string|null $targetCategory Activity category filter (NULL or 'All' for all categories)
+     * @param int|null $targetActivityTypeId Specific activity type filter (NULL for all types)
+     * @return float Total CO2 reduction achieved by members during the challenge
+     */
+    public function getCommunityProgress(
+        int $challengeId,
+        string $startDate,
+        string $endDate,
+        ?string $targetCategory = null,
+        ?int $targetActivityTypeId = null
+    ): float {
+        $category = $targetCategory ?? 'All';
+        $activityTypeId = $targetActivityTypeId ?? null;
+
+        $sql = "SELECT COALESCE(SUM(al.amount * at.kg_co2_per_unit), 0) as total_reduction
+                FROM ActivityLog al
+                INNER JOIN ActivityType at ON al.activity_type_id = at.id
+                INNER JOIN ChallengeMember cm ON al.user_id = cm.user_id
+                WHERE cm.challenge_id = :challenge_id
+                  AND al.logged_on BETWEEN :start_date AND :end_date";
+        $params = [
+            ':challenge_id' => $challengeId,
+            ':start_date' => $startDate,
+            ':end_date' => $endDate
+        ];
+
+        if ($category !== 'All') {
+            $sql .= " AND at.category = :target_category";
+            $params[':target_category'] = $category;
+        }
+
+        if ($activityTypeId !== null) {
+            $sql .= " AND al.activity_type_id = :target_activity_type_id";
+            $params[':target_activity_type_id'] = $activityTypeId;
+        }
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (float) ($result['total_reduction'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Challenge::getCommunityProgress error: " . $e->getMessage());
+            return 0.0;
         }
     }
 }

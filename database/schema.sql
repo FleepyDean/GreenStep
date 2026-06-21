@@ -86,6 +86,8 @@ CREATE TABLE Challenge (
     name VARCHAR(100) NOT NULL,
     description VARCHAR(1000) NOT NULL,
     target_co2_reduction DECIMAL(10, 2) NOT NULL,
+    target_category VARCHAR(50) NULL DEFAULT 'All',
+    target_activity_type_id INT(10) UNSIGNED NULL,
     duration_days INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,

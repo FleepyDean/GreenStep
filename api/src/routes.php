@@ -78,7 +78,13 @@ $app->group('/api', function ($group) {
     // Eco Challenges (Protected)
     $group->get('/challenges', [ChallengeController::class, 'index'])
         ->add(new JwtMiddleware());
+    $group->get('/challenges/{id}/details', [ChallengeController::class, 'details'])
+        ->add(new JwtMiddleware());
     $group->post('/challenges', [ChallengeController::class, 'create'])
+        ->add(new JwtMiddleware());
+    $group->put('/challenges/{id}', [ChallengeController::class, 'update'])
+        ->add(new JwtMiddleware());
+    $group->delete('/challenges/{id}', [ChallengeController::class, 'delete'])
         ->add(new JwtMiddleware());
     $group->post('/challenges/{id}/join', [ChallengeController::class, 'join'])
         ->add(new JwtMiddleware());
