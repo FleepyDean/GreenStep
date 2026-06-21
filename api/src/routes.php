@@ -5,6 +5,7 @@ use App\Controllers\ActivityController;
 use App\Controllers\ActivityTypeController;
 use App\Controllers\AuthController;
 use App\Controllers\HealthController;
+use App\Controllers\SocialController;
 use App\Controllers\TipController;
 use App\Middleware\JwtMiddleware;
 use Slim\App;
@@ -59,5 +60,17 @@ $app->group('/api', function ($group) {
     $group->post('/tips', [TipController::class, 'create'])
         ->add(new JwtMiddleware());
     $group->delete('/tips/{id}', [TipController::class, 'delete'])
+        ->add(new JwtMiddleware());
+    
+    // Social Features (Protected)
+    $group->get('/friends', [SocialController::class, 'getFriends'])
+        ->add(new JwtMiddleware());
+    $group->post('/friends/request', [SocialController::class, 'sendRequest'])
+        ->add(new JwtMiddleware());
+    $group->put('/friends/request/{id}', [SocialController::class, 'updateRequest'])
+        ->add(new JwtMiddleware());
+    
+    // Leaderboard (Protected)
+    $group->get('/leaderboard', [SocialController::class, 'getLeaderboard'])
         ->add(new JwtMiddleware());
 });
