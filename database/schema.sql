@@ -1,4 +1,4 @@
--- GreenStep Database Schema
+mysqlmysql-- GreenStep Database Schema
 -- SCSM2223 - Cross-Platform Application Development
 -- Project 3: Personal Carbon Footprint & Eco-Lifestyle Tracker
 

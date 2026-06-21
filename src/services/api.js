@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8080/api'
+const API_BASE_URL = 'http://localhost/GreenStep/api/public/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -50,6 +50,13 @@ export const activityAPI = {
   getTodayActivities: () => api.get('/activities/today'),
   getStats: (params) => api.get('/activities/stats', { params }),
   deleteActivity: (id) => api.delete(`/activities/${id}`)
+}
+
+export const tipAPI = {
+  getRandom: () => api.get('/tips/random'),
+  getAll: () => api.get('/tips'),
+  create: (data) => api.post('/tips', data),
+  delete: (id) => api.delete(`/tips/${id}`)
 }
 
 export default api

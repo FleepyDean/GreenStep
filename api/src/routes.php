@@ -5,6 +5,7 @@ use App\Controllers\ActivityController;
 use App\Controllers\ActivityTypeController;
 use App\Controllers\AuthController;
 use App\Controllers\HealthController;
+use App\Controllers\TipController;
 use App\Middleware\JwtMiddleware;
 use Slim\App;
 
@@ -51,5 +52,12 @@ $app->group('/api', function ($group) {
         ->add(new JwtMiddleware());
     $group->delete('/activities/{id}', [ActivityController::class, 'delete'])
         ->add(new JwtMiddleware());
-    
+    $group->get('/tips/random', [TipController::class, 'getRandom'])
+        ->add(new JwtMiddleware());
+    $group->get('/tips', [TipController::class, 'getAll'])
+        ->add(new JwtMiddleware());
+    $group->post('/tips', [TipController::class, 'create'])
+        ->add(new JwtMiddleware());
+    $group->delete('/tips/{id}', [TipController::class, 'delete'])
+        ->add(new JwtMiddleware());
 });
