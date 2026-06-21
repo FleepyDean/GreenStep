@@ -139,10 +139,11 @@ CREATE TABLE Friendship (
     id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sender_id INT(10) UNSIGNED NOT NULL,
     receiver_id INT(10) UNSIGNED NOT NULL,
-    status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
+    status ENUM('pending', 'accepted', 'declined') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES User(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES User(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_friendship_pair (sender_id, receiver_id),
     INDEX idx_sender (sender_id),
     INDEX idx_receiver (receiver_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
