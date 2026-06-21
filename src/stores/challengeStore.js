@@ -4,6 +4,7 @@ import { challengeAPI } from '@/services/api'
 
 export const useChallengeStore = defineStore('challenge', () => {
   const challenges = ref([])
+  const currentChallengeDetails = ref(null)
   const loading = ref(false)
   const error = ref(null)
 
@@ -70,13 +71,63 @@ export const useChallengeStore = defineStore('challenge', () => {
     }
   }
 
+  async function updateChallenge(id, challengeData) {
+    error.value = null
+    try {
+      const response = await challengeAPI.updateChallenge(id, challengeData)
+      const index = challenges.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        challenges.value[index] = { ...challenges.value[index], ...challengeData }
+      }
+      if (currentChallengeDetails.value && currentChallengeDetails.value.id === id) {
+        currentChallengeDetails.value = { ...currentChallengeDetails.value, ...challengeData }
+      }
+      return { success: true, message: response.data.message }
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to update challenge'
+      error.value = message
+      return { success: false, message }
+    }
+  }
+
+  async function deleteChallenge(id) {
+    error.value = null
+    try {
+      const response = await challengeAPI.deleteChallenge(id)
+      challenges.value = challenges.value.filter(c => c.id !== id)
+      return { success: true, message: response.data.message }
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to delete challenge'
+      error.value = message
+      return { success: false, message }
+    }
+  }
+
+  async function fetchChallengeDetails(id) {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await challengeAPI.getChallengeDetails(id)
+      currentChallengeDetails.value = response.data.challenge || null
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Failed to fetch challenge details'
+      console.error('fetchChallengeDetails error:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     challenges,
+    currentChallengeDetails,
     loading,
     error,
     fetchChallenges,
+    fetchChallengeDetails,
     joinChallenge,
     leaveChallenge,
-    createChallenge
+    createChallenge,
+    updateChallenge,
+    deleteChallenge
   }
 })

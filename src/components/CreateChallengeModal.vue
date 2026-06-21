@@ -2,7 +2,7 @@
   <div v-if="show" class="modal-overlay" @click.self="$emit('close')">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Create New Challenge</h3>
+        <h3>{{ modalTitle }}</h3>
         <button class="modal-close-btn" @click="$emit('close')">×</button>
       </div>
 
@@ -51,6 +51,37 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label>Target Category</label>
+          <select v-model="form.target_category" required>
+            <option value="All">All (General)</option>
+            <option value="Transport">Transport</option>
+            <option value="Diet">Diet</option>
+            <option value="Energy">Energy</option>
+            <option value="Recycling">Recycling</option>
+          </select>
+          <p class="field-hint">
+            Choose a category, or optionally narrow down to a specific activity type below.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label>Target Activity Type (Optional)</label>
+          <select v-model="form.target_activity_type_id" :disabled="!isCategorySpecific">
+            <option value="">All activities in category</option>
+            <option
+              v-for="type in activityTypes"
+              :key="type.id"
+              :value="type.id"
+            >
+              {{ type.name }}
+            </option>
+          </select>
+          <p class="field-hint">
+            Leave empty to count all activities in the selected category.
+          </p>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label>Start Date</label>
@@ -65,7 +96,7 @@
         <div class="modal-actions">
           <button type="button" class="cancel-btn" @click="$emit('close')">Cancel</button>
           <button type="submit" class="submit-btn" :disabled="submitting">
-            {{ submitting ? 'Creating...' : 'Create Challenge' }}
+            {{ submitting ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Challenge') }}
           </button>
         </div>
       </form>
@@ -74,37 +105,131 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
+import { activityAPI } from '@/services/api'
 
 const props = defineProps({
-  show: { type: Boolean, default: false }
+  show: { type: Boolean, default: false },
+  challenge: { type: Object, default: null }
 })
 
 const emit = defineEmits(['close', 'submit'])
 
 const submitting = ref(false)
+const activityTypes = ref([])
 
 const form = reactive({
   name: '',
   description: '',
   target_co2_reduction: '',
+  target_category: 'All',
+  target_activity_type_id: '',
   duration_days: '',
   start_date: '',
   end_date: ''
+})
+
+const isEdit = computed(() => !!props.challenge)
+const modalTitle = computed(() => isEdit.value ? 'Edit Challenge' : 'Create New Challenge')
+const isCategorySpecific = computed(() => form.target_category !== 'All' && form.target_category !== '')
+
+function addDaysToDate(dateStr, days) {
+  if (!dateStr || !days) return ''
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return ''
+  date.setDate(date.getDate() + parseInt(days, 10))
+  return date.toISOString().split('T')[0]
+}
+
+watch(
+  [() => form.duration_days, () => form.start_date],
+  ([durationDays, startDate]) => {
+    if (!durationDays || !startDate) return
+    const newEndDate = addDaysToDate(startDate, durationDays)
+    if (newEndDate !== form.end_date) {
+      form.end_date = newEndDate
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => form.end_date,
+  (newEndDate) => {
+    if (!newEndDate || !form.start_date) return
+    const start = new Date(form.start_date)
+    const end = new Date(newEndDate)
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return
+    const diffTime = end - start
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    if (diffDays >= 0 && diffDays !== parseInt(form.duration_days, 10)) {
+      form.duration_days = diffDays.toString()
+    }
+  }
+)
+
+async function loadActivityTypes() {
+  if (!isCategorySpecific.value) {
+    activityTypes.value = []
+    return
+  }
+  try {
+    const { data } = await activityAPI.getTypesByCategory(form.target_category)
+    activityTypes.value = data.activity_types || []
+    if (activityTypes.value.length === 0) {
+      form.target_activity_type_id = ''
+    }
+  } catch (e) {
+    activityTypes.value = []
+  }
+}
+
+watch(() => form.target_category, async (newCategory) => {
+  form.target_activity_type_id = ''
+  await loadActivityTypes()
+})
+
+watch(() => props.show, (visible) => {
+  if (visible) {
+    loadActivityTypes()
+  }
 })
 
 function resetForm() {
   form.name = ''
   form.description = ''
   form.target_co2_reduction = ''
+  form.target_category = 'All'
+  form.target_activity_type_id = ''
   form.duration_days = ''
   form.start_date = ''
   form.end_date = ''
+  activityTypes.value = []
 }
+
+async function populateForm() {
+  if (props.challenge) {
+    form.name = props.challenge.name || ''
+    form.description = props.challenge.description || ''
+    form.target_co2_reduction = props.challenge.target_co2_reduction || ''
+    form.target_category = props.challenge.target_category || 'All'
+    form.target_activity_type_id = props.challenge.target_activity_type_id || ''
+    form.duration_days = props.challenge.duration_days || ''
+    form.start_date = props.challenge.start_date || ''
+    form.end_date = props.challenge.end_date || ''
+    await loadActivityTypes()
+  }
+}
+
+watch(() => props.challenge, populateForm, { immediate: true })
 
 async function handleSubmit() {
   submitting.value = true
-  emit('submit', { ...form })
+  const payload = {
+    ...form,
+    target_activity_type_id: form.target_activity_type_id || null
+  }
+  emit('submit', payload)
   submitting.value = false
   resetForm()
 }
@@ -176,7 +301,8 @@ async function handleSubmit() {
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   width: 100%;
   padding: 0.7rem 0.9rem;
   border: 1px solid #1c3830;
@@ -190,9 +316,21 @@ async function handleSubmit() {
 }
 
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.form-group select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0.3rem 0 0;
 }
 
 .form-row {

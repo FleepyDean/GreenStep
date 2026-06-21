@@ -68,7 +68,10 @@ export const socialAPI = {
 
 export const challengeAPI = {
   getChallenges: () => api.get('/challenges'),
+  getChallengeDetails: (id) => api.get(`/challenges/${id}/details`),
   createChallenge: (data) => api.post('/challenges', data),
+  updateChallenge: (id, data) => api.put(`/challenges/${id}`, data),
+  deleteChallenge: (id) => api.delete(`/challenges/${id}`),
   joinChallenge: (id) => api.post(`/challenges/${id}/join`),
   leaveChallenge: (id) => api.delete(`/challenges/${id}/leave`)
 }

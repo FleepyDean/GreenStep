@@ -6,6 +6,7 @@ import TipsView from '../components/TipsView.vue'
 import ProfileView from '../components/ProfileView.vue'
 import FriendsView from '../components/FriendsView.vue'
 import LeaderboardView from '../components/LeaderboardView.vue'
+import ChallengeDetailsView from '../components/ChallengeDetailsView.vue'
 
 const routes = [
   {
@@ -26,6 +27,11 @@ const routes = [
     path: '/challenges',
     name: 'Challenges',
     component: ChallengesView
+  },
+  {
+    path: '/challenges/:id',
+    name: 'ChallengeDetails',
+    component: ChallengeDetailsView
   },
   {
     path: '/tips',
