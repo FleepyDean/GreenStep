@@ -5,6 +5,7 @@ use App\Controllers\ActivityController;
 use App\Controllers\ActivityTypeController;
 use App\Controllers\AuthController;
 use App\Controllers\ChallengeController;
+use App\Controllers\DashboardController; // ➕ IMPORTED DASHBOARD CONTROLLER HERE
 use App\Controllers\HealthController;
 use App\Controllers\SocialController;
 use App\Controllers\TipController;
@@ -41,6 +42,11 @@ $app->group('/api', function ($group) {
     
     // Auth - Get current user
     $group->get('/auth/me', [AuthController::class, 'me'])
+        ->add(new JwtMiddleware());
+
+    // Dashboard Statistics Metrics (Protected)
+    // ➕ NEW METRICS ENDPOINT CONNECTED TO SLIM ROUTER HERE:
+    $group->get('/dashboard/{userId}', [DashboardController::class, 'getMetrics'])
         ->add(new JwtMiddleware());
     
     // Activity Logging (Protected)
