@@ -10,52 +10,61 @@
       <h3>{{ dailyFeaturedTip.title }}</h3>
       <p>{{ dailyFeaturedTip.body }}</p>
     </div>
+
+    <!-- Premium Admin Panel Toggle Area -->
     <div v-if="user?.role === 'admin'" class="admin-panel">
+      <button 
+        class="toggle-panel-btn" 
+        @click="showAdminForm = !showAdminForm"
+      >
+        {{ showAdminForm ? '− Close Panel' : '＋ Add a Tip' }}
+      </button>
 
-  <div class="form-card">
+      <Transition name="fade-slide">
+        <div v-if="showAdminForm" class="form-card">
+          <h3>New Eco Tip</h3>
 
-    <h3>➕ Add New Eco Tip</h3>
+          <div class="form-row">
+            <input
+              v-model="newTip.title"
+              placeholder="Tip Title"
+              class="tip-input"
+            >
+            <select
+              v-model="newTip.category"
+              class="tip-select"
+            >
+              <option disabled value="">Category</option>
+              <option>Transport</option>
+              <option>Diet</option>
+              <option>Energy</option>
+              <option>Recycling</option>
+              <option>General</option>
+            </select>
+          </div>
 
-    <input
-      v-model="newTip.title"
-      placeholder="Tip Title"
-      class="tip-input"
-    >
+          <textarea
+            v-model="newTip.body"
+            placeholder="Tip Description"
+            class="tip-textarea"
+          ></textarea>
 
-    <textarea
-      v-model="newTip.body"
-      placeholder="Tip Description"
-      class="tip-textarea"
-    ></textarea>
+          <input
+            v-model="newTip.source_url"
+            placeholder="Source URL (optional)"
+            class="tip-input"
+          >
 
-    <select
-      v-model="newTip.category"
-      class="tip-input"
-    >
-      <option>Transport</option>
-      <option>Diet</option>
-      <option>Energy</option>
-      <option>Recycling</option>
-      <option>General</option>
-    </select>
+          <div class="action-row">
+            <button class="minimal-btn" @click="addTip">
+              Publish Tip
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </div>
 
-    <input
-      v-model="newTip.source_url"
-      placeholder="Source URL (optional)"
-      class="tip-input"
-    >
-
-    <button
-      class="green-btn"
-      @click="addTip"
-    >
-      + Add Tip
-    </button>
-
-  </div>
-
-</div>
-    <div class="page-title" style="margin-top: 1rem;">
+    <div class="page-title" style="margin-top: 2rem;">
       <h3>Browse by Category</h3>
     </div>
 
@@ -78,11 +87,11 @@
         <h4>{{ tip.title }}</h4>
         <p>{{ tip.body }}</p>
         <button
-        v-if="isAdmin"
-        class="delete-btn"
-        @click="deleteTip(tip.id)"
+          v-if="isAdmin"
+          class="delete-btn"
+          @click="deleteTip(tip.id)"
         >
-        🗑 Delete
+          🗑 Delete
         </button>
       </div>
     </div>
@@ -94,23 +103,24 @@ import { ref, computed, onMounted } from 'vue'
 import { tipAPI } from '../services/api'
 
 const selectedCategory = ref('All')
+const showAdminForm = ref(false) 
 const user = JSON.parse(localStorage.getItem('user'))
 
 const isAdmin = computed(() => {
     return user?.role === 'admin'
 })
+
 const categories = ['All', 'Transport', 'Diet', 'Energy', 'Recycling']
+const dailyFeaturedTip = ref({})
+const tipsLibrary = ref([])
+
 const loadTips = async () => {
   try {
-
-    // Today's random tip
     const featured = await tipAPI.getRandom()
     dailyFeaturedTip.value = featured.data
 
-    // All tips
     const all = await tipAPI.getAll()
     tipsLibrary.value = all.data
-
   } catch (err) {
     console.error(err)
   }
@@ -120,54 +130,38 @@ onMounted(() => {
   loadTips()
 })
 
-// Randomize or select top-tier row as daily feature highlight choice
-const dailyFeaturedTip = ref({})
-
-const tipsLibrary = ref([])
-
 const filteredTips = computed(() => {
   if (selectedCategory.value === 'All') return tipsLibrary.value
   return tipsLibrary.value.filter(tip => tip.category === selectedCategory.value)
 })
 
 const newTip = ref({
-    title:'',
-    body:'',
-    category:'General',
-    source_url:''
+    title: '',
+    body: '',
+    category: 'General',
+    source_url: ''
 })
 
-const addTip = async()=>{
-
-    try{
-
+const addTip = async () => {
+    try {
         await tipAPI.create(newTip.value)
-
-        newTip.value={
-            title:'',
-            body:'',
-            category:'General',
-            source_url:''
+        newTip.value = {
+            title: '',
+            body: '',
+            category: 'General',
+            source_url: ''
         }
-
+        showAdminForm.value = false 
         loadTips()
-
-    }catch(err){
-
+    } catch (err) {
         console.error(err)
-
     }
-
 }
 
-const deleteTip = async(id)=>{
-
-    if(!confirm("Delete this tip?")) return
-
+const deleteTip = async (id) => {
+    if (!confirm("Delete this tip?")) return
     await tipAPI.delete(id)
-
     loadTips()
-
 }
 
 const getCategoryClass = (cat) => {
@@ -176,137 +170,144 @@ const getCategoryClass = (cat) => {
 </script>
 
 <style scoped>
-
-.admin-panel{
-    margin-bottom:30px;
+/* Admin Architecture Framework */
+.admin-panel {
+  margin: 1.5rem 0;
 }
 
-.form-card{
-
-    background:#1f3e35;
-
-    border-radius:20px;
-
-    padding:30px;
-
-    margin:25px 0;
-
-    box-shadow:0 12px 30px rgba(0,0,0,.08);
-
-    border-top:5px solid #43a047;
-
+.toggle-panel-btn {
+  background: transparent;
+  border: none;
+  color: #10b981;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
 }
 
-.form-card h3{
-
-    font-size:24px;
-
-    color:#2e7d32;
-
-    margin-bottom:25px;
-
-    text-align:center;
-
+.toggle-panel-btn:hover {
+  color: #059669;
 }
 
+/* Premium Green Card Styling */
+.form-card {
+  background: #0b1f19; 
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-top: 1rem;
+  box-shadow: 0 20px 40px rgba(4, 13, 10, 0.5);
+}
+
+.form-card h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #f8fafc; 
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+/* Semi-transparent Glass Inputs */
 .tip-input,
-.tip-textarea{
+.tip-select,
+.tip-textarea {
+  width: 100%;
+  padding: 0.8rem 1.1rem;
+  margin-bottom: 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
 
-    width:100%;
-
-    padding:15px;
-
-    margin-bottom:18px;
-
-    border:1px solid #dfe5df;
-
-    border-radius:12px;
-
-    background:#f8fbf8;
-
-    font-size:15px;
-
-    transition:.25s;
-
-    box-sizing:border-box;
-
+.tip-select option {
+  background: #0b1f19;
+  color: #e2e8f0;
 }
 
 .tip-input:focus,
-.tip-textarea:focus{
-
-    outline:none;
-
-    border-color:#43a047;
-
-    background:white;
-
-    box-shadow:0 0 0 4px rgba(67,160,71,.15);
-
+.tip-select:focus,
+.tip-textarea:focus {
+  outline: none;
+  border-color: rgba(16, 185, 129, 0.5); 
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12); 
 }
 
-.tip-textarea{
-
-    min-height:120px;
-
-    resize:vertical;
-
+.tip-input::placeholder,
+.tip-textarea::placeholder {
+  color: #4b5f58;
 }
 
-.green-btn{
-
-    width:100%;
-
-    padding:15px;
-
-    border:none;
-
-    border-radius:12px;
-
-    background:linear-gradient(135deg,#43a047,#2e7d32);
-
-    color:white;
-
-    font-size:17px;
-
-    font-weight:700;
-
-    cursor:pointer;
-
-    transition:.25s;
-
+.tip-textarea {
+  min-height: 110px;
+  resize: vertical;
 }
 
-.green-btn:hover{
-
-    transform:translateY(-2px);
-
-    box-shadow:0 10px 20px rgba(67,160,71,.3);
-
+/* Premium Contrast Action Button */
+.action-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.4rem;
 }
 
-.delete-btn{
-
-    background:#ef5350;
-
-    color:white;
-
-    border:none;
-
-    padding:10px 18px;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
-    margin-top:15px;
-
+.minimal-btn {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  background: #10b981; 
+  color: #040d0a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.delete-btn:hover{
-
-    background:#d32f2f;
-
+.minimal-btn:hover {
+  background: #34d399;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
 }
 
+/* Animation Micro-interactions */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* Standalone Delete Button Overhaul */
+.delete-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #fef2f2;
+  color: #ef4444;
+  border-color: #fee2e2;
+}
 </style>
