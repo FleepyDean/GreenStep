@@ -248,9 +248,9 @@ async function handleSubmit() {
 }
 
 .modal-content {
-  background: #112620;
-  border: 1px solid #1c3830;
-  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
   padding: 1.5rem;
   width: 100%;
   max-width: 500px;
@@ -268,7 +268,7 @@ async function handleSubmit() {
 
 .modal-header h3 {
   font-size: 1.2rem;
-  color: #34d399;
+  color: #25D366;
   font-weight: 600;
   margin: 0;
 }
@@ -276,7 +276,7 @@ async function handleSubmit() {
 .modal-close-btn {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: #54656F;
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
@@ -295,7 +295,7 @@ async function handleSubmit() {
 .form-group label {
   display: block;
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: #54656F;
   margin-bottom: 0.4rem;
   font-weight: 500;
 }
@@ -305,10 +305,10 @@ async function handleSubmit() {
 .form-group select {
   width: 100%;
   padding: 0.7rem 0.9rem;
-  border: 1px solid #1c3830;
+  border: 1px solid #E9EDEF;
   border-radius: 8px;
-  background: #0c1d18;
-  color: #f1f5f9;
+  background: #F0F2F5;
+  color: #111B21;
   font-size: 0.9rem;
   outline: none;
   font-family: inherit;
@@ -318,8 +318,8 @@ async function handleSubmit() {
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  border-color: #00A884;
+  box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.15);
 }
 
 .form-group select:disabled {
@@ -351,18 +351,18 @@ async function handleSubmit() {
 
 .cancel-btn {
   padding: 0.7rem 1.25rem;
-  border: 1px solid #1c3830;
+  border: 1px solid #E9EDEF;
   border-radius: 8px;
   background: transparent;
-  color: #94a3b8;
+  color: #54656F;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .cancel-btn:hover {
-  background: #1c3830;
-  color: #f1f5f9;
+  background: #E9EDEF;
+  color: #111B21;
 }
 
 .modal-actions .submit-btn {

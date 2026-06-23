@@ -211,7 +211,7 @@ onMounted(async () => {
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.35rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
@@ -249,9 +249,9 @@ onMounted(async () => {
 }
 
 .active-pill {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(0, 168, 132, 0.15);
+  color: #25D366;
+  border: 1px solid rgba(0, 168, 132, 0.15);
 }
 
 .upcoming-pill {
@@ -262,7 +262,7 @@ onMounted(async () => {
 
 .completed-pill {
   background: rgba(94, 100, 110, 0.15);
-  color: #94a3b8;
+  color: #54656F;
   border: 1px solid rgba(94, 100, 110, 0.25);
 }
 
@@ -270,9 +270,9 @@ onMounted(async () => {
   width: 100%;
   padding: 0.85rem 1.5rem;
   border: none;
-  border-radius: 10px;
-  background: #10b981;
-  color: #ffffff;
+  border-radius: 6px;
+  background: #00A884;
+  color: #FFFFFF;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -281,14 +281,14 @@ onMounted(async () => {
 }
 
 .create-challenge-btn:hover {
-  background: #059669;
+  background: #008069;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 168, 132, 0.2);
 }
 
 .empty-state {
   text-align: center;
   padding: 2.5rem 1rem;
-  color: #94a3b8;
+  color: #54656F;
 }
 </style>

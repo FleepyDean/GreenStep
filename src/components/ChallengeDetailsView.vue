@@ -294,13 +294,13 @@ onMounted(async () => {
 .error-state {
   text-align: center;
   padding: 3rem 1rem;
-  color: #94a3b8;
+  color: #54656F;
 }
 
 .back-btn {
   background: none;
   border: none;
-  color: #34d399;
+  color: #25D366;
   font-size: 0.9rem;
   cursor: pointer;
   padding: 0.5rem 0;
@@ -318,7 +318,7 @@ onMounted(async () => {
 
 .details-header h2 {
   font-size: 1.5rem;
-  color: #ffffff;
+  color: #111B21;
   margin-bottom: 0.75rem;
   font-weight: 700;
 }
@@ -333,15 +333,15 @@ onMounted(async () => {
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.35rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .status-badge.active {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(0, 168, 132, 0.15);
+  color: #25D366;
+  border: 1px solid rgba(0, 168, 132, 0.15);
 }
 
 .status-badge.upcoming {
@@ -352,7 +352,7 @@ onMounted(async () => {
 
 .status-badge.completed {
   background: rgba(94, 100, 110, 0.15);
-  color: #94a3b8;
+  color: #54656F;
   border: 1px solid rgba(94, 100, 110, 0.25);
 }
 
@@ -360,15 +360,15 @@ onMounted(async () => {
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.35rem 0.75rem;
-  border-radius: 20px;
-  background: #10b981;
-  color: #ffffff;
+  border-radius: 4px;
+  background: #00A884;
+  color: #FFFFFF;
 }
 
 .details-card {
-  background: #112620;
-  border: 1px solid #1c3830;
-  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
   padding: 1.5rem;
   margin-bottom: 1.25rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
@@ -376,13 +376,13 @@ onMounted(async () => {
 
 .details-card h3 {
   font-size: 1.1rem;
-  color: #34d399;
+  color: #25D366;
   margin-bottom: 1rem;
   font-weight: 600;
 }
 
 .challenge-description {
-  color: #cbd5e1;
+  color: #54656F;
   line-height: 1.6;
   font-size: 0.95rem;
 }
@@ -406,7 +406,7 @@ onMounted(async () => {
 
 .meta-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: #8696A0;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   margin: 0;
@@ -414,18 +414,18 @@ onMounted(async () => {
 
 .meta-value {
   font-size: 0.95rem;
-  color: #e2e8f0;
+  color: #111B21;
   font-weight: 600;
   margin: 0;
 }
 
 .font-green {
-  color: #34d399;
+  color: #25D366;
 }
 
 .progress-description {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: #54656F;
   margin: -0.25rem 0 0.75rem;
   line-height: 1.5;
 }
@@ -445,15 +445,15 @@ onMounted(async () => {
 .progress-bar-track {
   flex: 1;
   height: 12px;
-  background: #0c1d18;
+  background: #F0F2F5;
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid #1c3830;
+  border: 1px solid #E9EDEF;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981, #34d399);
+  background: linear-gradient(90deg, #00A884, #25D366);
   border-radius: 6px;
   transition: width 0.5s ease;
   min-width: 2px;
@@ -462,7 +462,7 @@ onMounted(async () => {
 .progress-percentage {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #34d399;
+  color: #25D366;
   min-width: 40px;
   text-align: right;
 }
@@ -480,19 +480,19 @@ onMounted(async () => {
 
 .stat-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: #8696A0;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
 .stat-value {
   font-size: 1rem;
-  color: #e2e8f0;
+  color: #111B21;
   font-weight: 600;
 }
 
 .empty-participants {
-  color: #64748b;
+  color: #8696A0;
   font-size: 0.9rem;
   text-align: center;
   padding: 1.5rem 0;
@@ -509,14 +509,14 @@ onMounted(async () => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: #0c1d18;
-  border: 1px solid #1c3830;
-  border-radius: 10px;
+  background: #F0F2F5;
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
 }
 
 .participant-item.is-you {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.08);
+  border-color: #00A884;
+  background: rgba(0, 168, 132, 0.08);
 }
 
 .participant-avatar {
@@ -533,7 +533,7 @@ onMounted(async () => {
 
 .participant-name {
   font-size: 0.9rem;
-  color: #ffffff;
+  color: #111B21;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -543,16 +543,16 @@ onMounted(async () => {
 .you-tag {
   font-size: 0.65rem;
   padding: 0.15rem 0.4rem;
-  background: #10b981;
-  color: #ffffff;
-  border-radius: 10px;
+  background: #00A884;
+  color: #FFFFFF;
+  border-radius: 6px;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .participant-email {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: #54656F;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -573,7 +573,7 @@ onMounted(async () => {
   flex: 1;
   padding: 1rem;
   border: none;
-  border-radius: 12px;
+  border-radius: 6px;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -598,14 +598,14 @@ onMounted(async () => {
 
 .admin-delete-btn:hover {
   background: #ef4444;
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 .action-btn {
   width: 100%;
   padding: 1rem;
   border: none;
-  border-radius: 12px;
+  border-radius: 6px;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -613,14 +613,14 @@ onMounted(async () => {
 }
 
 .join-btn {
-  background: #10b981;
-  color: #ffffff;
+  background: #00A884;
+  color: #FFFFFF;
 }
 
 .join-btn:hover {
-  background: #059669;
+  background: #008069;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 168, 132, 0.2);
 }
 
 .leave-btn {
@@ -631,7 +631,7 @@ onMounted(async () => {
 
 .leave-btn:hover {
   background: #ef4444;
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 @media (max-width: 480px) {

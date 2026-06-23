@@ -107,9 +107,9 @@ onMounted(async () => {
  
 <style scoped>
 .leaderboard-card {
-  background: #112620;
-  border: 1px solid #1c3830;
-  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
   padding: 1.5rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   overflow: hidden;
@@ -129,17 +129,17 @@ onMounted(async () => {
 .leaderboard-table th {
   text-align: left;
   padding: 0.75rem 1rem;
-  color: #94a3b8;
+  color: #54656F;
   font-weight: 600;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #1c3830;
+  border-bottom: 1px solid #E9EDEF;
 }
  
 .leaderboard-table td {
   padding: 1rem;
-  border-bottom: 1px solid #1c3830;
+  border-bottom: 1px solid #E9EDEF;
   vertical-align: middle;
 }
  
@@ -148,8 +148,8 @@ onMounted(async () => {
 }
  
 .current-user-row {
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, transparent 100%);
-  border-left: 3px solid #10b981;
+  background: linear-gradient(90deg, rgba(0, 168, 132, 0.08) 0%, transparent 100%);
+  border-left: 3px solid #00A884;
 }
  
 .col-rank {
@@ -180,7 +180,7 @@ onMounted(async () => {
 }
  
 .rank-silver {
-  background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+  background: linear-gradient(135deg, #e2e8f0 0%, #54656F 100%);
   color: #0f172a;
 }
  
@@ -190,8 +190,8 @@ onMounted(async () => {
 }
  
 .rank-regular {
-  background-color: #1c3830;
-  color: #94a3b8;
+  background-color: #E9EDEF;
+  color: #54656F;
 }
  
 .user-cell {
@@ -206,13 +206,13 @@ onMounted(async () => {
 }
  
 .user-name {
-  color: #ffffff;
+  color: #111B21;
   font-weight: 600;
 }
  
 .you-badge {
   font-size: 0.7rem;
-  color: #34d399;
+  color: #25D366;
   font-weight: 700;
   margin-top: 0.2rem;
   text-transform: uppercase;
@@ -224,7 +224,7 @@ onMounted(async () => {
 }
  
 .score-low {
-  color: #34d399;
+  color: #25D366;
 }
  
 .score-high {
@@ -234,7 +234,7 @@ onMounted(async () => {
 .empty-state {
   text-align: center;
   padding: 2.5rem 1rem;
-  color: #94a3b8;
+  color: #54656F;
 }
  
 .empty-sub {

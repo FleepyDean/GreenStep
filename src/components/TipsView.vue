@@ -178,7 +178,7 @@ const getCategoryClass = (cat) => {
 .toggle-panel-btn {
   background: transparent;
   border: none;
-  color: #10b981;
+  color: #00A884;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -188,14 +188,14 @@ const getCategoryClass = (cat) => {
 }
 
 .toggle-panel-btn:hover {
-  color: #059669;
+  color: #008069;
 }
 
 /* Premium Green Card Styling */
 .form-card {
-  background: #0b1f19; 
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  border-radius: 16px;
+  background: #F0F2F5; 
+  border: 1px solid rgba(0, 168, 132, 0.15);
+  border-radius: 6px;
   padding: 2rem;
   margin-top: 1rem;
   box-shadow: 0 20px 40px rgba(4, 13, 10, 0.5);
@@ -222,27 +222,27 @@ const getCategoryClass = (cat) => {
   width: 100%;
   padding: 0.8rem 1.1rem;
   margin-bottom: 1.2rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
+  background: #F0F2F5;
   font-size: 0.9rem;
-  color: #e2e8f0;
+  color: #111B21;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
 }
 
 .tip-select option {
-  background: #0b1f19;
-  color: #e2e8f0;
+  background: #F0F2F5;
+  color: #111B21;
 }
 
 .tip-input:focus,
 .tip-select:focus,
 .tip-textarea:focus {
   outline: none;
-  border-color: rgba(16, 185, 129, 0.5); 
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12); 
+  border-color: rgba(0, 168, 132, 0.4); 
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(0, 168, 132, 0.08); 
 }
 
 .tip-input::placeholder,
@@ -265,8 +265,8 @@ const getCategoryClass = (cat) => {
 .minimal-btn {
   padding: 0.7rem 1.5rem;
   border: none;
-  border-radius: 10px;
-  background: #10b981; 
+  border-radius: 6px;
+  background: #00A884; 
   color: #040d0a;
   font-size: 0.85rem;
   font-weight: 600;
@@ -275,9 +275,9 @@ const getCategoryClass = (cat) => {
 }
 
 .minimal-btn:hover {
-  background: #34d399;
+  background: #25D366;
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 8px 20px rgba(0, 168, 132, 0.15);
 }
 
 /* Animation Micro-interactions */
@@ -295,8 +295,8 @@ const getCategoryClass = (cat) => {
 /* Standalone Delete Button Overhaul */
 .delete-btn {
   background: transparent;
-  color: #94a3b8;
-  border: 1px solid #e2e8f0;
+  color: #54656F;
+  border: 1px solid #E9EDEF;
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 0.8rem;

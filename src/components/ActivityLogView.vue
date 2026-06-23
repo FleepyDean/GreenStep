@@ -469,15 +469,15 @@ onMounted(async () => {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  border-bottom: 2px solid #1a3d2e;
+  border-bottom: 2px solid #E9EDEF;
   padding-bottom: 10px;
 }
 
 .tab-btn {
   padding: 10px 24px;
   background: transparent;
-  border: 2px solid #10b981;
-  color: #10b981;
+  border: 2px solid #00A884;
+  color: #00A884;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -485,20 +485,20 @@ onMounted(async () => {
 }
 
 .tab-btn:hover {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(0, 168, 132, 0.1);
 }
 
 .tab-btn.active {
-  background: #10b981;
-  color: #fff;
+  background: #00A884;
+  color: #FFFFFF;
 }
 
 /* ============= FILTER CARD ============= */
 .filter-card {
-  background: #0f1c17;
-  border-radius: 14px;
+  background: #FFFFFF;
+  border-radius: 6px;
   padding: 24px;
-  border: 1px solid #1a3d2e;
+  border: 1px solid #E9EDEF;
 }
 
 .filter-inner {
@@ -516,14 +516,14 @@ onMounted(async () => {
 .filter-label {
   font-size: 13px;
   font-weight: 600;
-  color: #9ca3af;
+  color: #54656F;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .filter-divider {
   height: 1px;
-  background: #1a3d2e;
+  background: #E9EDEF;
 }
 
 /* Date Range */
@@ -536,21 +536,21 @@ onMounted(async () => {
 .date-range-row input {
   flex: 1;
   padding: 10px 14px;
-  background: #0a1510;
-  border: 1px solid #1a3d2e;
+  background: #F0F2F5;
+  border: 1px solid #E9EDEF;
   border-radius: 8px;
-  color: #fff;
+  color: #111B21;
   font-size: 14px;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .date-range-row input:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #00A884;
 }
 
 .dash {
-  color: #4b5563;
+  color: #8696A0;
   font-size: 16px;
 }
 
@@ -566,14 +566,14 @@ onMounted(async () => {
   align-items: center;
   cursor: pointer;
   padding: 8px 16px;
-  background: #0a1510;
-  border: 1px solid #1a3d2e;
-  border-radius: 20px;
+  background: #F0F2F5;
+  border: 1px solid #E9EDEF;
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .category-radio:hover {
-  border-color: #10b981;
+  border-color: #00A884;
 }
 
 .category-radio input[type="radio"] {
@@ -582,18 +582,18 @@ onMounted(async () => {
 
 .category-radio span {
   font-size: 13px;
-  color: #9ca3af;
+  color: #54656F;
   font-weight: 500;
 }
 
 .category-radio input[type="radio"]:checked + span {
-  color: #10b981;
+  color: #00A884;
   font-weight: 600;
 }
 
 .category-radio:has(input[type="radio"]:checked) {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: #10b981;
+  background: rgba(0, 168, 132, 0.1);
+  border-color: #00A884;
 }
 
 /* Filter Buttons */
@@ -606,9 +606,9 @@ onMounted(async () => {
   flex: 1;
   padding: 11px 20px;
   background: transparent;
-  border: 1px solid #374151;
+  border: 1px solid #E9EDEF;
   border-radius: 25px;
-  color: #9ca3af;
+  color: #54656F;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -616,17 +616,17 @@ onMounted(async () => {
 }
 
 .btn-reset:hover:not(:disabled) {
-  border-color: #6b7280;
+  border-color: #8696A0;
   color: #d1d5db;
 }
 
 .btn-apply {
   flex: 1;
   padding: 11px 20px;
-  background: #10b981;
+  background: #00A884;
   border: none;
   border-radius: 25px;
-  color: #fff;
+  color: #FFFFFF;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -649,9 +649,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background: linear-gradient(135deg, #0f1c17, #0a1510);
-  border: 1px solid #1a3d2e;
-  border-radius: 14px;
+  background: linear-gradient(135deg, #FFFFFF, #F0F2F5);
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
   padding: 18px 24px;
   margin-top: 20px;
 }
@@ -666,12 +666,12 @@ onMounted(async () => {
 .summary-value {
   font-size: 22px;
   font-weight: 700;
-  color: #10b981;
+  color: #00A884;
 }
 
 .summary-label {
   font-size: 12px;
-  color: #6b7280;
+  color: #8696A0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -679,7 +679,7 @@ onMounted(async () => {
 .summary-divider {
   width: 1px;
   height: 36px;
-  background: #1a3d2e;
+  background: #E9EDEF;
 }
 
 /* ============= HISTORY LIST ============= */
@@ -695,14 +695,14 @@ onMounted(async () => {
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  background: #0f1c17;
-  border: 1px solid #1a3d2e;
-  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
 }
 
 .state-box p {
   margin: 8px 0 0;
-  color: #6b7280;
+  color: #8696A0;
   font-size: 15px;
 }
 
@@ -712,7 +712,7 @@ onMounted(async () => {
 
 .state-subtext {
   font-size: 13px !important;
-  color: #4b5563 !important;
+  color: #8696A0 !important;
   margin-top: 4px !important;
 }
 
@@ -724,8 +724,8 @@ onMounted(async () => {
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #1a3d2e;
-  border-top-color: #10b981;
+  border: 3px solid #E9EDEF;
+  border-top-color: #00A884;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 12px;
@@ -746,15 +746,15 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: #0f1c17;
-  border: 1px solid #1a3d2e;
-  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
   padding: 16px 20px;
   transition: all 0.2s ease;
 }
 
 .history-card:hover {
-  border-color: #2a5d3e;
+  border-color: #D1D7DB;
   transform: translateX(4px);
 }
 
@@ -765,17 +765,17 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 6px;
   font-size: 22px;
   flex-shrink: 0;
-  background: #0a1510;
-  border: 1px solid #1a3d2e;
+  background: #F0F2F5;
+  border: 1px solid #E9EDEF;
 }
 
 .history-card-icon.cat-transport { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
 .history-card-icon.cat-diet { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
 .history-card-icon.cat-energy { background: rgba(234, 179, 8, 0.1); border-color: rgba(234, 179, 8, 0.3); }
-.history-card-icon.cat-recycling { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+.history-card-icon.cat-recycling { background: rgba(0, 168, 132, 0.1); border-color: rgba(0, 168, 132, 0.2); }
 
 /* Card Body */
 .history-card-body {
@@ -794,7 +794,7 @@ onMounted(async () => {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #e5e7eb;
+  color: #111B21;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -803,28 +803,28 @@ onMounted(async () => {
 .category-pill {
   font-size: 11px;
   padding: 3px 10px;
-  border-radius: 12px;
+  border-radius: 6px;
   font-weight: 500;
   white-space: nowrap;
-  background: #1a3d2e;
-  color: #10b981;
+  background: #E9EDEF;
+  color: #00A884;
 }
 
 .category-pill.cat-transport { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 .category-pill.cat-diet { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
 .category-pill.cat-energy { background: rgba(234, 179, 8, 0.15); color: #facc15; }
-.category-pill.cat-recycling { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.category-pill.cat-recycling { background: rgba(0, 168, 132, 0.15); color: #25D366; }
 
 .history-card-meta {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #6b7280;
+  color: #8696A0;
 }
 
 .meta-dot {
-  color: #374151;
+  color: #E9EDEF;
 }
 
 /* Card Right Section */
@@ -848,7 +848,7 @@ onMounted(async () => {
 .carbon-badge small {
   font-size: 10px;
   font-weight: 500;
-  color: #6b7280;
+  color: #8696A0;
   text-transform: uppercase;
 }
 
