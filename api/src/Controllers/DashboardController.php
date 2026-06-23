@@ -5,18 +5,16 @@ namespace App\Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use PDO; // Using PHP's built-in database connection manager
+use PDO; 
 
 class DashboardController
 {
-    // If your app uses dependency injection for PDO, inject it here. 
-    // Otherwise, this fallback establishes a connection using native standard variables.
     private function getDB()
     {
         $host = 'localhost';
         $user = 'root';
-        $pass = '';
-        $dbname = 'greenstep_db'; // Ensure this matches your Laragon database name
+        $pass = 'admin123';
+        $dbname = 'greenstep_db'; // Matches your schema exactly
 
         $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8mb4", $user, $pass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -32,46 +30,49 @@ class DashboardController
             $db = $this->getDB();
 
             // 1. Calculate Today's Footprint Summary
+            // ✅ FIXED: Table name changed to ActivityLog, column changed to carbon_footprint, date column changed to logged_on
             $todayStmt = $db->prepare("
-                SELECT SUM(co2_amount) as total FROM carbon_logs 
-                WHERE user_id = :userId AND DATE(created_at) = CURDATE()
+                SELECT SUM(carbon_footprint) as total FROM ActivityLog 
+                WHERE user_id = :userId AND logged_on = CURDATE()
             ");
             $todayStmt->execute(['userId' => $userId]);
             $todayResult = $todayStmt->fetch();
 
             // 2. Calculate Last 7 Days Total Footprint
+            // ✅ FIXED: Using logged_on date tracking
             $weeklyStmt = $db->prepare("
-                SELECT SUM(co2_amount) as total FROM carbon_logs 
-                WHERE user_id = :userId AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                SELECT SUM(carbon_footprint) as total FROM ActivityLog 
+                WHERE user_id = :userId AND logged_on >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
             ");
             $weeklyStmt->execute(['userId' => $userId]);
             $weeklyResult = $weeklyStmt->fetch();
 
             // 3. Compile Data points for the Line Chart (Monday - Sunday)
+            // ✅ FIXED: Grouping by day using logged_on
             $trendStmt = $db->prepare("
-                SELECT DAYOFWEEK(created_at) as day_num, SUM(co2_amount) as total 
-                FROM carbon_logs 
-                WHERE user_id = :userId AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
-                GROUP BY DAYOFWEEK(created_at)
+                SELECT DAYOFWEEK(logged_on) as day_num, SUM(carbon_footprint) as total 
+                FROM ActivityLog 
+                WHERE user_id = :userId AND YEARWEEK(logged_on, 1) = YEARWEEK(CURDATE(), 1)
+                GROUP BY DAYOFWEEK(logged_on)
             ");
             $trendStmt->execute(['userId' => $userId]);
             $trendRows = $trendStmt->fetchAll();
 
-            // Format standard 0-6 array keys matching Mon-Sun for Chart.js
             $weeklyTrendArray = [0, 0, 0, 0, 0, 0, 0];
             foreach ($trendRows as $row) {
                 $dayNum = (int)$row['day_num'];
-                // Normalize: MySQL DAYOFWEEK (1=Sun, 2=Mon... 7=Sat) to index positions (Mon=0... Sun=6)
                 $targetIndex = ($dayNum === 1) ? 6 : $dayNum - 2;
                 $weeklyTrendArray[$targetIndex] = (float)$row['total'];
             }
 
             // 4. Group totals by category for the Doughnut Chart
+            // ✅ FIXED: Added INNER JOIN on ActivityType to safely extract the category ENUM
             $breakdownStmt = $db->prepare("
-                SELECT category, SUM(co2_amount) as total 
-                FROM carbon_logs 
-                WHERE user_id = :userId 
-                GROUP BY category
+                SELECT t.category, SUM(a.carbon_footprint) as total 
+                FROM ActivityLog a
+                INNER JOIN ActivityType t ON a.activity_type_id = t.id
+                WHERE a.user_id = :userId 
+                GROUP BY t.category
             ");
             $breakdownStmt->execute(['userId' => $userId]);
             $breakdownRows = $breakdownStmt->fetchAll();
@@ -85,24 +86,28 @@ class DashboardController
             ];
             
             foreach ($breakdownRows as $row) {
-                $catName = ucfirst(strtolower($row['category']));
-                if (array_key_exists($catName, $categoryBreakdown)) {
-                    $categoryBreakdown[$catName] = (float)$row['total'];
+                $dbCategory = ucfirst(strtolower(trim((string)$row['category']))); 
+                if (array_key_exists($dbCategory, $categoryBreakdown)) {
+                    $categoryBreakdown[$dbCategory] = (float)$row['total'];
                 }
             }
 
-            // Assemble payload structure matching Slim + your Vue charts expectations
+            // 5. Dynamic Badge Count Fetch
+            // ✅ BONUS: Dynamically checks your UserBadge table count
+            $badgeStmt = $db->prepare("SELECT COUNT(*) as total FROM UserBadge WHERE user_id = :userId");
+            $badgeStmt->execute(['userId' => $userId]);
+            $badgeCount = $badgeStmt->fetch();
+
+            // Assemble matching payload structure
             $metrics = [
                 "todayFootprint" => (float)($todayResult['total'] ?? 0),
                 "weeklyTotal" => (float)($weeklyResult['total'] ?? 0),
-                "dailyStreak" => 12, // Replace with dynamic streak calculation later
-                "badgesCount" => 3,  // Replace with user badges table count later
+                "dailyStreak" => 5,  // Temporary mockup placeholder
+                "badgesCount" => (int)($badgeCount['total'] ?? 0),
                 "weeklyTrendArray" => $weeklyTrendArray,
                 "categoryBreakdown" => $categoryBreakdown
             ];
 
-            // In older Slim versions use: return $response->withJson(["success" => true, "data" => $metrics]);
-            // If using standard modern Slim 4 PSR-7 formatting instead:
             $response->getBody()->write(json_encode(["success" => true, "data" => $metrics]));
             return $response->withHeader('Content-Type', 'application/json');
 

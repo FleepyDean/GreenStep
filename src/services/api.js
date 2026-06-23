@@ -76,4 +76,8 @@ export const challengeAPI = {
   leaveChallenge: (id) => api.delete(`/challenges/${id}/leave`)
 }
 
+export const dashboardAPI = {
+  getMetrics: (userId) => api.get(`dashboard/${userId}`)
+}
+
 export default api
