@@ -26,9 +26,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('user')
-      window.location.href = '/profile'
+      const url = error.config?.url || ''
+      // Don't redirect on auth endpoints - let the component handle the error
+      if (!url.includes('/auth/login') && !url.includes('/auth/register')) {
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('user')
+        window.location.href = '/profile'
+      }
     }
     return Promise.reject(error)
   }

@@ -59,30 +59,29 @@
             </form>
           </section>
         </slot>
-      </div>
 
-      
-      <footer class="guidelines-section" style="margin-top: 30px;">
-        <h3>📋 Activity Guidelines</h3>
-        <div class="guidelines-grid">
-          <div class="guide-item">
-            <h5>🚲 Transport</h5>
-            <p>Log your total travel distance in different transport modes.</p>
+        <footer class="guidelines-section" style="margin-top: 30px;">
+          <h3>📋 Activity Guidelines</h3>
+          <div class="guidelines-grid">
+            <div class="guide-item">
+              <h5>🚲 Transport</h5>
+              <p>Log your total travel distance in different transport modes.</p>
+            </div>
+            <div class="guide-item">
+              <h5>🥗 Diet</h5>
+              <p>Track your meals. Red meat heavily affects footprint calculations.</p>
+            </div>
+            <div class="guide-item">
+              <h5>🔌 Energy</h5>
+              <p>Monitor domestic electricity and appliance energy consumption.</p>
+            </div>
+            <div class="guide-item">
+              <h5>♻️ Recycling</h5>
+              <p>Log recycling efforts to reduce waste production totals.</p>
+            </div>
           </div>
-          <div class="guide-item">
-            <h5>🥗 Diet</h5>
-            <p>Track your meals. Red meat heavily affects footprint calculations.</p>
-          </div>
-          <div class="guide-item">
-            <h5>🔌 Energy</h5>
-            <p>Monitor domestic electricity and appliance energy consumption.</p>
-          </div>
-          <div class="guide-item">
-            <h5>♻️ Recycling</h5>
-            <p>Log recycling efforts to reduce waste production totals.</p>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
 
     <!-- Activity Track Tab -->
@@ -882,6 +881,12 @@ onMounted(async () => {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============= SPLIT LAYOUT ============= */
+.split-layout {
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ============= MOBILE RESPONSIVE ============= */
