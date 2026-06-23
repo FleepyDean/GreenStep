@@ -2,18 +2,20 @@
   <div class="app-container">
     <ToastNotification />
     <header class="app-header">
-      <!-- Mobile: hamburger sits top-left in the header -->
-      <button v-if="authStore.isAuthenticated" class="header-hamburger" @click="drawerOpen = true" aria-label="Open menu">
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-      </button>
+      <div class="header-left">
+        <!-- Mobile only: hamburger sits top-left -->
+        <button v-if="authStore.isAuthenticated" class="header-hamburger" @click="drawerOpen = true" aria-label="Open menu">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
 
-      <div class="brand-wrapper">
-        <div class="brand-logo">🌱</div>
-        <div class="brand-text">
-          <h1>GreenStep</h1>
-          <p>Small daily steps. Measurable impact.</p>
+        <div class="brand-wrapper">
+          <div class="brand-logo">🌱</div>
+          <div class="brand-text">
+            <h1>GreenStep</h1>
+            <p>Small daily steps. Measurable impact.</p>
+          </div>
         </div>
       </div>
       <div v-if="authStore.isAuthenticated" class="nav-links">
@@ -28,6 +30,14 @@
         <router-link to="/activity" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">📝</span>
           <span class="nav-text-label">Activity</span>
+        </router-link>
+        <router-link to="/tips" class="nav-link-btn desktop-only" active-class="active">
+          <span class="nav-icon-wrapper">💡</span>
+          <span class="nav-text-label">Tips</span>
+        </router-link>
+        <router-link v-if="!isAdmin" to="/friends" class="nav-link-btn desktop-only" active-class="active">
+          <span class="nav-icon-wrapper">🤝</span>
+          <span class="nav-text-label">Friends</span>
         </router-link>
         <router-link to="/leaderboard" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">🏅</span>
@@ -112,6 +122,18 @@ watch(() => route.path, () => {
   margin-bottom: 2px;
 }
 
+/* Header left group: hamburger + brand always together */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Tips/Friends nav links — desktop only, hidden on mobile */
+.desktop-only {
+  display: flex;
+}
+
 /* Header hamburger — hidden on desktop */
 .header-hamburger {
   display: none;
@@ -131,6 +153,11 @@ watch(() => route.path, () => {
     0%   { transform: scale(0.75); }
     60%  { transform: scale(1.25); }
     100% { transform: scale(1.15); }
+  }
+
+  /* Hide desktop-only links in mobile pill nav */
+  .desktop-only {
+    display: none !important;
   }
 
   /* Header hamburger — top-left of the header bar */
