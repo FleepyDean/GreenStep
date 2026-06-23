@@ -13,6 +13,7 @@
         Global
       </button>
       <button
+        v-if="!isAdmin()"
         :class="['tab-btn', filter === 'friends' ? 'active-tab' : '']"
         @click="setFilter('friends')"
       >
@@ -75,6 +76,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useSocialStore } from '@/stores/socialStore'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+const isAdmin = () => authStore.user?.role === 'admin'
  
 const socialStore = useSocialStore()
 const filter = ref('global')

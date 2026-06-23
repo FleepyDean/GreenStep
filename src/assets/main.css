@@ -1017,57 +1017,101 @@ input, select, .submit-btn, .primary-action-btn, .secondary-action-btn, .tab-btn
 
 /* Transforming top layout header into an App-Shell Bottom Navigation Desk on Mobile Screens */
 @media (max-width: 768px) {
-  /* Restructure main layout to account for a permanent bottom tab bar */
+  /* Extra bottom padding so content isn't hidden behind the floating nav */
   .app-container {
-    padding-bottom: calc(65px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   }
 
   .app-header {
-    flex-direction: row !important; /* Keep Brand logo and navigation inline */
+    flex-direction: row !important;
+    align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem !important;
+    padding: 0.75rem 1rem !important;
     border-bottom: 1px solid #E9EDEF;
     position: sticky;
     top: 0;
+    gap: 0.5rem;
   }
 
-  /* Hide subtitle text on tiny mobile viewports to avoid header clutter */
   .brand-text p {
     display: none;
   }
 
-  /* Shift standard navigation to a fixed modern native bottom deck sheet */
+  /* ── Threads-style floating pill nav ── */
   .nav-links {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #FFFFFF;
-    border-top: 1px solid #E9EDEF;
-    display: grid !important;
-    grid-template-columns: repeat(7, 1fr); /* Generates 7 even columns for all screens */
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    max-width: calc(100vw - 32px);
+
+    background: #FFFFFF;
+    border-radius: 999px;
+    border: 1px solid #E9EDEF;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06);
+
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
     gap: 0 !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px); /* Respects virtual home indicator bars */
-    height: calc(65px + env(safe-area-inset-bottom, 0px));
+    padding: 0 6px;
+    height: 60px;
     z-index: 999;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
   }
 
   .nav-link-btn {
-    font-size: 0.72rem !important; /* Smaller, crisp icon-subtitles style text */
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    flex-direction: column;
-    border-bottom: none !important;
-    border-top: 3px solid transparent; /* Highlight moves to top of bottom navbar */
-    padding: 0.5rem 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 44px;
+    border-radius: 999px;
+    border: none !important;
+    background: transparent;
     color: #8696A0;
+    font-size: 0 !important;        /* hide text labels */
+    padding: 0 !important;
+    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
   }
 
+  /* Show icons, hide text */
+  .nav-link-btn .nav-icon-wrapper {
+    display: inline-flex !important;
+    font-size: 1.35rem;
+    line-height: 1;
+    margin: 0;
+    transition: transform 0.15s ease;
+  }
+
+  .nav-link-btn .nav-text-label {
+    display: none !important;
+  }
+
+  /* Inactive hover */
+  .nav-link-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #54656F;
+  }
+
+  /* Active state — green tint with subtle pill highlight */
   .nav-link-btn.active {
-    color: #00A884;
-    border-top: 3px solid #00A884;
-    background: linear-gradient(to bottom, rgba(0, 168, 132, 0.04), transparent);
+    color: #00A884 !important;
+    background: rgba(0, 168, 132, 0.08);
+    border: none !important;
+  }
+
+  .nav-link-btn.active .nav-icon-wrapper {
+    transform: scale(1.15);
+  }
+
+  /* Tap / press animation */
+  .nav-link-btn:active {
+    transform: scale(0.88);
+    background: rgba(0, 0, 0, 0.06);
   }
 }
 
