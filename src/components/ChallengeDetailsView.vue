@@ -207,7 +207,7 @@ function formatDate(dateStr) {
 }
 
 function goBack() {
-  router.push('/community')
+  router.push('/challenges')
 }
 
 function openEditModal() {
