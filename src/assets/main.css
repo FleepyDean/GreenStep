@@ -1105,3 +1105,61 @@ input, select, .submit-btn, .primary-action-btn, .secondary-action-btn, .tab-btn
   margin-bottom: 1.25rem;
   font-weight: 600;
 }
+
+/* ==========================================================================
+   📌 STABLE DASHBOARD CHART LAYOUT CONFIGURATION
+   ========================================================================== */
+
+/**
+ * 1. Chart Layout Grid Wrapper
+ * Controls horizontal alignment and auto-wrapping for smaller screens.
+ */
+.charts-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  width: 100%;
+}
+
+/**
+ * 2. Independent Chart Panel Containers
+ * Ensures cards match exactly in height and structural thickness.
+ */
+.chart-box {
+  background: rgba(16, 185, 129, 0.15);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.chart-box h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #34d399;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/**
+ * 3. Chart Canvas Container Boundary
+ * CRITICAL FOR CHART.JS: Enforces strict aspect ratios and maximum height
+ * to stop charts from expanding down the screen when data hydrates.
+ */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 320px; /* Locks vertical height down permanently */
+  min-height: 320px;
+  max-height: 320px;
+}
+
+/* Ensure inner canvas expands to fill the fixed container constraints cleanly */
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+

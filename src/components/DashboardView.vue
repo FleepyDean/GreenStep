@@ -31,17 +31,21 @@
     <div class="charts-layout">
       <div class="chart-box">
         <h4>Weekly Trend</h4>
-        <WeeklyTrendChart 
-          :weekly-data="weeklyTrend" 
-          :key="weeklyTrend.join(',')"
-        />
+        <div class="chart-container">
+          <WeeklyTrendChart 
+            :weekly-data="weeklyTrend" 
+            :key="weeklyTrend.join(',')"
+          />
+        </div>
       </div>
       <div class="chart-box">
         <h4>Category Breakdown</h4>
-        <CategoryBreakdownChart 
-          :breakdown-data="categoryData" 
-          :key="JSON.stringify(categoryData)"
-        />
+        <div class="chart-container">
+          <CategoryBreakdownChart 
+            :breakdown-data="categoryData" 
+            :key="JSON.stringify(categoryData)"
+          />
+        </div>
       </div>
     </div>
 
@@ -133,4 +137,5 @@ onMounted(() => {
   }
 })
 </script>
+
 
