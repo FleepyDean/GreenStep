@@ -22,7 +22,7 @@
       </button>
     </div>
 
-    <div v-if="challengeStore.loading" class="empty-state">
+    <div v-if="isLoading" class="empty-state">
       <p>Loading challenges...</p>
     </div>
 
@@ -88,33 +88,51 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useChallengeStore } from '@/stores/challengeStore'
+import { challengeAPI } from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import CreateChallengeModal from './CreateChallengeModal.vue'
 
 const router = useRouter()
 
-const challengeStore = useChallengeStore()
 const authStore = useAuthStore()
 const { toast } = useToast()
 
+const challenges = ref([])
 const currentTab = ref('all')
 const showCreateModal = ref(false)
 const editingChallenge = ref(null)
+const isLoading = ref(true)
 
 const isAdmin = computed(() => authStore.user?.role === 'admin')
 
 const filteredChallenges = computed(() => {
+  const list = Array.isArray(challenges.value) ? challenges.value : []
   if (currentTab.value === 'joined') {
-    return challengeStore.challenges.filter(c => c.has_joined)
+    return list.filter(c => c.has_joined)
   }
-  return challengeStore.challenges
+  return list
 })
 
 const joinedCount = computed(() => {
-  return challengeStore.challenges.filter(c => c.has_joined).length
+  const list = Array.isArray(challenges.value) ? challenges.value : []
+  return list.filter(c => c.has_joined).length
 })
+
+async function loadChallenges() {
+  try {
+    isLoading.value = true
+    const response = await challengeAPI.getChallenges()
+    console.log('Challenges API response:', response.data)
+    challenges.value = response.data.challenges || []
+    console.log('challenges.value set to:', challenges.value, 'length:', challenges.value.length)
+  } catch (err) {
+    console.error('Failed to load challenges:', err)
+    toast.error(err.response?.data?.message || 'Failed to load challenges')
+  } finally {
+    isLoading.value = false
+  }
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
@@ -127,20 +145,20 @@ function viewDetails(id) {
 }
 
 async function toggleJoin(item) {
-  if (item.has_joined) {
-    const result = await challengeStore.leaveChallenge(item.id)
-    if (result.success) {
-      toast.success(result.message)
+  try {
+    const index = challenges.value.findIndex(c => c.id === item.id)
+    if (item.has_joined) {
+      const response = await challengeAPI.leaveChallenge(item.id)
+      challenges.value[index] = { ...item, has_joined: false, member_count: Math.max(0, (item.member_count || 0) - 1) }
+      toast.success(response.data.message || 'Left challenge')
     } else {
-      toast.error(result.message)
+      const response = await challengeAPI.joinChallenge(item.id)
+      challenges.value[index] = { ...item, has_joined: true, member_count: (item.member_count || 0) + 1 }
+      toast.success(response.data.message || 'Joined challenge')
     }
-  } else {
-    const result = await challengeStore.joinChallenge(item.id)
-    if (result.success) {
-      toast.success(result.message)
-    } else {
-      toast.error(result.message)
-    }
+  } catch (err) {
+    console.error('Failed to toggle join:', err)
+    toast.error(err.response?.data?.message || 'Failed to update challenge')
   }
 }
 
@@ -150,22 +168,19 @@ function closeModal() {
 }
 
 async function handleModalSubmit(challengeData) {
-  if (editingChallenge.value) {
-    const result = await challengeStore.updateChallenge(editingChallenge.value.id, challengeData)
-    if (result.success) {
-      toast.success(result.message)
-      closeModal()
+  try {
+    if (editingChallenge.value) {
+      const response = await challengeAPI.updateChallenge(editingChallenge.value.id, challengeData)
+      toast.success(response.data.message || 'Challenge updated')
     } else {
-      toast.error(result.message)
+      const response = await challengeAPI.createChallenge(challengeData)
+      toast.success(response.data.message || 'Challenge created')
     }
-  } else {
-    const result = await challengeStore.createChallenge(challengeData)
-    if (result.success) {
-      toast.success(result.message)
-      closeModal()
-    } else {
-      toast.error(result.message)
-    }
+    closeModal()
+    await loadChallenges()
+  } catch (err) {
+    console.error('Failed to save challenge:', err)
+    toast.error(err.response?.data?.message || 'Failed to save challenge')
   }
 }
 
@@ -176,16 +191,18 @@ function openEditModal(item) {
 
 async function deleteItem(item) {
   if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return
-  const result = await challengeStore.deleteChallenge(item.id)
-  if (result.success) {
-    toast.success(result.message)
-  } else {
-    toast.error(result.message)
+  try {
+    const response = await challengeAPI.deleteChallenge(item.id)
+    toast.success(response.data.message || 'Challenge deleted')
+    await loadChallenges()
+  } catch (err) {
+    console.error('Failed to delete challenge:', err)
+    toast.error(err.response?.data?.message || 'Failed to delete challenge')
   }
 }
 
-onMounted(() => {
-  challengeStore.fetchChallenges()
+onMounted(async () => {
+  await loadChallenges()
 })
 </script>
 

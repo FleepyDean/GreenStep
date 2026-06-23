@@ -26,10 +26,13 @@ export const useChallengeStore = defineStore('challenge', () => {
     error.value = null
     try {
       const response = await challengeAPI.joinChallenge(id)
-      const challenge = challenges.value.find(c => c.id === id)
-      if (challenge) {
-        challenge.has_joined = true
-        challenge.member_count += 1
+      const index = challenges.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        challenges.value[index] = {
+          ...challenges.value[index],
+          has_joined: true,
+          member_count: (challenges.value[index].member_count || 0) + 1
+        }
       }
       return { success: true, message: response.data.message }
     } catch (err) {
@@ -43,10 +46,13 @@ export const useChallengeStore = defineStore('challenge', () => {
     error.value = null
     try {
       const response = await challengeAPI.leaveChallenge(id)
-      const challenge = challenges.value.find(c => c.id === id)
-      if (challenge) {
-        challenge.has_joined = false
-        challenge.member_count = Math.max(0, challenge.member_count - 1)
+      const index = challenges.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        challenges.value[index] = {
+          ...challenges.value[index],
+          has_joined: false,
+          member_count: Math.max(0, (challenges.value[index].member_count || 0) - 1)
+        }
       }
       return { success: true, message: response.data.message }
     } catch (err) {

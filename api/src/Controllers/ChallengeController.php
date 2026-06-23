@@ -37,9 +37,9 @@ class ChallengeController
 
         // Non-admin users should not see completed (expired) challenges
         if (!$isAdmin) {
-            $challenges = array_filter($challenges, function ($c) use ($today) {
+            $challenges = array_values(array_filter($challenges, function ($c) use ($today) {
                 return $c['end_date'] >= $today;
-            });
+            }));
         }
 
         $formatted = array_map(function ($c) use ($today) {
