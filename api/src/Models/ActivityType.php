@@ -133,4 +133,82 @@ class ActivityType
             return [];
         }
     }
+
+    /**
+     * Create a new activity type
+     * 
+     * @param string $category
+     * @param string $name
+     * @param string $unit
+     * @param float  $kg_co2_per_unit
+     * @return int|null New record ID or null on failure
+     */
+    public function create(string $category, string $name, string $unit, float $kg_co2_per_unit): ?int
+    {
+        $sql = "INSERT INTO ActivityType (category, name, unit, kg_co2_per_unit) VALUES (:category, :name, :unit, :factor)";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':category' => $category,
+                ':name'     => $name,
+                ':unit'     => $unit,
+                ':factor'   => $kg_co2_per_unit
+            ]);
+            return (int) $this->db->lastInsertId();
+        } catch (PDOException $e) {
+            error_log("ActivityType::create error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Update an existing activity type
+     * 
+     * @param int    $id
+     * @param string $category
+     * @param string $name
+     * @param string $unit
+     * @param float  $kg_co2_per_unit
+     * @return bool Success flag
+     */
+    public function update(int $id, string $category, string $name, string $unit, float $kg_co2_per_unit): bool
+    {
+        $sql = "UPDATE ActivityType SET category = :category, name = :name, unit = :unit, kg_co2_per_unit = :factor WHERE id = :id";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':id'       => $id,
+                ':category' => $category,
+                ':name'     => $name,
+                ':unit'     => $unit,
+                ':factor'   => $kg_co2_per_unit
+            ]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("ActivityType::update error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete an activity type by ID
+     * 
+     * @param int $id
+     * @return bool Success flag
+     */
+    public function delete(int $id): bool
+    {
+        $sql = "DELETE FROM ActivityType WHERE id = :id";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("ActivityType::delete error: " . $e->getMessage());
+            return false;
+        }
+    }
 }

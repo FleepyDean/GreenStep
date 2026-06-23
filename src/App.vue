@@ -34,6 +34,10 @@
           <span class="nav-icon-wrapper">🏅</span>
           <span class="nav-text-label">Board</span>
         </router-link>
+        <router-link v-if="isAdmin" to="/emission-factors" class="nav-link-btn" active-class="active">
+          <span class="nav-icon-wrapper">⚡</span>
+          <span class="nav-text-label">Factors</span>
+        </router-link>
         <router-link to="/profile" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">👤</span>
           <span class="nav-text-label">Profile</span>

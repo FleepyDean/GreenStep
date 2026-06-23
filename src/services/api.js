@@ -84,4 +84,11 @@ export const dashboardAPI = {
   getMetrics: (userId) => api.get(`dashboard/${userId}`)
 }
 
+export const emissionFactorAPI = {
+  getAll: () => api.get('/activity-types?grouped=false'),
+  create: (data) => api.post('/admin/activity-types', data),
+  update: (id, data) => api.put(`/admin/activity-types/${id}`, data),
+  delete: (id) => api.delete(`/admin/activity-types/${id}`)
+}
+
 export default api

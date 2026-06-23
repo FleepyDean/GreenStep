@@ -96,4 +96,14 @@ $app->group('/api', function ($group) {
         ->add(new JwtMiddleware());
     $group->delete('/challenges/{id}/leave', [ChallengeController::class, 'leave'])
         ->add(new JwtMiddleware());
+
+    // ============================================
+    // Admin: Emission Factor Management (Protected + Admin Role)
+    // ============================================
+    $group->post('/admin/activity-types', [ActivityTypeController::class, 'store'])
+        ->add(new JwtMiddleware());
+    $group->put('/admin/activity-types/{id}', [ActivityTypeController::class, 'update'])
+        ->add(new JwtMiddleware());
+    $group->delete('/admin/activity-types/{id}', [ActivityTypeController::class, 'destroy'])
+        ->add(new JwtMiddleware());
 });
