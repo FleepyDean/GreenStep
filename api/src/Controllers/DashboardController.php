@@ -13,7 +13,7 @@ class DashboardController
     {
         $host = 'localhost';
         $user = 'root';
-        $pass = 'admin123';
+        $pass = '';
         $dbname = 'greenstep_db'; // Matches your schema exactly
 
         $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8mb4", $user, $pass);

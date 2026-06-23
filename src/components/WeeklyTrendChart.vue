@@ -36,10 +36,10 @@ const chartData = computed(() => ({
     {
       label: 'Carbon Spent (kg)',
       data: props.weeklyData,
-      borderColor: '#10b981', // Smooth premium green trace line
-      backgroundColor: 'rgba(16, 185, 129, 0.04)', // Light area gradient
+      borderColor: '#00A884',
+      backgroundColor: 'rgba(0, 168, 132, 0.06)',
       borderWidth: 2,
-      pointBackgroundColor: '#10b981',
+      pointBackgroundColor: '#00A884',
       pointHoverRadius: 6,
       tension: 0.38, 
       fill: true
@@ -57,11 +57,11 @@ const chartOptions = {
   scales: {
     x: {
       grid: { display: false },
-      ticks: { color: '#94a3b8', font: { size: 11 } }
+      ticks: { color: '#54656F', font: { size: 11 } }
     },
     y: {
-      grid: { color: 'rgba(241, 245, 249, 0.9)' },
-      ticks: { color: '#94a3b8', font: { size: 11 } },
+      grid: { color: 'rgba(0, 0, 0, 0.06)' },
+      ticks: { color: '#54656F', font: { size: 11 } },
       border: { dash: [4, 4] }
     }
   }

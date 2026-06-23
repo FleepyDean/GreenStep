@@ -5,8 +5,9 @@ import ChallengesView from '../components/ChallengesView.vue'
 import TipsView from '../components/TipsView.vue'
 import ProfileView from '../components/ProfileView.vue'
 import FriendsView from '../components/FriendsView.vue'
-import LeaderboardView from '../components/LeaderboardView.vue'
 import ChallengeDetailsView from '../components/ChallengeDetailsView.vue'
+import LeaderboardView from '../components/LeaderboardView.vue'
+import EmissionFactorView from '../components/EmissionFactorView.vue'
 
 const routes = [
   {
@@ -52,6 +53,11 @@ const routes = [
     path: '/leaderboard',
     name: 'Leaderboard',
     component: LeaderboardView
+  },
+  {
+    path: '/emission-factors',
+    name: 'EmissionFactors',
+    component: EmissionFactorView
   }
 ]
 

@@ -48,7 +48,7 @@ function iconFor(type) {
   font-size: 14px;
   font-weight: 500;
   color: #fff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   pointer-events: auto;
   min-width: 250px;
@@ -56,7 +56,7 @@ function iconFor(type) {
 }
 
 .toast-success {
-  background: linear-gradient(135deg, #059669, #10b981);
+  background: linear-gradient(135deg, #008069, #00A884);
 }
 
 .toast-error {

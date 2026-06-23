@@ -31,14 +31,14 @@ const chartData = computed(() => {
         data: dataValues,
         // Premium earthy/eco cohesive color palette
         backgroundColor: [
-          '#10b981', // Transport (Emerald)
-          '#34d399', // Diet (Mint)
+          '#00A884', // Transport
+          '#25D366', // Diet
           '#f59e0b', // Energy (Amber)
           '#3b82f6', // Recycling (Blue)
           '#64748b'  // General (Slate)
         ],
         borderWidth: 2,
-        borderColor: '#ffffff', // Clean white gap separation lines
+        borderColor: '#E9EDEF', // Clean white gap separation lines
         hoverOffset: 4
       }
     ]
@@ -55,7 +55,7 @@ const chartOptions = {
       labels: {
         boxWidth: 12,
         padding: 15,
-        color: '#64748b',
+        color: '#54656F',
         font: { size: 12, family: 'sans-serif' }
       }
     },

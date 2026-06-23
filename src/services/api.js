@@ -26,9 +26,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('user')
-      window.location.href = '/profile'
+      const url = error.config?.url || ''
+      // Don't redirect on auth endpoints - let the component handle the error
+      if (!url.includes('/auth/login') && !url.includes('/auth/register')) {
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('user')
+        window.location.href = '/profile'
+      }
     }
     return Promise.reject(error)
   }
@@ -78,6 +82,13 @@ export const challengeAPI = {
 
 export const dashboardAPI = {
   getMetrics: (userId) => api.get(`dashboard/${userId}`)
+}
+
+export const emissionFactorAPI = {
+  getAll: () => api.get('/activity-types?grouped=false'),
+  create: (data) => api.post('/admin/activity-types', data),
+  update: (id, data) => api.put(`/admin/activity-types/${id}`, data),
+  delete: (id) => api.delete(`/admin/activity-types/${id}`)
 }
 
 export default api

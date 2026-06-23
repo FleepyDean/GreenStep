@@ -105,4 +105,116 @@ class ActivityTypeController
 
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     }
+
+    /**
+     * POST /api/admin/activity-types
+     * Create a new activity type (admin only)
+     */
+    public function store(Request $request, Response $response): Response
+    {
+        $user = $request->getAttribute('user');
+        if (($user['role'] ?? '') !== 'admin') {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Admin access required']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
+        $data = json_decode($request->getBody()->getContents(), true);
+
+        $validCategories = ['Transport', 'Diet', 'Energy', 'Recycling'];
+        $category = $data['category'] ?? '';
+        $name     = trim($data['name'] ?? '');
+        $unit     = trim($data['unit'] ?? '');
+        $factor   = isset($data['kg_co2_per_unit']) ? (float) $data['kg_co2_per_unit'] : null;
+
+        if (!in_array($category, $validCategories) || empty($name) || empty($unit) || $factor === null) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Missing or invalid fields: category, name, unit, kg_co2_per_unit are required']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        $id = $this->model->create($category, $name, $unit, $factor);
+
+        if (!$id) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Failed to create activity type']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+
+        $response->getBody()->write(json_encode([
+            'success' => true,
+            'message' => 'Activity type created',
+            'activity_type' => $this->model->getById($id)
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+    }
+
+    /**
+     * PUT /api/admin/activity-types/{id}
+     * Update an activity type (admin only)
+     */
+    public function update(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        if (($user['role'] ?? '') !== 'admin') {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Admin access required']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
+        $id   = (int) ($args['id'] ?? 0);
+        $data = json_decode($request->getBody()->getContents(), true);
+
+        $existing = $this->model->getById($id);
+        if (!$existing) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Activity type not found']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+
+        $validCategories = ['Transport', 'Diet', 'Energy', 'Recycling'];
+        $category = $data['category'] ?? $existing['category'];
+        $name     = trim($data['name'] ?? $existing['name']);
+        $unit     = trim($data['unit'] ?? $existing['unit']);
+        $factor   = isset($data['kg_co2_per_unit']) ? (float) $data['kg_co2_per_unit'] : (float) $existing['kg_co2_per_unit'];
+
+        if (!in_array($category, $validCategories)) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Invalid category']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        $this->model->update($id, $category, $name, $unit, $factor);
+
+        $response->getBody()->write(json_encode([
+            'success' => true,
+            'message' => 'Activity type updated',
+            'activity_type' => $this->model->getById($id)
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    }
+
+    /**
+     * DELETE /api/admin/activity-types/{id}
+     * Delete an activity type (admin only)
+     */
+    public function destroy(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        if (($user['role'] ?? '') !== 'admin') {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Admin access required']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
+        $id = (int) ($args['id'] ?? 0);
+
+        if (!$this->model->getById($id)) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Activity type not found']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+
+        $deleted = $this->model->delete($id);
+
+        if (!$deleted) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Failed to delete. It may be referenced by existing activity logs.']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(409);
+        }
+
+        $response->getBody()->write(json_encode(['success' => true, 'message' => 'Activity type deleted']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    }
 }

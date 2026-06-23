@@ -145,7 +145,7 @@ onMounted(async () => {
  
 .add-friend-card h3 {
   font-size: 1.15rem;
-  color: #34d399;
+  color: #25D366;
   margin-bottom: 1rem;
 }
  
@@ -162,17 +162,17 @@ onMounted(async () => {
 .add-friend-input input {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #1c3830;
+  border: 1px solid #E9EDEF;
   border-radius: 8px;
-  background-color: #0c1d18;
+  background-color: #F0F2F5;
   font-size: 0.95rem;
-  color: #f1f5f9;
+  color: #111B21;
   outline: none;
 }
  
 .add-friend-input input:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  border-color: #00A884;
+  box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.15);
 }
  
 .add-friend-form .submit-btn {
@@ -192,9 +192,9 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.25rem;
-  background-color: #0c1d18;
-  border: 1px solid #1c3830;
-  border-radius: 10px;
+  background-color: #F0F2F5;
+  border: 1px solid #E9EDEF;
+  border-radius: 6px;
   gap: 1rem;
 }
  
@@ -212,7 +212,7 @@ onMounted(async () => {
  
 .friend-info h4 {
   font-size: 0.95rem;
-  color: #ffffff;
+  color: #111B21;
   margin-bottom: 0.2rem;
   white-space: nowrap;
   overflow: hidden;
@@ -221,7 +221,7 @@ onMounted(async () => {
  
 .friend-email {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: #54656F;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -229,7 +229,7 @@ onMounted(async () => {
  
 .request-direction {
   font-size: 0.75rem;
-  color: #34d399;
+  color: #25D366;
   margin-top: 0.2rem;
 }
  
@@ -237,16 +237,16 @@ onMounted(async () => {
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.35rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
 }
  
 .friend-status-badge.accepted {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background-color: rgba(0, 168, 132, 0.15);
+  color: #25D366;
+  border: 1px solid rgba(0, 168, 132, 0.1);
 }
  
 .friend-status-badge.pending {
@@ -262,7 +262,7 @@ onMounted(async () => {
 }
  
 .accept-btn {
-  background-color: #10b981;
+  background-color: #00A884;
   color: white;
   border: none;
   padding: 0.55rem 0.9rem;
@@ -274,7 +274,7 @@ onMounted(async () => {
 }
  
 .accept-btn:hover {
-  background-color: #059669;
+  background-color: #008069;
 }
  
 .decline-btn {
@@ -297,7 +297,7 @@ onMounted(async () => {
 .empty-state {
   text-align: center;
   padding: 2.5rem 1rem;
-  color: #94a3b8;
+  color: #54656F;
 }
  
 .empty-sub {
