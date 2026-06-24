@@ -51,7 +51,17 @@
               <p class="friend-email">{{ friend.friend_email }}</p>
             </div>
           </div>
-          <span class="friend-status-badge accepted">Friend</span>
+          <div class="friend-actions">
+            <span class="friend-status-badge accepted">Friend</span>
+            <button
+              class="remove-friend-btn"
+              title="Remove friend"
+              :disabled="socialStore.loading"
+              @click="handleRemoveFriend(friend.friendship_id)"
+            >
+              ×
+            </button>
+          </div>
         </li>
       </ul>
     </section>
@@ -123,6 +133,15 @@ const handleSendRequest = async () => {
   }
 }
  
+const handleRemoveFriend = async (friendshipId) => {
+  const result = await socialStore.removeFriend(friendshipId)
+  if (result.success) {
+    toast.success(result.message)
+  } else {
+    toast.error(result.message)
+  }
+}
+
 const handleRespond = async (requestId, status) => {
   const result = await socialStore.respondToRequest(requestId, status)
   if (result.success) {
@@ -233,6 +252,13 @@ onMounted(async () => {
   margin-top: 0.2rem;
 }
  
+.friend-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .friend-status-badge {
   font-size: 0.75rem;
   font-weight: 700;
@@ -241,6 +267,29 @@ onMounted(async () => {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
+}
+
+.remove-friend-btn {
+  background: none;
+  border: none;
+  color: #8696A0;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.remove-friend-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.remove-friend-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
  
 .friend-status-badge.accepted {

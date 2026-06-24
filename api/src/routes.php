@@ -76,6 +76,8 @@ $app->group('/api', function ($group) {
         ->add(new JwtMiddleware());
     $group->put('/friends/request/{id}', [SocialController::class, 'updateRequest'])
         ->add(new JwtMiddleware());
+    $group->delete('/friends/{id}', [SocialController::class, 'removeFriend'])
+        ->add(new JwtMiddleware());
     
     // Leaderboard (Protected)
     $group->get('/leaderboard', [SocialController::class, 'getLeaderboard'])
