@@ -1153,23 +1153,24 @@ input, select, .submit-btn, .primary-action-btn, .secondary-action-btn, .tab-btn
 
 /**
  * 1. Chart Layout Grid Wrapper
- * Controls horizontal alignment and auto-wrapping for smaller screens.
+ * Mobile-first: Starts as a single column. 
+ * Scalable: Scales dynamically using 100% minus the gap to avoid overflow.
  */
 .charts-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2.5rem;
+  /* Uses a safe minimum clamping approach so it never exceeds narrow mobile screens */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr));
+  gap: 1rem; /* Reduced gap for mobile real estate */
+  margin-bottom: 1.5rem;
   width: 100%;
 }
 
 /**
  * 2. Independent Chart Panel Containers
- * Ensures cards match exactly in height and structural thickness.
  */
 .chart-box {
   background: rgba(16, 185, 129, 0.15);
-  padding: 1.5rem;
+  padding: 1.25rem; /* Slightly tighter padding on mobile */
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   display: flex;
@@ -1187,15 +1188,15 @@ input, select, .submit-btn, .primary-action-btn, .secondary-action-btn, .tab-btn
 
 /**
  * 3. Chart Canvas Container Boundary
- * CRITICAL FOR CHART.JS: Enforces strict aspect ratios and maximum height
- * to stop charts from expanding down the screen when data hydrates.
+ * CRITICAL FOR CHART.JS: Height scales down to 260px on mobile to leave room 
+ * for labels/legends, but preserves structural rigidity.
  */
 .chart-container {
   position: relative;
   width: 100%;
-  height: 320px; /* Locks vertical height down permanently */
-  min-height: 320px;
-  max-height: 320px;
+  height: 260px; 
+  min-height: 260px;
+  max-height: 260px;
 }
 
 /* Ensure inner canvas expands to fill the fixed container constraints cleanly */
@@ -1204,3 +1205,22 @@ input, select, .submit-btn, .primary-action-btn, .secondary-action-btn, .tab-btn
   height: 100% !important;
 }
 
+/* ==========================================================================
+   📱 TABLET & DESKTOP ENHANCEMENTS (Screens wider than 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+  .charts-layout {
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .chart-box {
+    padding: 1.5rem;
+  }
+
+  .chart-container {
+    height: 320px;
+    min-height: 320px;
+    max-height: 320px;
+  }
+}
