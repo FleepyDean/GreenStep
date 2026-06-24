@@ -590,7 +590,6 @@ function resolvePhotoUrl(url) {
 
 async function deleteFromDetail() {
   if (!detailActivity.value) return
-  if (!confirm('Are you sure you want to delete this activity?')) return
   const id = detailActivity.value.id
   closeDetail()
   await removeHistoryLog(id)
