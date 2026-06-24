@@ -152,7 +152,7 @@
         >
           {{ challenge.has_joined ? 'Leave Challenge' : 'Join Challenge' }}
         </button>
-        <div v-else class="admin-actions">
+        <div v-if="canManageChallenges" class="admin-actions">
           <button class="admin-edit-btn" @click="openEditModal">
             ✏️ Edit Challenge
           </button>
@@ -190,6 +190,7 @@ const showEditModal = ref(false)
 const isLoading = ref(true)
 
 const isAdmin = computed(() => authStore.user?.role === 'admin')
+const canManageChallenges = computed(() => authStore.user?.role === 'admin' || authStore.user?.role === 'leader')
 
 const progressPercentage = computed(() => {
   if (!challenge.value) return 0
@@ -593,6 +594,10 @@ onMounted(async () => {
 .action-area {
   padding-top: 0.5rem;
   padding-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .admin-actions {

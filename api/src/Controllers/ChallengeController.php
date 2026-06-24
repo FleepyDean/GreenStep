@@ -22,6 +22,12 @@ class ChallengeController
         $this->challengeModel = new Challenge();
     }
 
+    private function canManageChallenges(array $user): bool
+    {
+        $role = $user['role'] ?? '';
+        return $role === 'admin' || $role === 'leader';
+    }
+
     /**
      * GET /api/challenges
      * Fetch all challenges with member count and joined status
@@ -30,13 +36,13 @@ class ChallengeController
     {
         $user = $request->getAttribute('user');
         $userId = (int) ($user['id'] ?? 0);
-        $isAdmin = ($user['role'] ?? '') === 'admin';
+        $canManage = $this->canManageChallenges($user);
 
         $challenges = $this->challengeModel->getAllWithMemberCount($userId);
         $today = date('Y-m-d');
 
-        // Non-admin users should not see completed (expired) challenges
-        if (!$isAdmin) {
+        // Non-admin/leader users should not see completed (expired) challenges
+        if (!$canManage) {
             $challenges = array_values(array_filter($challenges, function ($c) use ($today) {
                 return $c['end_date'] >= $today;
             }));
@@ -75,16 +81,16 @@ class ChallengeController
 
     /**
      * POST /api/challenges
-     * Create a new challenge (Admin Only)
+     * Create a new challenge (Admin or Leader)
      */
     public function create(Request $request, Response $response): Response
     {
         $user = $request->getAttribute('user');
 
-        if (($user['role'] ?? '') !== 'admin') {
+        if (!$this->canManageChallenges($user)) {
             $response->getBody()->write(json_encode([
                 'success' => false,
-                'message' => 'Admin access required'
+                'message' => 'Admin or leader access required'
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
@@ -152,16 +158,16 @@ class ChallengeController
 
     /**
      * PUT /api/challenges/{id}
-     * Update an existing challenge (Admin Only)
+     * Update an existing challenge (Admin or Leader)
      */
     public function update(Request $request, Response $response, array $args): Response
     {
         $user = $request->getAttribute('user');
 
-        if (($user['role'] ?? '') !== 'admin') {
+        if (!$this->canManageChallenges($user)) {
             $response->getBody()->write(json_encode([
                 'success' => false,
-                'message' => 'Admin access required'
+                'message' => 'Admin or leader access required'
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
@@ -219,16 +225,16 @@ class ChallengeController
 
     /**
      * DELETE /api/challenges/{id}
-     * Delete a challenge (Admin Only)
+     * Delete a challenge (Admin or Leader)
      */
     public function delete(Request $request, Response $response, array $args): Response
     {
         $user = $request->getAttribute('user');
 
-        if (($user['role'] ?? '') !== 'admin') {
+        if (!$this->canManageChallenges($user)) {
             $response->getBody()->write(json_encode([
                 'success' => false,
-                'message' => 'Admin access required'
+                'message' => 'Admin or leader access required'
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }

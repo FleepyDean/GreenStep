@@ -15,7 +15,7 @@ CREATE TABLE User (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('end-user', 'admin') DEFAULT 'end-user',
+    role ENUM('end-user', 'admin', 'leader') DEFAULT 'end-user',
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_email (email),
     INDEX idx_role (role)
@@ -221,8 +221,12 @@ INSERT INTO Badge (name, criteria_json, image_url) VALUES
 -- Password hashed with bcrypt
 -- ============================================
 INSERT INTO User (name, email, password_hash, role, joined_at) VALUES
-('Administrator', 'admin@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NOW());
-
+('Administrator', 'admin@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NOW()),
+('Leader', 'leader@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'leader', NOW()),
+('Farish', 'farish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', NOW()),
+('Hafiz', 'hafiz@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', NOW()),
+('Danish', 'danish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', NOW()),
+('Syaeeda', 'syaeeda@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', NOW());
 -- ============================================
 -- Verification: Check all tables were created
 -- ============================================

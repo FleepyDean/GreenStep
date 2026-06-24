@@ -5,7 +5,7 @@
       <p>Join community actions and reduce your carbon footprint together</p>
     </div>
 
-    <button v-if="isAdmin" class="create-challenge-btn" @click="showCreateModal = true">
+    <button v-if="canManageChallenges" class="create-challenge-btn" @click="showCreateModal = true">
       + Create New Challenge
     </button>
 
@@ -35,7 +35,7 @@
           </span>
           <span v-if="item.has_joined" class="joined-pill">✓ Joined</span>
           <!-- <span class="member-count">👥 {{ item.member_count }} members</span> -->
-          <div v-if="isAdmin" class="admin-card-actions">
+          <div v-if="canManageChallenges" class="admin-card-actions">
             <button class="icon-btn edit-icon-btn" @click.stop="openEditModal(item)" title="Edit">✏️</button>
             <button class="icon-btn delete-icon-btn" @click.stop="deleteItem(item)" title="Delete">🗑️</button>
           </div>
@@ -131,6 +131,7 @@ const isLoading = ref(true)
 
 
 const isAdmin = computed(() => authStore.user?.role === 'admin')
+const canManageChallenges = computed(() => authStore.user?.role === 'admin' || authStore.user?.role === 'leader')
 
 
 
