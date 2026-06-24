@@ -85,13 +85,35 @@ class ActivityController
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? null;
 
+        // Handle optional photo upload
+        $photoUrl = null;
+        $uploadedFiles = $request->getUploadedFiles();
+        if (!empty($uploadedFiles['photo'])) {
+            $photo = $uploadedFiles['photo'];
+            if ($photo->getError() === UPLOAD_ERR_OK) {
+                $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                $mimeType = $photo->getClientMediaType();
+                if (in_array($mimeType, $allowed)) {
+                    $uploadDir = __DIR__ . '/../../public/uploads/activities/';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+                    $ext = pathinfo($photo->getClientFilename(), PATHINFO_EXTENSION);
+                    $filename = 'activity_' . $userId . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $photo->moveTo($uploadDir . $filename);
+                    $photoUrl = '/uploads/activities/' . $filename;
+                }
+            }
+        }
+
         // Create activity log
         $logId = $this->activityLogModel->create(
             $userId,
             $activityTypeId,
             $amount,
             $carbonFootprint,
-            $date
+            $date,
+            $photoUrl
         );
 
         if (!$logId) {
@@ -115,7 +137,8 @@ class ActivityController
                 'amount' => $amount,
                 'carbon_footprint' => $carbonFootprint,
                 'emission_factor' => $emissionFactor,
-                'logged_on' => $date
+                'logged_on' => $date,
+                'photo_url' => $photoUrl
             ]
         ]));
 

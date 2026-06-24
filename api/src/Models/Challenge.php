@@ -34,11 +34,13 @@ class Challenge
                     c.name,
                     c.description,
                     c.target_co2_reduction,
+                    c.target_category,
+                    c.target_activity_type_id,
                     c.duration_days,
                     c.start_date,
                     c.end_date,
                     c.created_at,
-                    COUNT(cm.id) as member_count,
+                    COUNT(DISTINCT cm.id) as member_count,
                     EXISTS(
                         SELECT 1 FROM ChallengeMember cm2
                         WHERE cm2.challenge_id = c.id AND cm2.user_id = :user_id
@@ -46,6 +48,7 @@ class Challenge
                 FROM Challenge c
                 LEFT JOIN ChallengeMember cm ON c.id = cm.challenge_id
                 GROUP BY c.id, c.name, c.description, c.target_co2_reduction,
+                         c.target_category, c.target_activity_type_id,
                          c.duration_days, c.start_date, c.end_date, c.created_at
                 ORDER BY c.start_date DESC";
 
@@ -73,7 +76,9 @@ class Challenge
             $stmt = $this->db->prepare($sql);
             $stmt->execute([':id' => $id]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result ?: null;
+            if (!$result) return null;
+            $result['target_activity_type_ids'] = $this->decodeActivityTypeIds($result['target_activity_type_id'] ?? null);
+            return $result;
         } catch (PDOException $e) {
             error_log("Challenge::getById error: " . $e->getMessage());
             return null;
@@ -86,6 +91,22 @@ class Challenge
      * @param array $data Challenge data (name, description, target_co2_reduction, duration_days, start_date, end_date)
      * @return int|false Challenge ID or false on failure
      */
+    private function encodeActivityTypeIds(mixed $ids): ?string
+    {
+        if (empty($ids)) return null;
+        if (is_array($ids)) {
+            $filtered = array_filter(array_map('intval', $ids));
+            return empty($filtered) ? null : implode(',', $filtered);
+        }
+        return (string) $ids;
+    }
+
+    private function decodeActivityTypeIds(?string $ids): array
+    {
+        if (empty($ids)) return [];
+        return array_values(array_filter(array_map('intval', explode(',', $ids))));
+    }
+
     public function create(array $data): int|false
     {
         $sql = "INSERT INTO Challenge (name, description, target_co2_reduction, target_category, target_activity_type_id, duration_days, start_date, end_date)
@@ -98,7 +119,7 @@ class Challenge
                 ':description' => $data['description'],
                 ':target_co2_reduction' => (float) $data['target_co2_reduction'],
                 ':target_category' => $data['target_category'] ?? 'All',
-                ':target_activity_type_id' => !empty($data['target_activity_type_id']) ? (int) $data['target_activity_type_id'] : null,
+                ':target_activity_type_id' => $this->encodeActivityTypeIds($data['target_activity_type_ids'] ?? $data['target_activity_type_id'] ?? null),
                 ':duration_days' => (int) $data['duration_days'],
                 ':start_date' => $data['start_date'],
                 ':end_date' => $data['end_date']
@@ -138,12 +159,12 @@ class Challenge
                 ':description' => $data['description'],
                 ':target_co2_reduction' => (float) $data['target_co2_reduction'],
                 ':target_category' => $data['target_category'] ?? 'All',
-                ':target_activity_type_id' => !empty($data['target_activity_type_id']) ? (int) $data['target_activity_type_id'] : null,
+                ':target_activity_type_id' => $this->encodeActivityTypeIds($data['target_activity_type_ids'] ?? $data['target_activity_type_id'] ?? null),
                 ':duration_days' => (int) $data['duration_days'],
                 ':start_date' => $data['start_date'],
                 ':end_date' => $data['end_date']
             ]);
-            return $stmt->rowCount() > 0;
+            return $stmt->rowCount() >= 0;
         } catch (PDOException $e) {
             error_log("Challenge::update error: " . $e->getMessage());
             return false;
@@ -299,10 +320,10 @@ class Challenge
         string $startDate,
         string $endDate,
         ?string $targetCategory = null,
-        ?int $targetActivityTypeId = null
+        array|null $targetActivityTypeId = null
     ): float {
         $category = $targetCategory ?? 'All';
-        $activityTypeId = $targetActivityTypeId ?? null;
+        $activityTypeId = $targetActivityTypeId;
 
         $sql = "SELECT COALESCE(SUM(al.amount * at.kg_co2_per_unit), 0) as total_reduction
                 FROM ActivityLog al
@@ -321,9 +342,17 @@ class Challenge
             $params[':target_category'] = $category;
         }
 
-        if ($activityTypeId !== null) {
-            $sql .= " AND al.activity_type_id = :target_activity_type_id";
-            $params[':target_activity_type_id'] = $activityTypeId;
+        if (!empty($activityTypeId)) {
+            $ids = $activityTypeId;
+            if (!empty($ids)) {
+                $namedPlaceholders = [];
+                foreach ($ids as $i => $typeId) {
+                    $key = ':at_id_' . $i;
+                    $namedPlaceholders[] = $key;
+                    $params[$key] = $typeId;
+                }
+                $sql .= " AND al.activity_type_id IN (" . implode(',', $namedPlaceholders) . ")";
+            }
         }
 
         try {

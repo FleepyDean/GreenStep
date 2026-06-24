@@ -50,6 +50,7 @@ export const activityAPI = {
   getTypesByCategory: (category) => api.get(`/activity-types/category/${category}`),
   
   logActivity: (data) => api.post('/activities', data),
+  logActivityWithPhoto: (formData) => api.post('/activities', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   getActivities: (params) => api.get('/activities', { params }),
   getTodayActivities: () => api.get('/activities/today'),
   getStats: (params) => api.get('/activities/stats', { params }),
@@ -86,6 +87,8 @@ export const dashboardAPI = {
 
 export const emissionFactorAPI = {
   getAll: () => api.get('/activity-types?grouped=false'),
+  getCategories: () => api.get('/activity-types/categories'),
+  createCategory: (data) => api.post('/admin/categories', data),
   create: (data) => api.post('/admin/activity-types', data),
   update: (id, data) => api.put(`/admin/activity-types/${id}`, data),
   delete: (id) => api.delete(`/admin/activity-types/${id}`)

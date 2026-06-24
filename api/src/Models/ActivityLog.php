@@ -31,10 +31,10 @@ class ActivityLog
      * @param string $date Date of activity (YYYY-MM-DD)
      * @return int|false ID of the created log or false on failure
      */
-    public function create(int $userId, int $activityTypeId, float $amount, float $carbonFootprint, string $date): int|false
+    public function create(int $userId, int $activityTypeId, float $amount, float $carbonFootprint, string $date, ?string $photoUrl = null): int|false
     {
-        $sql = "INSERT INTO ActivityLog (user_id, activity_type_id, amount, carbon_footprint, logged_on) 
-                VALUES (:user_id, :activity_type_id, :amount, :carbon_footprint, :logged_on)";
+        $sql = "INSERT INTO ActivityLog (user_id, activity_type_id, amount, carbon_footprint, logged_on, photo_url) 
+                VALUES (:user_id, :activity_type_id, :amount, :carbon_footprint, :logged_on, :photo_url)";
         
         try {
             $stmt = $this->db->prepare($sql);
@@ -43,7 +43,8 @@ class ActivityLog
                 ':activity_type_id' => $activityTypeId,
                 ':amount' => $amount,
                 ':carbon_footprint' => $carbonFootprint,
-                ':logged_on' => $date
+                ':logged_on' => $date,
+                ':photo_url' => $photoUrl
             ]);
             
             return (int) $this->db->lastInsertId();
@@ -69,6 +70,7 @@ class ActivityLog
                     al.amount,
                     al.carbon_footprint,
                     al.logged_on,
+                    al.photo_url,
                     at.id as activity_type_id,
                     at.category,
                     at.name as activity_name,

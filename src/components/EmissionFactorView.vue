@@ -12,7 +12,7 @@
     </div>
 
     <template v-else>
-      <!-- Add New Activity Type -->
+      <!-- Add / Edit Activity Type -->
       <div class="ef-card">
         <h3>{{ editingId ? '✏️ Edit Activity Type' : '➕ Add New Activity Type' }}</h3>
         <form @submit.prevent="editingId ? submitUpdate() : submitCreate()" class="ef-form">
@@ -21,15 +21,19 @@
               <label>Category</label>
               <select v-model="form.category" required>
                 <option disabled value="">Select category</option>
-                <option>Transport</option>
-                <option>Diet</option>
-                <option>Energy</option>
-                <option>Recycling</option>
+                <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                <option value="__other__">+ Other (add new)</option>
               </select>
             </div>
             <div class="form-group">
               <label>Activity Name</label>
               <input v-model="form.name" type="text" placeholder="e.g. Car (Petrol)" required />
+            </div>
+          </div>
+          <div v-if="form.category === '__other__'" class="form-row">
+            <div class="form-group">
+              <label>New Category Name</label>
+              <input v-model="customCategory" type="text" placeholder="e.g. Water, Aviation" required />
             </div>
           </div>
           <div class="form-row">
@@ -131,10 +135,12 @@ const { toast } = useToast()
 const isAdmin = computed(() => authStore.user?.role === 'admin')
 
 const activityTypes = ref([])
-const loadingList  = ref(false)
-const loading      = ref(false)
-const editingId    = ref(null)
-const deletingItem = ref(null)
+const categories    = ref([])
+const loadingList   = ref(false)
+const loading       = ref(false)
+const editingId     = ref(null)
+const deletingItem  = ref(null)
+const customCategory = ref('')
 
 const blankForm = () => ({ category: '', name: '', unit: '', kg_co2_per_unit: '' })
 const form = ref(blankForm())
@@ -149,6 +155,15 @@ const grouped = computed(() => {
 })
 
 const categoryIcon = (cat) => ({ Transport: '🚗', Diet: '🥗', Energy: '⚡', Recycling: '♻️' }[cat] ?? '📋')
+
+async function loadCategories() {
+  try {
+    const res = await emissionFactorAPI.getCategories()
+    categories.value = res.data.categories ?? []
+  } catch {
+    toast.error('Failed to load categories')
+  }
+}
 
 async function loadAll() {
   loadingList.value = true
@@ -165,10 +180,48 @@ async function loadAll() {
 async function submitCreate() {
   loading.value = true
   try {
-    await emissionFactorAPI.create({ ...form.value })
+    const payload = { ...form.value }
+    
+    if (!payload.category) {
+      toast.error('Please select a category')
+      loading.value = false
+      return
+    }
+    
+    if (payload.category === '__other__') {
+      const newCat = customCategory.value.trim()
+      if (!newCat) {
+        toast.error('Please enter a new category name')
+        loading.value = false
+        return
+      }
+      const res = await emissionFactorAPI.createCategory({ name: newCat })
+      payload.category = res.data.category
+    }
+    
+    if (!payload.name?.trim()) {
+      toast.error('Please enter an activity name')
+      loading.value = false
+      return
+    }
+    
+    if (!payload.unit?.trim()) {
+      toast.error('Please enter a unit (e.g. km, kWh, meal)')
+      loading.value = false
+      return
+    }
+    
+    if (payload.kg_co2_per_unit === null || payload.kg_co2_per_unit === undefined || payload.kg_co2_per_unit === '') {
+      toast.error('Please enter the kg CO₂ per unit value')
+      loading.value = false
+      return
+    }
+    
+    await emissionFactorAPI.create(payload)
     toast.success('Activity type added')
     form.value = blankForm()
-    await loadAll()
+    customCategory.value = ''
+    await Promise.all([loadAll(), loadCategories()])
   } catch (err) {
     toast.error(err.response?.data?.message ?? 'Failed to add activity type')
   } finally {
@@ -190,6 +243,7 @@ function startEdit(item) {
 function cancelEdit() {
   editingId.value = null
   form.value = blankForm()
+  customCategory.value = ''
 }
 
 async function submitUpdate() {
@@ -225,7 +279,10 @@ async function submitDelete() {
 }
 
 onMounted(() => {
-  if (isAdmin.value) loadAll()
+  if (isAdmin.value) {
+    loadAll()
+    loadCategories()
+  }
 })
 </script>
 
@@ -303,6 +360,27 @@ onMounted(() => {
   display: flex;
   gap: 0.75rem;
   margin-top: 0.5rem;
+}
+
+.submit-btn {
+  padding: 0.7rem 1.5rem;
+  background: #00A884;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #008f6f;
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .cancel-edit-btn {

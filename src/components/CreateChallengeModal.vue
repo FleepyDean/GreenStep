@@ -66,19 +66,36 @@
         </div>
 
         <div class="form-group">
-          <label>Target Activity Type (Optional)</label>
-          <select v-model="form.target_activity_type_id" :disabled="!isCategorySpecific">
-            <option value="">All activities in category</option>
-            <option
+          <label>Target Activity Types <span class="optional-label">(Optional)</span></label>
+          <div v-if="!isCategorySpecific" class="activity-type-disabled">
+            Select a specific category above to pick activity types.
+          </div>
+          <div v-else-if="activityTypes.length === 0" class="activity-type-disabled">
+            Loading...
+          </div>
+          <div v-else class="activity-type-checklist">
+            <label
               v-for="type in activityTypes"
               :key="type.id"
-              :value="type.id"
+              class="check-item"
+              :class="{ checked: form.target_activity_type_ids.includes(type.id) }"
             >
-              {{ type.name }}
-            </option>
-          </select>
+              <input
+                type="checkbox"
+                :value="type.id"
+                v-model="form.target_activity_type_ids"
+                class="check-input"
+              />
+              <span class="check-box">
+                <svg v-if="form.target_activity_type_ids.includes(type.id)" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="check-label">{{ type.name }}</span>
+            </label>
+          </div>
           <p class="field-hint">
-            Leave empty to count all activities in the selected category.
+            Leave all unchecked to count all activities in the selected category.
           </p>
         </div>
 
@@ -123,7 +140,7 @@ const form = reactive({
   description: '',
   target_co2_reduction: '',
   target_category: 'All',
-  target_activity_type_id: '',
+  target_activity_type_ids: [],
   duration_days: '',
   start_date: '',
   end_date: ''
@@ -176,16 +193,17 @@ async function loadActivityTypes() {
   try {
     const { data } = await activityAPI.getTypesByCategory(form.target_category)
     activityTypes.value = data.activity_types || []
-    if (activityTypes.value.length === 0) {
-      form.target_activity_type_id = ''
-    }
   } catch (e) {
     activityTypes.value = []
   }
 }
 
-watch(() => form.target_category, async (newCategory) => {
-  form.target_activity_type_id = ''
+let populatingForm = false
+
+watch(() => form.target_category, async () => {
+  if (!populatingForm) {
+    form.target_activity_type_ids = []
+  }
   await loadActivityTypes()
 })
 
@@ -200,7 +218,7 @@ function resetForm() {
   form.description = ''
   form.target_co2_reduction = ''
   form.target_category = 'All'
-  form.target_activity_type_id = ''
+  form.target_activity_type_ids = []
   form.duration_days = ''
   form.start_date = ''
   form.end_date = ''
@@ -209,15 +227,21 @@ function resetForm() {
 
 async function populateForm() {
   if (props.challenge) {
+    populatingForm = true
     form.name = props.challenge.name || ''
     form.description = props.challenge.description || ''
     form.target_co2_reduction = props.challenge.target_co2_reduction || ''
     form.target_category = props.challenge.target_category || 'All'
-    form.target_activity_type_id = props.challenge.target_activity_type_id || ''
+    form.target_activity_type_ids = []
     form.duration_days = props.challenge.duration_days || ''
     form.start_date = props.challenge.start_date || ''
     form.end_date = props.challenge.end_date || ''
     await loadActivityTypes()
+    const saved = props.challenge.target_activity_type_ids
+    form.target_activity_type_ids = Array.isArray(saved)
+      ? saved.map(Number)
+      : []
+    populatingForm = false
   }
 }
 
@@ -227,7 +251,7 @@ async function handleSubmit() {
   submitting.value = true
   const payload = {
     ...form,
-    target_activity_type_id: form.target_activity_type_id || null
+    target_activity_type_ids: form.target_activity_type_ids.length > 0 ? form.target_activity_type_ids : []
   }
   emit('submit', payload)
   submitting.value = false
@@ -331,6 +355,92 @@ async function handleSubmit() {
   font-size: 0.75rem;
   color: #64748b;
   margin: 0.3rem 0 0;
+}
+
+.optional-label {
+  font-size: 0.75rem;
+  color: #8696A0;
+  font-weight: 400;
+}
+
+.activity-type-disabled {
+  font-size: 0.82rem;
+  color: #8696A0;
+  padding: 0.6rem 0.9rem;
+  background: #F0F2F5;
+  border: 1px solid #E9EDEF;
+  border-radius: 8px;
+}
+
+.activity-type-checklist {
+  display: flex;
+  flex-direction: column;
+  max-height: 196px;
+  overflow-y: auto;
+  border: 1px solid #D1D7DB;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid #F0F2F5;
+  transition: background 0.1s;
+}
+
+.check-item:last-child {
+  border-bottom: none;
+}
+
+.check-item:hover {
+  background: #F7F9FA;
+}
+
+.check-item.checked {
+  background: rgba(0, 168, 132, 0.06);
+}
+
+.check-input {
+  display: none;
+}
+
+.check-box {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 4px;
+  border: 1.5px solid #CBD5E1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.check-item.checked .check-box {
+  background: #00A884;
+  border-color: #00A884;
+}
+
+.check-box svg {
+  width: 10px;
+  height: 8px;
+}
+
+.check-label {
+  font-size: 0.875rem;
+  color: #111B21;
+  line-height: 1.2;
+}
+
+.check-item.checked .check-label {
+  color: #00A884;
+  font-weight: 600;
 }
 
 .form-row {
