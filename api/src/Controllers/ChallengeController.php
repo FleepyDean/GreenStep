@@ -52,7 +52,7 @@ class ChallengeController
                 'description' => $c['description'],
                 'target_co2_reduction' => (float) $c['target_co2_reduction'],
                 'target_category' => $c['target_category'] ?? 'All',
-                'target_activity_type_id' => isset($c['target_activity_type_id']) ? (int) $c['target_activity_type_id'] : null,
+                'target_activity_type_ids' => !empty($c['target_activity_type_id']) ? array_values(array_filter(array_map('intval', explode(',', $c['target_activity_type_id'])))) : [],
                 'duration_days' => (int) $c['duration_days'],
                 'start_date' => $c['start_date'],
                 'end_date' => $c['end_date'],
@@ -100,12 +100,18 @@ class ChallengeController
             }
         }
 
+        $targetActivityTypeIds = $body['target_activity_type_ids'] ?? [];
+        if (is_string($targetActivityTypeIds)) {
+            $targetActivityTypeIds = array_filter(array_map('intval', explode(',', $targetActivityTypeIds)));
+        }
+        $targetActivityTypeIds = array_values(array_filter(array_map('intval', (array) $targetActivityTypeIds)));
+
         $challengeId = $this->challengeModel->create([
             'name' => trim($body['name']),
             'description' => trim($body['description']),
             'target_co2_reduction' => (float) $body['target_co2_reduction'],
             'target_category' => $body['target_category'] ?? 'All',
-            'target_activity_type_id' => !empty($body['target_activity_type_id']) ? (int) $body['target_activity_type_id'] : null,
+            'target_activity_type_ids' => $targetActivityTypeIds,
             'duration_days' => (int) $body['duration_days'],
             'start_date' => $body['start_date'],
             'end_date' => $body['end_date']
@@ -120,8 +126,6 @@ class ChallengeController
         }
 
         $today = date('Y-m-d');
-        $targetCategory = $body['target_category'] ?? 'All';
-        $targetActivityTypeId = !empty($body['target_activity_type_id']) ? (int) $body['target_activity_type_id'] : null;
 
         $response->getBody()->write(json_encode([
             'success' => true,
@@ -131,8 +135,8 @@ class ChallengeController
                 'name' => trim($body['name']),
                 'description' => trim($body['description']),
                 'target_co2_reduction' => (float) $body['target_co2_reduction'],
-                'target_category' => $targetCategory,
-                'target_activity_type_id' => $targetActivityTypeId,
+                'target_category' => $body['target_category'] ?? 'All',
+                'target_activity_type_ids' => $targetActivityTypeIds,
                 'duration_days' => (int) $body['duration_days'],
                 'start_date' => $body['start_date'],
                 'end_date' => $body['end_date'],
@@ -185,12 +189,18 @@ class ChallengeController
             }
         }
 
+        $targetActivityTypeIds = $body['target_activity_type_ids'] ?? [];
+        if (is_string($targetActivityTypeIds)) {
+            $targetActivityTypeIds = array_filter(array_map('intval', explode(',', $targetActivityTypeIds)));
+        }
+        $targetActivityTypeIds = array_values(array_filter(array_map('intval', (array) $targetActivityTypeIds)));
+
         $success = $this->challengeModel->update($challengeId, [
             'name' => trim($body['name']),
             'description' => trim($body['description']),
             'target_co2_reduction' => (float) $body['target_co2_reduction'],
             'target_category' => $body['target_category'] ?? 'All',
-            'target_activity_type_id' => !empty($body['target_activity_type_id']) ? (int) $body['target_activity_type_id'] : null,
+            'target_activity_type_ids' => $targetActivityTypeIds,
             'duration_days' => (int) $body['duration_days'],
             'start_date' => $body['start_date'],
             'end_date' => $body['end_date']
@@ -279,20 +289,22 @@ class ChallengeController
         $members = $this->challengeModel->getMembers($challengeId);
         $isJoined = $this->challengeModel->isMember($challengeId, $userId);
         $targetCategory = $challenge['target_category'] ?? 'All';
-        $targetActivityTypeId = isset($challenge['target_activity_type_id']) ? (int) $challenge['target_activity_type_id'] : null;
+        $targetActivityTypeIds = $challenge['target_activity_type_ids'] ?? [];
         $communityProgress = $this->challengeModel->getCommunityProgress(
             $challengeId,
             $challenge['start_date'],
             $challenge['end_date'],
             $targetCategory,
-            $targetActivityTypeId
+            !empty($targetActivityTypeIds) ? $targetActivityTypeIds : null
         );
 
-        $activityTypeName = null;
-        if ($targetActivityTypeId !== null) {
+        $activityTypeNames = [];
+        if (!empty($targetActivityTypeIds)) {
             $activityTypeModel = new ActivityType();
-            $activityType = $activityTypeModel->getById($targetActivityTypeId);
-            $activityTypeName = $activityType ? $activityType['name'] : null;
+            foreach ($targetActivityTypeIds as $atId) {
+                $activityType = $activityTypeModel->getById($atId);
+                if ($activityType) $activityTypeNames[] = $activityType['name'];
+            }
         }
 
         $today = date('Y-m-d');
@@ -317,8 +329,8 @@ class ChallengeController
                 'description' => $challenge['description'],
                 'target_co2_reduction' => (float) $challenge['target_co2_reduction'],
                 'target_category' => $targetCategory,
-                'target_activity_type_id' => $targetActivityTypeId,
-                'target_activity_type_name' => $activityTypeName,
+                'target_activity_type_ids' => $targetActivityTypeIds,
+                'target_activity_type_names' => $activityTypeNames,
                 'duration_days' => (int) $challenge['duration_days'],
                 'start_date' => $challenge['start_date'],
                 'end_date' => $challenge['end_date'],
