@@ -87,6 +87,8 @@ export const dashboardAPI = {
 
 export const emissionFactorAPI = {
   getAll: () => api.get('/activity-types?grouped=false'),
+  getCategories: () => api.get('/activity-types/categories'),
+  createCategory: (data) => api.post('/admin/categories', data),
   create: (data) => api.post('/admin/activity-types', data),
   update: (id, data) => api.put(`/admin/activity-types/${id}`, data),
   delete: (id) => api.delete(`/admin/activity-types/${id}`)
