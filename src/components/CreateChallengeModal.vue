@@ -56,6 +56,7 @@
               type="number"
               min="1"
               placeholder="Max members"
+              required
             />
           </div>
         </div>
@@ -63,6 +64,7 @@
         <div class="form-group">
           <label>Target Category</label>
           <select v-model="form.target_category" required>
+            <option value="" disabled selected>Select a category</option>
             <option value="All">All (General)</option>
             <option value="Transport">Transport</option>
             <option value="Diet">Diet</option>
@@ -70,14 +72,14 @@
             <option value="Recycling">Recycling</option>
           </select>
           <p class="field-hint">
-            Choose a category, or optionally narrow down to a specific activity type below.
+            All fields are required to create a challenge.
           </p>
         </div>
 
         <div class="form-group">
-          <label>Target Activity Type (Optional)</label>
-          <select v-model="form.target_activity_type_id" :disabled="!isCategorySpecific">
-            <option value="">All activities in category</option>
+          <label>Target Activity Type</label>
+          <select v-model="form.target_activity_type_id" required :disabled="!isCategorySpecific">
+            <option value="" disabled selected>Select an activity type</option>
             <option
               v-for="type in activityTypes"
               :key="type.id"
@@ -131,7 +133,7 @@ const form = reactive({
   name: '',
   description: '',
   target_co2_reduction: '',
-  target_category: 'All',
+  target_category: '',
   target_activity_type_id: '',
   duration_days: '',
   member_limit: '',
@@ -209,7 +211,7 @@ function resetForm() {
   form.name = ''
   form.description = ''
   form.target_co2_reduction = ''
-  form.target_category = 'All'
+  form.target_category = ''
   form.target_activity_type_id = ''
   form.duration_days = ''
   form.member_limit = ''

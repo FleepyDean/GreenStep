@@ -91,9 +91,9 @@ class ChallengeController
 
         $body = $request->getParsedBody() ?? [];
 
-        $required = ['name', 'description', 'target_co2_reduction', 'duration_days', 'start_date', 'end_date'];
+        $required = ['name', 'description', 'target_co2_reduction', 'target_category', 'target_activity_type_id', 'duration_days', 'member_limit', 'start_date', 'end_date'];
         foreach ($required as $field) {
-            if (!isset($body[$field]) || $body[$field] === '') {
+            if (!isset($body[$field]) || $body[$field] === '' || $body[$field] === null) {
                 $response->getBody()->write(json_encode([
                     'success' => false,
                     'message' => "Field '{$field}' is required"
@@ -178,9 +178,9 @@ class ChallengeController
 
         $body = $request->getParsedBody() ?? [];
 
-        $required = ['name', 'description', 'target_co2_reduction', 'duration_days', 'start_date', 'end_date'];
+        $required = ['name', 'description', 'target_co2_reduction', 'target_category', 'target_activity_type_id', 'duration_days', 'member_limit', 'start_date', 'end_date'];
         foreach ($required as $field) {
-            if (!isset($body[$field]) || $body[$field] === '') {
+            if (!isset($body[$field]) || $body[$field] === '' || $body[$field] === null) {
                 $response->getBody()->write(json_encode([
                     'success' => false,
                     'message' => "Field '{$field}' is required"
