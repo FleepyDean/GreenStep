@@ -67,15 +67,17 @@
                   <img v-if="photoPreview" :src="photoPreview" class="photo-preview" alt="Activity photo preview" />
                   <div v-else class="photo-placeholder">
                     <span class="photo-icon">📷</span>
-                    <span class="photo-hint">Tap to upload or take a photo</span>
+                    <span class="photo-hint">Tap to upload a photo</span>
                   </div>
                   <button v-if="photoPreview" type="button" class="photo-remove-btn" @click.stop="removePhoto">✕</button>
                 </div>
+                <button type="button" class="webcam-btn" @click.stop="openWebcam">
+                  📷 Use Camera
+                </button>
                 <input
                   ref="fileInputRef"
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   class="hidden-file-input"
                   @change="onPhotoSelected"
                 />
@@ -279,10 +281,33 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Webcam Modal -->
+  <Teleport to="body">
+    <Transition name="modal-fade">
+      <div v-if="showWebcam" class="detail-overlay" @click.self="closeWebcam">
+        <div class="webcam-sheet">
+          <div class="webcam-header">
+            <h3>Take a Photo</h3>
+            <button class="detail-close" @click="closeWebcam">✕</button>
+          </div>
+          <div class="webcam-preview-wrap">
+            <video ref="videoRef" class="webcam-video" autoplay playsinline muted></video>
+          </div>
+          <div class="webcam-actions">
+            <button type="button" class="webcam-capture-btn" @click="captureFromWebcam">
+              <span class="capture-ring"></span>
+            </button>
+          </div>
+          <canvas ref="canvasRef" class="hidden-canvas"></canvas>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue'
 import { activityAPI } from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -307,6 +332,11 @@ const form = reactive({
 const photoFile = ref(null)
 const photoPreview = ref(null)
 const fileInputRef = ref(null)
+
+const showWebcam = ref(false)
+const videoRef = ref(null)
+const canvasRef = ref(null)
+let webcamStream = null
 
 function triggerFileInput() {
   fileInputRef.value?.click()
@@ -333,6 +363,44 @@ function removePhoto() {
   photoFile.value = null
   photoPreview.value = null
   if (fileInputRef.value) fileInputRef.value.value = ''
+}
+
+async function openWebcam() {
+  showWebcam.value = true
+  await nextTick()
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    if (videoRef.value) {
+      videoRef.value.srcObject = webcamStream
+      videoRef.value.play()
+    }
+  } catch (err) {
+    toast.error('Camera access denied or not available')
+    showWebcam.value = false
+  }
+}
+
+function closeWebcam() {
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(t => t.stop())
+    webcamStream = null
+  }
+  showWebcam.value = false
+}
+
+function captureFromWebcam() {
+  if (!videoRef.value || !canvasRef.value) return
+  const video = videoRef.value
+  const canvas = canvasRef.value
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+  canvas.getContext('2d').drawImage(video, 0, 0)
+  canvas.toBlob((blob) => {
+    if (!blob) return
+    const file = new File([blob], 'webcam_capture.jpg', { type: 'image/jpeg' })
+    setPhoto(file)
+    closeWebcam()
+  }, 'image/jpeg', 0.92)
 }
 
 // Activity Track filters
@@ -1221,6 +1289,108 @@ onMounted(async () => {
 /* Make history cards feel clickable */
 .history-card {
   cursor: pointer;
+}
+
+/* ============= WEBCAM ============= */
+.webcam-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.6rem;
+  border: 1px solid #D1D7DB;
+  border-radius: 8px;
+  background: #F0F2F5;
+  color: #54656F;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.webcam-btn:hover {
+  background: #E9EDEF;
+  border-color: #00A884;
+  color: #00A884;
+}
+
+.webcam-sheet {
+  background: #111B21;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 20px 20px 0 0;
+  padding: 1.25rem 1.25rem calc(2rem + env(safe-area-inset-bottom, 0px));
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.webcam-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.webcam-header h3 {
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.webcam-preview-wrap {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 4/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.webcam-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.webcam-actions {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+.webcam-capture-btn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 4px solid rgba(255,255,255,0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease, background 0.15s;
+  position: relative;
+}
+
+.webcam-capture-btn:active {
+  transform: scale(0.92);
+  background: #E9EDEF;
+}
+
+.capture-ring {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 2px solid #D1D7DB;
+  display: block;
+}
+
+.hidden-canvas {
+  display: none;
 }
 
 /* ============= PHOTO UPLOAD ============= */
