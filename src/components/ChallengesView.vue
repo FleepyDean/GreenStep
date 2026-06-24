@@ -57,6 +57,20 @@
             <span class="meta-label">Timeline:</span>
             <span class="meta-val">{{ formatDate(item.start_date) }} - {{ formatDate(item.end_date) }}</span>
           </div>
+          <div class="meta-row">
+            <span class="meta-label">Category:</span>
+            <span class="meta-val">{{ item.target_category }}</span>
+          </div>
+          <div v-if="item.target_activity_type_names && item.target_activity_type_names.length > 0" class="meta-row meta-row-tags">
+            <span class="meta-label">Activity Types:</span>
+            <div class="card-type-tags">
+              <span
+                v-for="name in item.target_activity_type_names"
+                :key="name"
+                class="card-type-tag"
+              >{{ name }}</span>
+            </div>
+          </div>
         </div>
 
         <div class="action-btn-group">
@@ -493,6 +507,29 @@ onMounted(async () => {
 
   color: #54656F;
 
+}
+
+.meta-row-tags {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.card-type-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.card-type-tag {
+  background: rgba(0, 168, 132, 0.12);
+  color: #00A884;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 168, 132, 0.3);
 }
 
 </style>

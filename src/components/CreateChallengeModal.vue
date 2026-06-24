@@ -84,8 +84,14 @@
                 type="checkbox"
                 :value="type.id"
                 v-model="form.target_activity_type_ids"
+                class="check-input"
               />
-              <span>{{ type.name }}</span>
+              <span class="check-box">
+                <svg v-if="form.target_activity_type_ids.includes(type.id)" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="check-label">{{ type.name }}</span>
             </label>
           </div>
           <p class="field-hint">
@@ -369,44 +375,72 @@ async function handleSubmit() {
 .activity-type-checklist {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  max-height: 180px;
+  max-height: 196px;
   overflow-y: auto;
-  border: 1px solid #E9EDEF;
+  border: 1px solid #D1D7DB;
   border-radius: 8px;
-  padding: 0.5rem;
-  background: #F0F2F5;
+  background: #fff;
 }
 
 .check-item {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.45rem 0.6rem;
-  border-radius: 6px;
+  padding: 0.45rem 0.7rem;
   cursor: pointer;
-  font-size: 0.88rem;
-  color: #111B21;
-  transition: background 0.12s;
   user-select: none;
+  border-bottom: 1px solid #F0F2F5;
+  transition: background 0.1s;
+}
+
+.check-item:last-child {
+  border-bottom: none;
 }
 
 .check-item:hover {
-  background: #E9EDEF;
+  background: #F7F9FA;
 }
 
 .check-item.checked {
-  background: rgba(0, 168, 132, 0.1);
-  color: #00A884;
-  font-weight: 600;
+  background: rgba(0, 168, 132, 0.06);
 }
 
-.check-item input[type="checkbox"] {
+.check-input {
+  display: none;
+}
+
+.check-box {
   width: 16px;
   height: 16px;
-  accent-color: #00A884;
-  flex-shrink: 0;
-  cursor: pointer;
+  min-width: 16px;
+  border-radius: 4px;
+  border: 1.5px solid #CBD5E1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.check-item.checked .check-box {
+  background: #00A884;
+  border-color: #00A884;
+}
+
+.check-box svg {
+  width: 10px;
+  height: 8px;
+}
+
+.check-label {
+  font-size: 0.875rem;
+  color: #111B21;
+  line-height: 1.2;
+}
+
+.check-item.checked .check-label {
+  color: #00A884;
+  font-weight: 600;
 }
 
 .form-row {

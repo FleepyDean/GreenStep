@@ -40,7 +40,7 @@ class Challenge
                     c.start_date,
                     c.end_date,
                     c.created_at,
-                    COUNT(cm.id) as member_count,
+                    COUNT(DISTINCT cm.id) as member_count,
                     EXISTS(
                         SELECT 1 FROM ChallengeMember cm2
                         WHERE cm2.challenge_id = c.id AND cm2.user_id = :user_id

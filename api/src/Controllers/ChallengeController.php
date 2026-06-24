@@ -42,9 +42,21 @@ class ChallengeController
             }));
         }
 
-        $formatted = array_map(function ($c) use ($today) {
+        // Build a lookup map of all activity type id => name
+        $activityTypeModel = new ActivityType();
+        $allTypes = $activityTypeModel->getAll();
+        $typeNameMap = [];
+        foreach ($allTypes as $t) {
+            $typeNameMap[(int) $t['id']] = $t['name'];
+        }
+
+        $formatted = array_map(function ($c) use ($today, $typeNameMap) {
             $isActive = $today >= $c['start_date'] && $today <= $c['end_date'];
             $isUpcoming = $today < $c['start_date'];
+            $typeIds = !empty($c['target_activity_type_id'])
+                ? array_values(array_filter(array_map('intval', explode(',', $c['target_activity_type_id']))))
+                : [];
+            $typeNames = array_values(array_filter(array_map(fn($id) => $typeNameMap[$id] ?? null, $typeIds)));
 
             return [
                 'id' => (int) $c['id'],
@@ -52,7 +64,8 @@ class ChallengeController
                 'description' => $c['description'],
                 'target_co2_reduction' => (float) $c['target_co2_reduction'],
                 'target_category' => $c['target_category'] ?? 'All',
-                'target_activity_type_ids' => !empty($c['target_activity_type_id']) ? array_values(array_filter(array_map('intval', explode(',', $c['target_activity_type_id'])))) : [],
+                'target_activity_type_ids' => $typeIds,
+                'target_activity_type_names' => $typeNames,
                 'duration_days' => (int) $c['duration_days'],
                 'start_date' => $c['start_date'],
                 'end_date' => $c['end_date'],

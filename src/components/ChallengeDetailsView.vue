@@ -68,11 +68,17 @@
               <p class="meta-value">{{ challenge.target_category }}</p>
             </div>
           </div>
-          <div v-if="challenge.target_activity_type_name" class="meta-item">
+          <div v-if="challenge.target_activity_type_names && challenge.target_activity_type_names.length > 0" class="meta-item meta-item-full">
             <span class="meta-icon">⚡</span>
             <div>
-              <p class="meta-label">Target Activity</p>
-              <p class="meta-value font-green">{{ challenge.target_activity_type_name }}</p>
+              <p class="meta-label">Target Activity Types</p>
+              <div class="activity-type-tags">
+                <span
+                  v-for="name in challenge.target_activity_type_names"
+                  :key="name"
+                  class="activity-type-tag"
+                >{{ name }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -82,7 +88,7 @@
         <h3>Community Progress</h3>
         <p class="progress-description">
           Total CO₂ reduction from
-          <strong>{{ challenge.target_activity_type_name || challenge.target_category }}</strong>
+          <strong>{{ challenge.target_activity_type_names && challenge.target_activity_type_names.length ? challenge.target_activity_type_names.join(', ') : challenge.target_category }}</strong>
           activities logged by members during the challenge.
         </p>
         <div class="progress-section">
@@ -397,6 +403,28 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.meta-item-full {
+  grid-column: 1 / -1;
+  align-items: flex-start;
+}
+
+.activity-type-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.activity-type-tag {
+  background: rgba(0, 168, 132, 0.12);
+  color: #00A884;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 168, 132, 0.3);
 }
 
 .meta-icon {
