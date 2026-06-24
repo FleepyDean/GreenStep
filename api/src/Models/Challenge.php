@@ -294,6 +294,54 @@ class Challenge
      * @param int|null $targetActivityTypeId Specific activity type filter (NULL for all types)
      * @return float Total CO2 reduction achieved by members during the challenge
      */
+    /**
+     * Get individual user's CO2 reduction progress for a challenge
+     */
+    public function getUserProgress(
+        int $challengeId,
+        int $userId,
+        string $startDate,
+        string $endDate,
+        ?string $targetCategory = null,
+        ?int $targetActivityTypeId = null
+    ): float {
+        $category = $targetCategory ?? 'All';
+
+        $sql = "SELECT COALESCE(SUM(al.amount * at.kg_co2_per_unit), 0) as total_reduction
+                FROM ActivityLog al
+                INNER JOIN ActivityType at ON al.activity_type_id = at.id
+                INNER JOIN ChallengeMember cm ON al.user_id = cm.user_id
+                WHERE cm.challenge_id = :challenge_id
+                  AND al.user_id = :user_id
+                  AND al.logged_on BETWEEN :start_date AND :end_date";
+        $params = [
+            ':challenge_id' => $challengeId,
+            ':user_id' => $userId,
+            ':start_date' => $startDate,
+            ':end_date' => $endDate
+        ];
+
+        if ($category !== 'All') {
+            $sql .= " AND at.category = :target_category";
+            $params[':target_category'] = $category;
+        }
+
+        if ($targetActivityTypeId !== null) {
+            $sql .= " AND al.activity_type_id = :target_activity_type_id";
+            $params[':target_activity_type_id'] = $targetActivityTypeId;
+        }
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (float) ($result['total_reduction'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Challenge::getUserProgress error: " . $e->getMessage());
+            return 0.0;
+        }
+    }
+
     public function getCommunityProgress(
         int $challengeId,
         string $startDate,

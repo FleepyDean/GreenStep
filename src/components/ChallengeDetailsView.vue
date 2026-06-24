@@ -78,6 +78,19 @@
         </div>
       </section>
 
+      <section v-if="challenge.has_joined && !isAdmin" class="details-card">
+        <h3>Your Contribution</h3>
+        <p class="progress-description">
+          Your personal CO₂ reduction from
+          <strong>{{ challenge.target_activity_type_name || challenge.target_category }}</strong>
+          activities during this challenge.
+        </p>
+        <div class="user-contribution-stat">
+          <span class="contribution-value">{{ (challenge.user_progress || 0).toFixed(2) }} kg</span>
+          <span class="contribution-label">CO₂ reduced</span>
+        </div>
+      </section>
+
       <section class="details-card">
         <h3>Community Progress</h3>
         <p class="progress-description">
@@ -185,6 +198,7 @@ const progressPercentage = computed(() => {
   const pct = (challenge.value.current_progress / target) * 100
   return Math.min(Math.round(pct), 100)
 })
+
 
 async function loadDetails() {
   try {
@@ -457,6 +471,24 @@ onMounted(async () => {
   border-radius: 6px;
   transition: width 0.5s ease;
   min-width: 2px;
+}
+
+.user-contribution-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.contribution-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0EA5E9;
+}
+
+.contribution-label {
+  font-size: 0.9rem;
+  color: #8696A0;
 }
 
 .progress-percentage {

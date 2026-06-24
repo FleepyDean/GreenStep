@@ -288,6 +288,15 @@ class ChallengeController
             $targetActivityTypeId
         );
 
+        $userProgress = $this->challengeModel->getUserProgress(
+            $challengeId,
+            $userId,
+            $challenge['start_date'],
+            $challenge['end_date'],
+            $targetCategory,
+            $targetActivityTypeId
+        );
+
         $activityTypeName = null;
         if ($targetActivityTypeId !== null) {
             $activityTypeModel = new ActivityType();
@@ -327,7 +336,8 @@ class ChallengeController
                 'has_joined' => $isJoined,
                 'member_count' => count($members),
                 'members' => $formattedMembers,
-                'current_progress' => $communityProgress
+                'current_progress' => $communityProgress,
+                'user_progress' => $userProgress
             ]
         ]));
 
