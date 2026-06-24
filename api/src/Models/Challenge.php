@@ -377,11 +377,8 @@ class Challenge
         $sql = "SELECT COALESCE(SUM(al.amount * at.kg_co2_per_unit), 0) as total_reduction
                 FROM ActivityLog al
                 INNER JOIN ActivityType at ON al.activity_type_id = at.id
-                INNER JOIN ChallengeMember cm ON al.user_id = cm.user_id
-                WHERE cm.challenge_id = :challenge_id
-                  AND al.logged_on BETWEEN :start_date AND :end_date";
+                WHERE al.logged_on BETWEEN :start_date AND :end_date";
         $params = [
-            ':challenge_id' => $challengeId,
             ':start_date' => $startDate,
             ':end_date' => $endDate
         ];
