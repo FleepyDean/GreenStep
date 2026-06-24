@@ -16,6 +16,10 @@ CREATE TABLE User (
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('end-user', 'admin', 'leader') DEFAULT 'end-user',
+    target_reduction_percent DECIMAL(5,2) DEFAULT 20.00,
+    goal_duration_days INT DEFAULT 30,
+    goal_start_date DATE DEFAULT NULL,
+    baseline_footprint DECIMAL(10,4) DEFAULT NULL,
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_email (email),
     INDEX idx_role (role)

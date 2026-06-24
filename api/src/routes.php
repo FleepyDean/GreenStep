@@ -6,6 +6,7 @@ use App\Controllers\ActivityTypeController;
 use App\Controllers\AuthController;
 use App\Controllers\ChallengeController;
 use App\Controllers\DashboardController; // ➕ IMPORTED DASHBOARD CONTROLLER HERE
+use App\Controllers\GoalController;
 use App\Controllers\HealthController;
 use App\Controllers\SocialController;
 use App\Controllers\TipController;
@@ -47,6 +48,12 @@ $app->group('/api', function ($group) {
     // Dashboard Statistics Metrics (Protected)
     // ➕ NEW METRICS ENDPOINT CONNECTED TO SLIM ROUTER HERE:
     $group->get('/dashboard/{userId}', [DashboardController::class, 'getMetrics'])
+        ->add(new JwtMiddleware());
+
+    // Personal Goal & Projection (Protected)
+    $group->get('/goal', [GoalController::class, 'getGoal'])
+        ->add(new JwtMiddleware());
+    $group->put('/goal', [GoalController::class, 'updateGoal'])
         ->add(new JwtMiddleware());
     
     // Activity Logging (Protected)

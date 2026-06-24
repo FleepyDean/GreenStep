@@ -85,6 +85,11 @@ export const dashboardAPI = {
   getMetrics: (userId) => api.get(`dashboard/${userId}`)
 }
 
+export const goalAPI = {
+  getGoal: () => api.get('/goal'),
+  updateGoal: (data) => api.put('/goal', data)
+}
+
 export const emissionFactorAPI = {
   getAll: () => api.get('/activity-types?grouped=false'),
   create: (data) => api.post('/admin/activity-types', data),
