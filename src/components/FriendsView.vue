@@ -12,7 +12,7 @@
           <input
             type="text"
             v-model="searchIdentifier"
-            placeholder="Enter email or user ID"
+            placeholder="Enter email"
             :disabled="socialStore.loading"
             required
           />
