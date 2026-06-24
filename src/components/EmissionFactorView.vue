@@ -88,8 +88,8 @@
                   </td>
                   <td>
                     <div class="action-btns">
-                      <button class="edit-btn" @click="startEdit(item)">Edit</button>
-                      <button class="del-btn" @click="confirmDelete(item)">Delete</button>
+                      <button class="icon-action-btn edit-icon-btn" @click="startEdit(item)" title="Edit">✏️</button>
+                      <button class="icon-action-btn del-icon-btn" @click="confirmDelete(item)" title="Delete">🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -408,23 +408,44 @@ onMounted(() => {
 
 .action-btns {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
-.edit-btn {
-  background: #E9EDEF;
-  border: 1px solid #D1D7DB;
-  color: #111B21;
-  padding: 0.35rem 0.8rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border-radius: 4px;
+.icon-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.edit-btn:hover {
-  background: #D1D7DB;
+.icon-action-btn:active {
+  transform: scale(0.9);
+}
+
+.edit-icon-btn {
+  border-color: #D1D7DB;
+  background: #F0F2F5;
+}
+
+.edit-icon-btn:hover {
+  background: #E9EDEF;
+}
+
+.del-icon-btn {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.07);
+}
+
+.del-icon-btn:hover {
+  background: rgba(239, 68, 68, 0.18);
 }
 
 .del-btn {
