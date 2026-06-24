@@ -35,6 +35,7 @@ class Challenge
                     c.description,
                     c.target_co2_reduction,
                     c.duration_days,
+                    c.member_limit,
                     c.start_date,
                     c.end_date,
                     c.created_at,
@@ -46,7 +47,7 @@ class Challenge
                 FROM Challenge c
                 LEFT JOIN ChallengeMember cm ON c.id = cm.challenge_id
                 GROUP BY c.id, c.name, c.description, c.target_co2_reduction,
-                         c.duration_days, c.start_date, c.end_date, c.created_at
+                         c.duration_days, c.member_limit, c.start_date, c.end_date, c.created_at
                 ORDER BY c.start_date DESC";
 
         try {
@@ -88,8 +89,8 @@ class Challenge
      */
     public function create(array $data): int|false
     {
-        $sql = "INSERT INTO Challenge (name, description, target_co2_reduction, target_category, target_activity_type_id, duration_days, start_date, end_date)
-                VALUES (:name, :description, :target_co2_reduction, :target_category, :target_activity_type_id, :duration_days, :start_date, :end_date)";
+        $sql = "INSERT INTO Challenge (name, description, target_co2_reduction, target_category, target_activity_type_id, duration_days, member_limit, start_date, end_date)
+                VALUES (:name, :description, :target_co2_reduction, :target_category, :target_activity_type_id, :duration_days, :member_limit, :start_date, :end_date)";
 
         try {
             $stmt = $this->db->prepare($sql);
@@ -100,6 +101,7 @@ class Challenge
                 ':target_category' => $data['target_category'] ?? 'All',
                 ':target_activity_type_id' => !empty($data['target_activity_type_id']) ? (int) $data['target_activity_type_id'] : null,
                 ':duration_days' => (int) $data['duration_days'],
+                ':member_limit' => !empty($data['member_limit']) ? (int) $data['member_limit'] : null,
                 ':start_date' => $data['start_date'],
                 ':end_date' => $data['end_date']
             ]);
@@ -126,6 +128,7 @@ class Challenge
                     target_category = :target_category,
                     target_activity_type_id = :target_activity_type_id,
                     duration_days = :duration_days,
+                    member_limit = :member_limit,
                     start_date = :start_date,
                     end_date = :end_date
                 WHERE id = :id";
@@ -140,6 +143,7 @@ class Challenge
                 ':target_category' => $data['target_category'] ?? 'All',
                 ':target_activity_type_id' => !empty($data['target_activity_type_id']) ? (int) $data['target_activity_type_id'] : null,
                 ':duration_days' => (int) $data['duration_days'],
+                ':member_limit' => !empty($data['member_limit']) ? (int) $data['member_limit'] : null,
                 ':start_date' => $data['start_date'],
                 ':end_date' => $data['end_date']
             ]);
@@ -186,6 +190,24 @@ class Challenge
      */
     public function join(int $challengeId, int $userId): bool
     {
+        // Check if challenge has reached its member limit
+        $limitSql = "SELECT COUNT(*) as member_count, c.member_limit
+                     FROM Challenge c
+                     LEFT JOIN ChallengeMember cm ON c.id = cm.challenge_id
+                     WHERE c.id = :challenge_id
+                     GROUP BY c.member_limit";
+        try {
+            $limitStmt = $this->db->prepare($limitSql);
+            $limitStmt->execute([':challenge_id' => $challengeId]);
+            $limitRow = $limitStmt->fetch(PDO::FETCH_ASSOC);
+            if ($limitRow && !empty($limitRow['member_limit']) && (int) $limitRow['member_count'] >= (int) $limitRow['member_limit']) {
+                return false;
+            }
+        } catch (PDOException $e) {
+            error_log("Challenge::join limit check error: " . $e->getMessage());
+            return false;
+        }
+
         $sql = "INSERT INTO ChallengeMember (challenge_id, user_id)
                 VALUES (:challenge_id, :user_id)";
 

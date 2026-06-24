@@ -57,6 +57,14 @@
             <span class="meta-label">Timeline:</span>
             <span class="meta-val">{{ formatDate(item.start_date) }} - {{ formatDate(item.end_date) }}</span>
           </div>
+          <div class="meta-row">
+            <span class="meta-label">Members:</span>
+            <span class="meta-val">
+              {{ item.member_count }}
+              <span v-if="item.member_limit">/ {{ item.member_limit }}</span>
+              <span v-if="item.is_full" class="full-badge">Full</span>
+            </span>
+          </div>
         </div>
 
         <div class="action-btn-group">
@@ -64,9 +72,10 @@
           <button
             v-if="!isAdmin"
             :class="['primary-action-btn', item.has_joined ? 'leave-action-btn' : '']"
+            :disabled="item.is_full && !item.has_joined"
             @click="toggleJoin(item)"
           >
-            {{ item.has_joined ? 'Leave Challenge' : 'Join Challenge' }}
+            {{ item.has_joined ? 'Leave Challenge' : (item.is_full ? 'Full' : 'Join Challenge') }}
           </button>
         </div>
       </div>
@@ -159,11 +168,7 @@ async function loadChallenges() {
 
     const response = await challengeAPI.getChallenges()
 
-    console.log('Challenges API response:', response.data)
-
     challenges.value = response.data.challenges || []
-
-    console.log('challenges.value set to:', challenges.value, 'length:', challenges.value.length)
 
   } catch (err) {
 
@@ -481,6 +486,24 @@ onMounted(async () => {
 
   box-shadow: 0 4px 12px rgba(0, 168, 132, 0.2);
 
+}
+
+.full-badge {
+  display: inline-block;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 10px;
+  margin-left: 0.4rem;
+  text-transform: uppercase;
+}
+
+.primary-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #8696A0;
 }
 
 

@@ -59,6 +59,8 @@ class ChallengeController
                 'is_active' => $isActive,
                 'is_upcoming' => $isUpcoming,
                 'member_count' => (int) $c['member_count'],
+                'member_limit' => isset($c['member_limit']) ? (int) $c['member_limit'] : null,
+                'is_full' => !empty($c['member_limit']) && (int) $c['member_count'] >= (int) $c['member_limit'],
                 'has_joined' => (bool) $c['has_joined']
             ];
         }, $challenges);
@@ -107,6 +109,7 @@ class ChallengeController
             'target_category' => $body['target_category'] ?? 'All',
             'target_activity_type_id' => !empty($body['target_activity_type_id']) ? (int) $body['target_activity_type_id'] : null,
             'duration_days' => (int) $body['duration_days'],
+            'member_limit' => !empty($body['member_limit']) ? (int) $body['member_limit'] : null,
             'start_date' => $body['start_date'],
             'end_date' => $body['end_date']
         ]);
@@ -134,6 +137,7 @@ class ChallengeController
                 'target_category' => $targetCategory,
                 'target_activity_type_id' => $targetActivityTypeId,
                 'duration_days' => (int) $body['duration_days'],
+                'member_limit' => !empty($body['member_limit']) ? (int) $body['member_limit'] : null,
                 'start_date' => $body['start_date'],
                 'end_date' => $body['end_date'],
                 'is_active' => $today >= $body['start_date'] && $today <= $body['end_date'],
@@ -192,6 +196,7 @@ class ChallengeController
             'target_category' => $body['target_category'] ?? 'All',
             'target_activity_type_id' => !empty($body['target_activity_type_id']) ? (int) $body['target_activity_type_id'] : null,
             'duration_days' => (int) $body['duration_days'],
+            'member_limit' => !empty($body['member_limit']) ? (int) $body['member_limit'] : null,
             'start_date' => $body['start_date'],
             'end_date' => $body['end_date']
         ]);
@@ -335,6 +340,8 @@ class ChallengeController
                 'is_upcoming' => $isUpcoming,
                 'has_joined' => $isJoined,
                 'member_count' => count($members),
+                'member_limit' => isset($challenge['member_limit']) ? (int) $challenge['member_limit'] : null,
+                'is_full' => !empty($challenge['member_limit']) && count($members) >= (int) $challenge['member_limit'],
                 'members' => $formattedMembers,
                 'current_progress' => $communityProgress,
                 'user_progress' => $userProgress
@@ -374,11 +381,14 @@ class ChallengeController
         $success = $this->challengeModel->join($challengeId, $userId);
 
         if (!$success) {
+            $message = (!empty($challenge['member_limit']) && (int) $challenge['member_count'] >= (int) $challenge['member_limit'])
+                ? 'This challenge has reached its member limit'
+                : 'Failed to join challenge';
             $response->getBody()->write(json_encode([
                 'success' => false,
-                'message' => 'Failed to join challenge'
+                'message' => $message
             ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(409);
         }
 
         $response->getBody()->write(json_encode([
