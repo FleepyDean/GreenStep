@@ -34,7 +34,7 @@
             {{ item.is_active ? 'Active' : item.is_upcoming ? 'Upcoming' : 'Completed' }}
           </span>
           <span v-if="item.has_joined" class="joined-pill">✓ Joined</span>
-          <span class="member-count">👥 {{ item.member_count }} members</span>
+          <!-- <span class="member-count">👥 {{ item.member_count }} members</span> -->
           <div v-if="isAdmin" class="admin-card-actions">
             <button class="icon-btn edit-icon-btn" @click.stop="openEditModal(item)" title="Edit">✏️</button>
             <button class="icon-btn delete-icon-btn" @click.stop="deleteItem(item)" title="Delete">🗑️</button>
