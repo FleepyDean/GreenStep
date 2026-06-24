@@ -50,6 +50,7 @@ export const activityAPI = {
   getTypesByCategory: (category) => api.get(`/activity-types/category/${category}`),
   
   logActivity: (data) => api.post('/activities', data),
+  logActivityWithPhoto: (formData) => api.post('/activities', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   getActivities: (params) => api.get('/activities', { params }),
   getTodayActivities: () => api.get('/activities/today'),
   getStats: (params) => api.get('/activities/stats', { params }),
