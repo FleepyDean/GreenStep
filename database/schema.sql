@@ -224,13 +224,13 @@ INSERT INTO Badge (name, criteria_json, image_url) VALUES
 -- Create Admin User (password: admin123 - CHANGE IN PRODUCTION!)
 -- Password hashed with bcrypt
 -- ============================================
-INSERT INTO User (name, email, password_hash, role, joined_at) VALUES
-('Administrator', 'admin@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NOW()),
-('Leader', 'leader@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'leader', NOW()),
-('Farish', 'farish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', NOW()),
-('Hafiz', 'hafiz@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', NOW()),
-('Danish', 'danish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', NOW()),
-('Syaeeda', 'syaeeda@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', NOW());
+INSERT INTO User (name, email, password_hash, role, target_reduction_percent, goal_duration_days, goal_start_date, baseline_footprint, joined_at) VALUES
+('Administrator', 'admin@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Leader', 'leader@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'leader', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Farish', 'farish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Hafiz', 'hafiz@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Danish', 'danish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Syaeeda', 'syaeeda@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW());
 -- ============================================
 -- Verification: Check all tables were created
 -- ============================================

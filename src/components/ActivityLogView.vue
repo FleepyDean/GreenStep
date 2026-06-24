@@ -210,6 +210,7 @@ import { activityAPI } from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
+import { eventBus } from '@/utils/eventBus'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -324,6 +325,7 @@ async function submitActivity() {
       
       await loadTodayActivities()
       await loadHistory()
+      eventBus.emit('activity-logged')
       toast.success('Activity logged successfully!')
     }
   } catch (err) {
@@ -343,6 +345,7 @@ async function removeLog(id) {
     await activityAPI.deleteActivity(id)
     await loadTodayActivities()
     await loadHistory()
+    eventBus.emit('activity-logged')
     toast.success('Activity deleted')
   } catch (err) {
     console.error('Failed to delete activity:', err)

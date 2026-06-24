@@ -226,12 +226,16 @@ class GoalController
         $baseline = (float) $goal['baseline_footprint'];
         $targetPercent = (float) $goal['target_reduction_percent'];
 
+        error_log("Goal calculation debug: today=$today, startDate=$startDate, durationDays=$durationDays");
+
         $startTimestamp = strtotime($startDate);
         $todayTimestamp = strtotime($today);
         $daysElapsed = max(1, (int) round(($todayTimestamp - $startTimestamp) / 86400) + 1);
         $daysElapsed = min($daysElapsed, $durationDays);
         $daysRemaining = max(0, $durationDays - $daysElapsed);
         $endDate = date('Y-m-d', strtotime($startDate . ' + ' . ($durationDays - 1) . ' days'));
+
+        error_log("Goal calculation debug: daysElapsed=$daysElapsed, daysRemaining=$daysRemaining");
 
         $stmt = $this->db->prepare('
             SELECT
@@ -247,9 +251,14 @@ class GoalController
         ]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        error_log("Goal calculation SQL debug: user_id=$userId, start_date=$startDate, today=$today");
+        error_log("Goal calculation SQL result: " . json_encode($row));
+
         $totalLogged = (float) ($row['total_logged'] ?? 0);
         $daysWithLogs = (int) ($row['days_with_logs'] ?? 0);
         $daysWithoutLogs = max(0, $daysElapsed - $daysWithLogs);
+
+        error_log("Goal calculation debug: totalLogged=$totalLogged, daysWithLogs=$daysWithLogs, daysWithoutLogs=$daysWithoutLogs");
 
         // Days without any tracked activity are assumed to be at the baseline pace
         $actualFootprint = $totalLogged + ($baseline * $daysWithoutLogs);
