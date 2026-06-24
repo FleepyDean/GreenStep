@@ -91,6 +91,7 @@ CREATE TABLE Challenge (
     target_category VARCHAR(50) NULL DEFAULT 'All',
     target_activity_type_id INT UNSIGNED NULL,
     duration_days INT NOT NULL,
+    member_limit INT UNSIGNED NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_dates (start_date, end_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -198,11 +199,11 @@ INSERT INTO Tip (title, body, category, source_url) VALUES
 -- ============================================
 -- SEED DATA: Challenges
 -- ============================================
-INSERT INTO Challenge (name, description, start_date, end_date, target_co2_reduction, target_category, target_activity_type_id, duration_days) VALUES
-('Zero Waste Week', 'Go one week minimizing plastic wrappers, composting food scraps, and refusing single-use items.', '2026-06-01', '2026-06-07', 20.00, 'Recycling', NULL, 7),
-('30-Day Eco Warrior Challenge', 'Reduce your household electricity footings by shifting to alternative transit modes and vegetarian meal tracks.', '2026-06-01', '2026-06-30', 50.00, 'All', NULL, 30),
-('Green Transport Month', 'Ditch private combustion vehicles. Rely completely on commuter electric transit systems, cycling, or shared buses.', '2026-06-01', '2026-06-30', 100.00, 'Transport', NULL, 30),
-('Plastic Free July', 'Eliminate single-use plastics from your daily routine for the entire month.', '2026-07-01', '2026-07-31', 15.00, 'Recycling', NULL, 31);
+INSERT INTO Challenge (name, description, start_date, end_date, target_co2_reduction, target_category, target_activity_type_id, duration_days, member_limit) VALUES
+('Zero Waste Week', 'Go one week minimizing plastic wrappers, composting food scraps, and refusing single-use items.', '2026-06-01', '2026-06-07', 20.00, 'Recycling', NULL, 7, 100),
+('30-Day Eco Warrior Challenge', 'Reduce your household electricity footings by shifting to alternative transit modes and vegetarian meal tracks.', '2026-06-01', '2026-06-30', 50.00, 'All', NULL, 30, 200),
+('Green Transport Month', 'Ditch private combustion vehicles. Rely completely on commuter electric transit systems, cycling, or shared buses.', '2026-06-01', '2026-06-30', 100.00, 'Transport', NULL, 30, 150),
+('Plastic Free July', 'Eliminate single-use plastics from your daily routine for the entire month.', '2026-07-01', '2026-07-31', 15.00, 'Recycling', NULL, 31, 500);
 
 -- ============================================
 -- SEED DATA: Badges
