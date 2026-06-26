@@ -69,6 +69,42 @@ class ActivityTypeController
     }
 
     /**
+     * POST /api/admin/categories
+     * Create a new category (admin only)
+     */
+    public function storeCategory(Request $request, Response $response): Response
+    {
+        $user = $request->getAttribute('user');
+        if (($user['role'] ?? '') !== 'admin') {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Admin access required']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
+        $data = json_decode($request->getBody()->getContents(), true);
+        $name = trim($data['name'] ?? '');
+
+        if (empty($name)) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Category name is required']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        $existing = $this->model->getCategories();
+        foreach ($existing as $cat) {
+            if (strtolower($cat) === strtolower($name)) {
+                $response->getBody()->write(json_encode(['success' => false, 'message' => 'Category already exists']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(409);
+            }
+        }
+
+        $response->getBody()->write(json_encode([
+            'success' => true,
+            'message' => 'Category "' . $name . '" is ready to use',
+            'category' => $name
+        ]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+    }
+
+    /**
      * GET /api/activity-types/category/{category}
      * Get activity types for a specific category
      */
@@ -84,8 +120,8 @@ class ActivityTypeController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
-        // Validate category is one of the allowed values
-        $validCategories = ['Transport', 'Diet', 'Energy', 'Recycling'];
+        // Validate category is one of the existing values
+        $validCategories = $this->model->getCategories();
         if (!in_array($category, $validCategories)) {
             $response->getBody()->write(json_encode([
                 'success' => false,
@@ -120,13 +156,12 @@ class ActivityTypeController
 
         $data = json_decode($request->getBody()->getContents(), true);
 
-        $validCategories = ['Transport', 'Diet', 'Energy', 'Recycling'];
-        $category = $data['category'] ?? '';
+        $category = trim($data['category'] ?? '');
         $name     = trim($data['name'] ?? '');
         $unit     = trim($data['unit'] ?? '');
         $factor   = isset($data['kg_co2_per_unit']) ? (float) $data['kg_co2_per_unit'] : null;
 
-        if (!in_array($category, $validCategories) || empty($name) || empty($unit) || $factor === null) {
+        if (empty($category) || empty($name) || empty($unit) || $factor === null) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Missing or invalid fields: category, name, unit, kg_co2_per_unit are required']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
@@ -167,14 +202,13 @@ class ActivityTypeController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
 
-        $validCategories = ['Transport', 'Diet', 'Energy', 'Recycling'];
-        $category = $data['category'] ?? $existing['category'];
+        $category = trim($data['category'] ?? $existing['category']);
         $name     = trim($data['name'] ?? $existing['name']);
         $unit     = trim($data['unit'] ?? $existing['unit']);
         $factor   = isset($data['kg_co2_per_unit']) ? (float) $data['kg_co2_per_unit'] : (float) $existing['kg_co2_per_unit'];
 
-        if (!in_array($category, $validCategories)) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Invalid category']));
+        if (empty($category)) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Category is required']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 

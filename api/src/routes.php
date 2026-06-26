@@ -109,6 +109,8 @@ $app->group('/api', function ($group) {
     // ============================================
     // Admin: Emission Factor Management (Protected + Admin Role)
     // ============================================
+    $group->post('/admin/categories', [ActivityTypeController::class, 'storeCategory'])
+        ->add(new JwtMiddleware());
     $group->post('/admin/activity-types', [ActivityTypeController::class, 'store'])
         ->add(new JwtMiddleware());
     $group->put('/admin/activity-types/{id}', [ActivityTypeController::class, 'update'])

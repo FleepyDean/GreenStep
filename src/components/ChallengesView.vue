@@ -519,4 +519,27 @@ onMounted(async () => {
 
 }
 
+.meta-row-tags {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.card-type-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.card-type-tag {
+  background: rgba(0, 168, 132, 0.12);
+  color: #00A884;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 168, 132, 0.3);
+}
+
 </style>

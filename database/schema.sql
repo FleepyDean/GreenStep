@@ -30,7 +30,7 @@ CREATE TABLE User (
 -- ============================================
 CREATE TABLE ActivityType (
     id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    category ENUM('Transport', 'Diet', 'Energy', 'Recycling') NOT NULL,
+    category VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     unit VARCHAR(20) NOT NULL,
     kg_co2_per_unit DECIMAL(10, 4) NOT NULL,
@@ -47,6 +47,7 @@ CREATE TABLE ActivityLog (
     amount DECIMAL(10, 2) NOT NULL,
     carbon_footprint DECIMAL(10, 4) DEFAULT 0,
     logged_on DATE NOT NULL,
+    photo_url VARCHAR(500) NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
     FOREIGN KEY (activity_type_id) REFERENCES ActivityType(id) ON DELETE CASCADE,
@@ -61,7 +62,7 @@ CREATE TABLE Tip (
     id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     body VARCHAR(2000) NOT NULL,
-    category ENUM('Transport', 'Diet', 'Energy', 'Recycling', 'General') NOT NULL,
+    category VARCHAR(100) NOT NULL,
     source_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_category (category)
