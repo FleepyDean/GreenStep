@@ -22,6 +22,12 @@ class ChallengeController
         $this->challengeModel = new Challenge();
     }
 
+    private function canManageChallenges(array $user): bool
+    {
+        $role = $user['role'] ?? '';
+        return $role === 'admin' || $role === 'leader';
+    }
+
     /**
      * GET /api/challenges
      * Fetch all challenges with member count and joined status
@@ -30,13 +36,13 @@ class ChallengeController
     {
         $user = $request->getAttribute('user');
         $userId = (int) ($user['id'] ?? 0);
-        $isAdmin = ($user['role'] ?? '') === 'admin';
+        $canManage = $this->canManageChallenges($user);
 
         $challenges = $this->challengeModel->getAllWithMemberCount($userId);
         $today = date('Y-m-d');
 
-        // Non-admin users should not see completed (expired) challenges
-        if (!$isAdmin) {
+        // Non-admin/leader users should not see completed (expired) challenges
+        if (!$canManage) {
             $challenges = array_values(array_filter($challenges, function ($c) use ($today) {
                 return $c['end_date'] >= $today;
             }));
@@ -72,6 +78,8 @@ class ChallengeController
                 'is_active' => $isActive,
                 'is_upcoming' => $isUpcoming,
                 'member_count' => (int) $c['member_count'],
+                'member_limit' => isset($c['member_limit']) ? (int) $c['member_limit'] : null,
+                'is_full' => !empty($c['member_limit']) && (int) $c['member_count'] >= (int) $c['member_limit'],
                 'has_joined' => (bool) $c['has_joined']
             ];
         }, $challenges);
@@ -86,25 +94,25 @@ class ChallengeController
 
     /**
      * POST /api/challenges
-     * Create a new challenge (Admin Only)
+     * Create a new challenge (Admin or Leader)
      */
     public function create(Request $request, Response $response): Response
     {
         $user = $request->getAttribute('user');
 
-        if (($user['role'] ?? '') !== 'admin') {
+        if (!$this->canManageChallenges($user)) {
             $response->getBody()->write(json_encode([
                 'success' => false,
-                'message' => 'Admin access required'
+                'message' => 'Admin or leader access required'
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
 
         $body = $request->getParsedBody() ?? [];
 
-        $required = ['name', 'description', 'target_co2_reduction', 'duration_days', 'start_date', 'end_date'];
+        $required = ['name', 'description', 'target_co2_reduction', 'target_category', 'target_activity_type_id', 'duration_days', 'member_limit', 'start_date', 'end_date'];
         foreach ($required as $field) {
-            if (!isset($body[$field]) || $body[$field] === '') {
+            if (!isset($body[$field]) || $body[$field] === '' || $body[$field] === null) {
                 $response->getBody()->write(json_encode([
                     'success' => false,
                     'message' => "Field '{$field}' is required"
@@ -126,6 +134,7 @@ class ChallengeController
             'target_category' => $body['target_category'] ?? 'All',
             'target_activity_type_ids' => $targetActivityTypeIds,
             'duration_days' => (int) $body['duration_days'],
+            'member_limit' => !empty($body['member_limit']) ? (int) $body['member_limit'] : null,
             'start_date' => $body['start_date'],
             'end_date' => $body['end_date']
         ]);
@@ -151,6 +160,7 @@ class ChallengeController
                 'target_category' => $body['target_category'] ?? 'All',
                 'target_activity_type_ids' => $targetActivityTypeIds,
                 'duration_days' => (int) $body['duration_days'],
+                'member_limit' => !empty($body['member_limit']) ? (int) $body['member_limit'] : null,
                 'start_date' => $body['start_date'],
                 'end_date' => $body['end_date'],
                 'is_active' => $today >= $body['start_date'] && $today <= $body['end_date'],
@@ -165,16 +175,16 @@ class ChallengeController
 
     /**
      * PUT /api/challenges/{id}
-     * Update an existing challenge (Admin Only)
+     * Update an existing challenge (Admin or Leader)
      */
     public function update(Request $request, Response $response, array $args): Response
     {
         $user = $request->getAttribute('user');
 
-        if (($user['role'] ?? '') !== 'admin') {
+        if (!$this->canManageChallenges($user)) {
             $response->getBody()->write(json_encode([
                 'success' => false,
-                'message' => 'Admin access required'
+                'message' => 'Admin or leader access required'
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
@@ -191,9 +201,9 @@ class ChallengeController
 
         $body = $request->getParsedBody() ?? [];
 
-        $required = ['name', 'description', 'target_co2_reduction', 'duration_days', 'start_date', 'end_date'];
+        $required = ['name', 'description', 'target_co2_reduction', 'target_category', 'target_activity_type_id', 'duration_days', 'member_limit', 'start_date', 'end_date'];
         foreach ($required as $field) {
-            if (!isset($body[$field]) || $body[$field] === '') {
+            if (!isset($body[$field]) || $body[$field] === '' || $body[$field] === null) {
                 $response->getBody()->write(json_encode([
                     'success' => false,
                     'message' => "Field '{$field}' is required"
@@ -215,6 +225,7 @@ class ChallengeController
             'target_category' => $body['target_category'] ?? 'All',
             'target_activity_type_ids' => $targetActivityTypeIds,
             'duration_days' => (int) $body['duration_days'],
+            'member_limit' => !empty($body['member_limit']) ? (int) $body['member_limit'] : null,
             'start_date' => $body['start_date'],
             'end_date' => $body['end_date']
         ]);
@@ -237,16 +248,16 @@ class ChallengeController
 
     /**
      * DELETE /api/challenges/{id}
-     * Delete a challenge (Admin Only)
+     * Delete a challenge (Admin or Leader)
      */
     public function delete(Request $request, Response $response, array $args): Response
     {
         $user = $request->getAttribute('user');
 
-        if (($user['role'] ?? '') !== 'admin') {
+        if (!$this->canManageChallenges($user)) {
             $response->getBody()->write(json_encode([
                 'success' => false,
-                'message' => 'Admin access required'
+                'message' => 'Admin or leader access required'
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
@@ -311,8 +322,17 @@ class ChallengeController
             !empty($targetActivityTypeIds) ? $targetActivityTypeIds : null
         );
 
-        $activityTypeNames = [];
-        if (!empty($targetActivityTypeIds)) {
+        $userProgress = $this->challengeModel->getUserProgress(
+            $challengeId,
+            $userId,
+            $challenge['start_date'],
+            $challenge['end_date'],
+            $targetCategory,
+            $targetActivityTypeId
+        );
+
+        $activityTypeName = null;
+        if ($targetActivityTypeId !== null) {
             $activityTypeModel = new ActivityType();
             foreach ($targetActivityTypeIds as $atId) {
                 $activityType = $activityTypeModel->getById($atId);
@@ -351,8 +371,11 @@ class ChallengeController
                 'is_upcoming' => $isUpcoming,
                 'has_joined' => $isJoined,
                 'member_count' => count($members),
+                'member_limit' => isset($challenge['member_limit']) ? (int) $challenge['member_limit'] : null,
+                'is_full' => !empty($challenge['member_limit']) && count($members) >= (int) $challenge['member_limit'],
                 'members' => $formattedMembers,
-                'current_progress' => $communityProgress
+                'current_progress' => $communityProgress,
+                'user_progress' => $userProgress
             ]
         ]));
 
@@ -389,11 +412,14 @@ class ChallengeController
         $success = $this->challengeModel->join($challengeId, $userId);
 
         if (!$success) {
+            $message = (!empty($challenge['member_limit']) && (int) $challenge['member_count'] >= (int) $challenge['member_limit'])
+                ? 'This challenge has reached its member limit'
+                : 'Failed to join challenge';
             $response->getBody()->write(json_encode([
                 'success' => false,
-                'message' => 'Failed to join challenge'
+                'message' => $message
             ]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(409);
         }
 
         $response->getBody()->write(json_encode([

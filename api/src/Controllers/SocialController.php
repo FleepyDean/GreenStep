@@ -240,6 +240,70 @@ class SocialController
     }
 
     /**
+     * DELETE /api/friends/{id}
+     * Remove a friend or cancel a pending request
+     */
+    public function removeFriend(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        $userId = (int) ($user['id'] ?? 0);
+        $userRole = $user['role'] ?? '';
+
+        if ($userRole === 'admin') {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Admins cannot remove friends'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
+        $friendshipId = (int) ($args['id'] ?? 0);
+
+        if ($friendshipId <= 0) {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Friendship ID is required'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        $friendship = $this->friendshipModel->getById($friendshipId);
+
+        if (!$friendship) {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Friendship not found'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+
+        if ((int) $friendship['sender_id'] !== $userId && (int) $friendship['receiver_id'] !== $userId) {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Unauthorized to remove this friendship'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
+        $success = $this->friendshipModel->delete($friendshipId, $userId);
+
+        if (!$success) {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Failed to remove friend'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+
+        $response->getBody()->write(json_encode([
+            'success' => true,
+            'message' => 'Friend removed successfully'
+        ]));
+
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    }
+
+    /**
      * GET /api/leaderboard
      * Get global or friends-only leaderboard rankings based on carbon footprint
      */

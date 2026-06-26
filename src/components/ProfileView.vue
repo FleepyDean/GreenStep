@@ -69,6 +69,7 @@
         <button class="logout-trigger-btn" @click="handleLogout">Logout</button>
       </section>
 
+      
       <section class="gamification-showcase-panel">
         <h3>🏆 Earned Digital Badges & Milestones</h3>
         <div class="badges-display-grid">
@@ -94,6 +95,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { goalAPI } from '@/services/api'
 
 const authStore = useAuthStore()
 const { toast } = useToast()
@@ -111,7 +113,7 @@ const userProfile = computed(() => authStore.user || {
   role: 'end-user'
 })
 
-// Gamification Logic Engine Payload Mappings (FR-iv)
+
 const userBadges = ref([
   {
     id: 1,
@@ -184,9 +186,15 @@ const handleLogout = () => {
   toast.info('Logged out successfully')
 }
 
+
+
+
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     await authStore.fetchProfile()
   }
 })
 </script>
+
+<style scoped>
+</style>

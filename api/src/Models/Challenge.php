@@ -37,6 +37,7 @@ class Challenge
                     c.target_category,
                     c.target_activity_type_id,
                     c.duration_days,
+                    c.member_limit,
                     c.start_date,
                     c.end_date,
                     c.created_at,
@@ -48,8 +49,7 @@ class Challenge
                 FROM Challenge c
                 LEFT JOIN ChallengeMember cm ON c.id = cm.challenge_id
                 GROUP BY c.id, c.name, c.description, c.target_co2_reduction,
-                         c.target_category, c.target_activity_type_id,
-                         c.duration_days, c.start_date, c.end_date, c.created_at
+                         c.duration_days, c.member_limit, c.start_date, c.end_date, c.created_at
                 ORDER BY c.start_date DESC";
 
         try {
@@ -109,8 +109,8 @@ class Challenge
 
     public function create(array $data): int|false
     {
-        $sql = "INSERT INTO Challenge (name, description, target_co2_reduction, target_category, target_activity_type_id, duration_days, start_date, end_date)
-                VALUES (:name, :description, :target_co2_reduction, :target_category, :target_activity_type_id, :duration_days, :start_date, :end_date)";
+        $sql = "INSERT INTO Challenge (name, description, target_co2_reduction, target_category, target_activity_type_id, duration_days, member_limit, start_date, end_date)
+                VALUES (:name, :description, :target_co2_reduction, :target_category, :target_activity_type_id, :duration_days, :member_limit, :start_date, :end_date)";
 
         try {
             $stmt = $this->db->prepare($sql);
@@ -121,6 +121,7 @@ class Challenge
                 ':target_category' => $data['target_category'] ?? 'All',
                 ':target_activity_type_id' => $this->encodeActivityTypeIds($data['target_activity_type_ids'] ?? $data['target_activity_type_id'] ?? null),
                 ':duration_days' => (int) $data['duration_days'],
+                ':member_limit' => !empty($data['member_limit']) ? (int) $data['member_limit'] : null,
                 ':start_date' => $data['start_date'],
                 ':end_date' => $data['end_date']
             ]);
@@ -147,6 +148,7 @@ class Challenge
                     target_category = :target_category,
                     target_activity_type_id = :target_activity_type_id,
                     duration_days = :duration_days,
+                    member_limit = :member_limit,
                     start_date = :start_date,
                     end_date = :end_date
                 WHERE id = :id";
@@ -161,6 +163,7 @@ class Challenge
                 ':target_category' => $data['target_category'] ?? 'All',
                 ':target_activity_type_id' => $this->encodeActivityTypeIds($data['target_activity_type_ids'] ?? $data['target_activity_type_id'] ?? null),
                 ':duration_days' => (int) $data['duration_days'],
+                ':member_limit' => !empty($data['member_limit']) ? (int) $data['member_limit'] : null,
                 ':start_date' => $data['start_date'],
                 ':end_date' => $data['end_date']
             ]);
@@ -207,6 +210,24 @@ class Challenge
      */
     public function join(int $challengeId, int $userId): bool
     {
+        // Check if challenge has reached its member limit
+        $limitSql = "SELECT COUNT(*) as member_count, c.member_limit
+                     FROM Challenge c
+                     LEFT JOIN ChallengeMember cm ON c.id = cm.challenge_id
+                     WHERE c.id = :challenge_id
+                     GROUP BY c.member_limit";
+        try {
+            $limitStmt = $this->db->prepare($limitSql);
+            $limitStmt->execute([':challenge_id' => $challengeId]);
+            $limitRow = $limitStmt->fetch(PDO::FETCH_ASSOC);
+            if ($limitRow && !empty($limitRow['member_limit']) && (int) $limitRow['member_count'] >= (int) $limitRow['member_limit']) {
+                return false;
+            }
+        } catch (PDOException $e) {
+            error_log("Challenge::join limit check error: " . $e->getMessage());
+            return false;
+        }
+
         $sql = "INSERT INTO ChallengeMember (challenge_id, user_id)
                 VALUES (:challenge_id, :user_id)";
 
@@ -315,24 +336,69 @@ class Challenge
      * @param int|null $targetActivityTypeId Specific activity type filter (NULL for all types)
      * @return float Total CO2 reduction achieved by members during the challenge
      */
-    public function getCommunityProgress(
+    /**
+     * Get individual user's CO2 reduction progress for a challenge
+     */
+    public function getUserProgress(
         int $challengeId,
+        int $userId,
         string $startDate,
         string $endDate,
         ?string $targetCategory = null,
         array|null $targetActivityTypeId = null
     ): float {
         $category = $targetCategory ?? 'All';
-        $activityTypeId = $targetActivityTypeId;
 
         $sql = "SELECT COALESCE(SUM(al.amount * at.kg_co2_per_unit), 0) as total_reduction
                 FROM ActivityLog al
                 INNER JOIN ActivityType at ON al.activity_type_id = at.id
                 INNER JOIN ChallengeMember cm ON al.user_id = cm.user_id
                 WHERE cm.challenge_id = :challenge_id
+                  AND al.user_id = :user_id
                   AND al.logged_on BETWEEN :start_date AND :end_date";
         $params = [
             ':challenge_id' => $challengeId,
+            ':user_id' => $userId,
+            ':start_date' => $startDate,
+            ':end_date' => $endDate
+        ];
+
+        if ($category !== 'All') {
+            $sql .= " AND at.category = :target_category";
+            $params[':target_category'] = $category;
+        }
+
+        if ($targetActivityTypeId !== null) {
+            $sql .= " AND al.activity_type_id = :target_activity_type_id";
+            $params[':target_activity_type_id'] = $targetActivityTypeId;
+        }
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (float) ($result['total_reduction'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Challenge::getUserProgress error: " . $e->getMessage());
+            return 0.0;
+        }
+    }
+
+    public function getCommunityProgress(
+        int $challengeId,
+        string $startDate,
+        string $endDate,
+        ?string $targetCategory = null,
+        ?int $targetActivityTypeId = null
+    ): float {
+        $category = $targetCategory ?? 'All';
+        $activityTypeId = $targetActivityTypeId ?? null;
+
+        $sql = "SELECT COALESCE(SUM(al.amount * at.kg_co2_per_unit), 0) as total_reduction
+                FROM ActivityLog al
+                INNER JOIN ActivityType at ON al.activity_type_id = at.id
+                WHERE al.logged_on BETWEEN :start_date AND :end_date";
+        $params = [
             ':start_date' => $startDate,
             ':end_date' => $endDate
         ];

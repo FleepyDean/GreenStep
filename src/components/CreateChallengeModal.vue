@@ -27,7 +27,7 @@
           ></textarea>
         </div>
 
-        <div class="form-row">
+        <div class="form-row form-row-three">
           <div class="form-group">
             <label>Target CO₂ Reduction (kg)</label>
             <input
@@ -49,11 +49,22 @@
               required
             />
           </div>
+          <div class="form-group">
+            <label>Member Limit</label>
+            <input
+              v-model="form.member_limit"
+              type="number"
+              min="1"
+              placeholder="Max members"
+              required
+            />
+          </div>
         </div>
 
         <div class="form-group">
           <label>Target Category</label>
           <select v-model="form.target_category" required>
+            <option value="" disabled selected>Select a category</option>
             <option value="All">All (General)</option>
             <option value="Transport">Transport</option>
             <option value="Diet">Diet</option>
@@ -61,20 +72,15 @@
             <option value="Recycling">Recycling</option>
           </select>
           <p class="field-hint">
-            Choose a category, or optionally narrow down to a specific activity type below.
+            All fields are required to create a challenge.
           </p>
         </div>
 
         <div class="form-group">
-          <label>Target Activity Types <span class="optional-label">(Optional)</span></label>
-          <div v-if="!isCategorySpecific" class="activity-type-disabled">
-            Select a specific category above to pick activity types.
-          </div>
-          <div v-else-if="activityTypes.length === 0" class="activity-type-disabled">
-            Loading...
-          </div>
-          <div v-else class="activity-type-checklist">
-            <label
+          <label>Target Activity Type</label>
+          <select v-model="form.target_activity_type_id" required :disabled="!isCategorySpecific">
+            <option value="" disabled selected>Select an activity type</option>
+            <option
               v-for="type in activityTypes"
               :key="type.id"
               class="check-item"
@@ -139,9 +145,10 @@ const form = reactive({
   name: '',
   description: '',
   target_co2_reduction: '',
-  target_category: 'All',
-  target_activity_type_ids: [],
+  target_category: '',
+  target_activity_type_id: '',
   duration_days: '',
+  member_limit: '',
   start_date: '',
   end_date: ''
 })
@@ -217,9 +224,10 @@ function resetForm() {
   form.name = ''
   form.description = ''
   form.target_co2_reduction = ''
-  form.target_category = 'All'
-  form.target_activity_type_ids = []
+  form.target_category = ''
+  form.target_activity_type_id = ''
   form.duration_days = ''
+  form.member_limit = ''
   form.start_date = ''
   form.end_date = ''
   activityTypes.value = []
@@ -234,6 +242,7 @@ async function populateForm() {
     form.target_category = props.challenge.target_category || 'All'
     form.target_activity_type_ids = []
     form.duration_days = props.challenge.duration_days || ''
+    form.member_limit = props.challenge.member_limit || ''
     form.start_date = props.challenge.start_date || ''
     form.end_date = props.challenge.end_date || ''
     await loadActivityTypes()
@@ -251,7 +260,8 @@ async function handleSubmit() {
   submitting.value = true
   const payload = {
     ...form,
-    target_activity_type_ids: form.target_activity_type_ids.length > 0 ? form.target_activity_type_ids : []
+    target_activity_type_id: form.target_activity_type_id || null,
+    member_limit: form.member_limit ? parseInt(form.member_limit, 10) : null
   }
   emit('submit', payload)
   submitting.value = false
@@ -449,6 +459,10 @@ async function handleSubmit() {
 }
 
 .form-row .form-group {
+  flex: 1;
+}
+
+.form-row-three .form-group {
   flex: 1;
 }
 

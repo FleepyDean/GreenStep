@@ -68,6 +68,7 @@ export const socialAPI = {
   getFriends: () => api.get('/friends'),
   sendFriendRequest: (data) => api.post('/friends/request', data),
   updateFriendRequest: (id, data) => api.put(`/friends/request/${id}`, data),
+  removeFriend: (id) => api.delete(`/friends/${id}`),
   getLeaderboard: (filter = 'global') => api.get('/leaderboard', { params: { filter } })
 }
 
@@ -83,6 +84,11 @@ export const challengeAPI = {
 
 export const dashboardAPI = {
   getMetrics: (userId) => api.get(`dashboard/${userId}`)
+}
+
+export const goalAPI = {
+  getGoal: () => api.get('/goal'),
+  updateGoal: (data) => api.put('/goal', data)
 }
 
 export const emissionFactorAPI = {
