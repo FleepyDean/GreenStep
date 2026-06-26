@@ -110,7 +110,7 @@
         <p class="goal-insight">
           At your current pace you are projected to reduce
           <strong>{{ goal.projection.projected_reduction_percent }}%</strong>
-          by <strong>{{ goal.projection.end_date }}</strong>.
+          by <strong>{{ goal.projection.end_date.split('-').reverse().join('-') }}</strong>.
         </p>
 
         <div class="goal-editor">
