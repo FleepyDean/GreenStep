@@ -129,9 +129,6 @@
             <button class="update-goal-btn" @click="updateGoal" :disabled="goalUpdating">
               {{ goalUpdating ? 'Updating...' : 'Update Goal' }}
             </button>
-            <button class="reset-goal-btn" @click="resetGoal" :disabled="goalUpdating">
-              Start New Cycle
-            </button>
           </div>
         </div>
       </div>
