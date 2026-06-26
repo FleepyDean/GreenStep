@@ -66,10 +66,7 @@
           <select v-model="form.target_category" required>
             <option value="" disabled selected>Select a category</option>
             <option value="All">All (General)</option>
-            <option value="Transport">Transport</option>
-            <option value="Diet">Diet</option>
-            <option value="Energy">Energy</option>
-            <option value="Recycling">Recycling</option>
+            <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
           </select>
           <p class="field-hint">
             All fields are required to create a challenge.
@@ -142,6 +139,7 @@ const emit = defineEmits(['close', 'submit'])
 
 const submitting = ref(false)
 const activityTypes = ref([])
+const categories = ref([])
 
 const form = reactive({
   name: '',
@@ -194,6 +192,15 @@ watch(
   }
 )
 
+async function loadCategories() {
+  try {
+    const { data } = await activityAPI.getCategories()
+    if (data.success) categories.value = data.categories || []
+  } catch (e) {
+    categories.value = []
+  }
+}
+
 async function loadActivityTypes() {
   if (!isCategorySpecific.value) {
     activityTypes.value = []
@@ -218,6 +225,7 @@ watch(() => form.target_category, async () => {
 
 watch(() => props.show, (visible) => {
   if (visible) {
+    loadCategories()
     loadActivityTypes()
   }
 })
