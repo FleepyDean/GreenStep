@@ -78,9 +78,11 @@
 
         <div class="form-group">
           <label>Target Activity Type</label>
-          <select v-model="form.target_activity_type_id" required :disabled="!isCategorySpecific">
-            <option value="" disabled selected>Select an activity type</option>
-            <option
+          <div v-if="!isCategorySpecific" class="field-hint">
+            Select a specific category above to choose activity types.
+          </div>
+          <div v-else class="activity-type-checklist">
+            <label
               v-for="type in activityTypes"
               :key="type.id"
               class="check-item"

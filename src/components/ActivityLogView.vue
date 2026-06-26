@@ -28,10 +28,7 @@
                 <label>Category</label>
                 <select v-model="form.category" required>
                   <option value="" disabled>Select category</option>
-                  <option value="Transport">Transport</option>
-                  <option value="Diet">Diet/Food Choice</option>
-                  <option value="Energy">Energy</option>
-                  <option value="Recycling">Recycling</option>
+                  <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
                 </select>
               </div>
 
@@ -412,6 +409,7 @@ const filters = reactive({
 })
 
 // Activity Log data
+const categories = ref([])
 const activityTypes = ref([])
 const activities = ref([])
 const totalFootprint = ref(0)
@@ -439,6 +437,17 @@ watch(() => form.type, (newType) => {
   const selected = activityTypes.value.find(t => t.name === newType)
   form.activityTypeId = selected?.id || null
 })
+
+async function loadCategories() {
+  try {
+    const response = await activityAPI.getCategories()
+    if (response.data.success) {
+      categories.value = response.data.categories || []
+    }
+  } catch (err) {
+    console.error('Failed to load categories:', err)
+  }
+}
 
 async function loadActivityTypes() {
   try {
@@ -670,6 +679,7 @@ onMounted(async () => {
     return
   }
   
+  await loadCategories()
   await loadActivityTypes()
   await loadTodayActivities()
   await loadHistory() // Load initial history for Activity Track tab

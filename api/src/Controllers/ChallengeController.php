@@ -110,7 +110,7 @@ class ChallengeController
 
         $body = $request->getParsedBody() ?? [];
 
-        $required = ['name', 'description', 'target_co2_reduction', 'target_category', 'target_activity_type_id', 'duration_days', 'member_limit', 'start_date', 'end_date'];
+        $required = ['name', 'description', 'target_co2_reduction', 'target_category', 'duration_days', 'member_limit', 'start_date', 'end_date'];
         foreach ($required as $field) {
             if (!isset($body[$field]) || $body[$field] === '' || $body[$field] === null) {
                 $response->getBody()->write(json_encode([
@@ -201,7 +201,7 @@ class ChallengeController
 
         $body = $request->getParsedBody() ?? [];
 
-        $required = ['name', 'description', 'target_co2_reduction', 'target_category', 'target_activity_type_id', 'duration_days', 'member_limit', 'start_date', 'end_date'];
+        $required = ['name', 'description', 'target_co2_reduction', 'target_category', 'duration_days', 'member_limit', 'start_date', 'end_date'];
         foreach ($required as $field) {
             if (!isset($body[$field]) || $body[$field] === '' || $body[$field] === null) {
                 $response->getBody()->write(json_encode([
@@ -328,11 +328,11 @@ class ChallengeController
             $challenge['start_date'],
             $challenge['end_date'],
             $targetCategory,
-            $targetActivityTypeId
+            !empty($targetActivityTypeIds) ? $targetActivityTypeIds : null
         );
 
-        $activityTypeName = null;
-        if ($targetActivityTypeId !== null) {
+        $activityTypeNames = [];
+        if (!empty($targetActivityTypeIds)) {
             $activityTypeModel = new ActivityType();
             foreach ($targetActivityTypeIds as $atId) {
                 $activityType = $activityTypeModel->getById($atId);

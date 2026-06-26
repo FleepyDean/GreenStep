@@ -49,6 +49,7 @@ class Challenge
                 FROM Challenge c
                 LEFT JOIN ChallengeMember cm ON c.id = cm.challenge_id
                 GROUP BY c.id, c.name, c.description, c.target_co2_reduction,
+                         c.target_category, c.target_activity_type_id,
                          c.duration_days, c.member_limit, c.start_date, c.end_date, c.created_at
                 ORDER BY c.start_date DESC";
 
@@ -368,9 +369,17 @@ class Challenge
             $params[':target_category'] = $category;
         }
 
-        if ($targetActivityTypeId !== null) {
-            $sql .= " AND al.activity_type_id = :target_activity_type_id";
-            $params[':target_activity_type_id'] = $targetActivityTypeId;
+        if (!empty($targetActivityTypeId)) {
+            $ids = $targetActivityTypeId;
+            if (!empty($ids)) {
+                $namedPlaceholders = [];
+                foreach ($ids as $i => $typeId) {
+                    $key = ':at_id_' . $i;
+                    $namedPlaceholders[] = $key;
+                    $params[$key] = $typeId;
+                }
+                $sql .= " AND al.activity_type_id IN (" . implode(',', $namedPlaceholders) . ")";
+            }
         }
 
         try {
@@ -389,16 +398,18 @@ class Challenge
         string $startDate,
         string $endDate,
         ?string $targetCategory = null,
-        ?int $targetActivityTypeId = null
+        array|null $targetActivityTypeId = null
     ): float {
         $category = $targetCategory ?? 'All';
-        $activityTypeId = $targetActivityTypeId ?? null;
+        $activityTypeId = $targetActivityTypeId;
 
         $sql = "SELECT COALESCE(SUM(al.amount * at.kg_co2_per_unit), 0) as total_reduction
                 FROM ActivityLog al
                 INNER JOIN ActivityType at ON al.activity_type_id = at.id
+                INNER JOIN ChallengeMember cm ON al.user_id = cm.user_id AND cm.challenge_id = :challenge_id
                 WHERE al.logged_on BETWEEN :start_date AND :end_date";
         $params = [
+            ':challenge_id' => $challengeId,
             ':start_date' => $startDate,
             ':end_date' => $endDate
         ];

@@ -167,13 +167,16 @@ async function loadChallenges() {
 
     isLoading.value = true
 
+    console.log('Loading challenges...')
     const response = await challengeAPI.getChallenges()
+    console.log('Challenges response:', response)
 
     challenges.value = response.data.challenges || []
 
   } catch (err) {
 
     console.error('Failed to load challenges:', err)
+    console.error('Error response:', err.response)
 
     toast.error(err.response?.data?.message || 'Failed to load challenges')
 
