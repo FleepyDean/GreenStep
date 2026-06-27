@@ -748,7 +748,6 @@ opacity:.9;
 letter-spacing:1px;
 
 }
-</style>
 
 .toggle-container {
   display: flex;
