@@ -175,7 +175,7 @@ INSERT INTO ActivityType (category, name, unit, kg_co2_per_unit) VALUES
 ('Energy', 'Natural Gas', 'kWh', 0.1850),
 
 -- Recycling (negative values = carbon reduction)
-('Recycling', 'Paper Recycling', 'kg', -0.1700),
+('Recycling', 'Paper Recycling', 'kg', -0.1700),    
 ('Recycling', 'Plastic Recycling', 'kg', -0.4500),
 ('Recycling', 'Glass Recycling', 'kg', -0.3000),
 ('Recycling', 'Aluminum Recycling', 'kg', -9.1300);
@@ -207,13 +207,16 @@ INSERT INTO Challenge (name, description, start_date, end_date, target_co2_reduc
 -- ============================================
 -- SEED DATA: Badges
 -- ============================================
-INSERT INTO Badge (name, criteria_json, image_url) VALUES
-('Green Commuter', '{"type": "transport_distance", "threshold": 50, "description": "Log over 50 kilometers in non-combustion alternative transit"}', '/badges/green-commuter.png'),
-('Conscious Eater', '{"type": "diet_streak", "threshold": 7, "description": "Log a streak of 7 consecutive plant-based dinner choices"}', '/badges/conscious-eater.png'),
-('Carbon Neutral Master', '{"type": "footprint_reduction", "threshold": 50, "description": "Successfully drop total cumulative footprint values below regional averages"}', '/badges/carbon-neutral.png'),
-('Recycling Hero', '{"type": "recycling_amount", "threshold": 10, "description": "Recycle over 10kg of materials"}', '/badges/recycling-hero.png'),
-('Energy Saver', '{"type": "energy_reduction", "threshold": 20, "description": "Reduce electricity usage by 20% compared to baseline"}', '/badges/energy-saver.png'),
-('30-Day Streak', '{"type": "login_streak", "threshold": 30, "description": "Log activities for 30 consecutive days"}', '/badges/30-day-streak.png');
+INSERT INTO `badge` (`id`, `name`, `criteria_json`) VALUES
+(1, 'Green Commuter', '{"description": "Log an activity under the Transport category."}'),
+(2, 'Plant-Based Hero', '{"description": "Log an activity under the Diet category."}'),
+(3, 'Energy Saver', '{"description": "Log an activity under the Energy category."}'),
+(4, 'Recycling Champion', '{"description": "Log an activity under the Recycling category."}'),
+(5, 'Eco Innovator', '{"description": "Log an activity under the General category."}'),
+(6, 'First Steps', '{"description": "Maintain a 1-day consecutive activity logging streak."}'),
+(7, 'Habit Builder', '{"description": "Maintain a 3-day consecutive activity logging streak."}'),
+(8, 'Eco Warrior', '{"description": "Maintain a 5-day consecutive activity logging streak."}'),
+(9, 'Sustainability Master', '{"description": "Maintain a 10-day consecutive activity logging streak."}');
 
 -- ============================================
 -- Create Admin User (password: admin123 - CHANGE IN PRODUCTION!)
