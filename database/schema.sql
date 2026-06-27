@@ -226,6 +226,25 @@ INSERT INTO User (name, email, password_hash, role, joined_at) VALUES
 ('Administrator', 'admin@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NOW());
 
 -- ============================================
+-- Table to track which badges each user has earned
+-- ============================================
+CREATE TABLE IF NOT EXISTS `userbadge` (
+  `user_id` INT NOT NULL,
+  `badge_id` INT NOT NULL,
+  `earned_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`, `badge_id`),
+  
+  -- Foreign Key constraints automatically clean up records if a user or badge is deleted
+  CONSTRAINT `fk_userbadge_user` 
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) 
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    
+  CONSTRAINT `fk_userbadge_badge` 
+    FOREIGN KEY (`badge_id`) REFERENCES `badge` (`id`) 
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
 -- Verification: Check all tables were created
 -- ============================================
 SHOW TABLES;
