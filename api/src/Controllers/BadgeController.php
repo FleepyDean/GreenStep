@@ -1,30 +1,24 @@
 <?php
+namespace App\Controllers;
 
-namespace Src\Controllers;
-
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use PDO;
 
 class BadgeController {
     private $db;
 
-    public function __construct($dbConnection) {
-        $this->db = $dbConnection;
+    // Slim apps typically inject container elements or PDO connections directly
+    public function __construct(PDO $db) {
+        $this->db = $db;
     }
 
-    public function getUserBadges($userId) {
-        // 1. Set the correct headers to fix CORS and output JSON
-        header("Access-Control-Allow-Origin: http://localhost:5173");
-        header("Access-Control-Allow-Headers: Content-Type, Authorization, Accept");
-        header("Access-Control-Allow-Methods: GET, OPTIONS");
-        header("Content-Type: application/json");
-
-        // Handle preflight requests
-        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-            exit(0);
-        }
+    public function getUserBadges(Request $request, Response $response): Response {
+        // Grab the user id dynamically attached by your JwtMiddleware token check
+        // (Adjust attribute name string to match how AuthController::me grabs it)
+        $userId = $request->getAttribute('userId') ?? 1; 
 
         try {
-            // 2. Run the Left Join Query
             $query = "
                 SELECT 
                     b.id, 
@@ -39,13 +33,12 @@ class BadgeController {
             $stmt->execute(['user_id' => $userId]);
             $badges = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            echo json_encode($badges);
-            exit;
+            $response->getBody()->write(json_encode($badges));
+            return $response->withHeader('Content-Type', 'application/json');
 
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(["error" => "Failed to fetch badges: " . $e->getMessage()]);
-            exit;
+            $response->getBody()->write(json_encode(["error" => $e->getMessage()]));
+            return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
         }
     }
 }
