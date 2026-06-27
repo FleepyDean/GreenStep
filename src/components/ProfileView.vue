@@ -1,64 +1,7 @@
 <template>
   <div class="profile-container">
     <div v-if="!isAuthenticated" class="auth-box">
-      <div v-if="authMode === 'login'">
-        <h3>Welcome Back</h3>
-        <p class="auth-subtitle">Sign in to sync your local footprint metrics securely</p>
-        
-        <div v-if="error" style="padding: 10px; margin-bottom: 15px; background: #ff6b6b; color: white; border-radius: 5px;">
-          {{ error }}
-        </div>
-        
-        <form @submit.prevent="handleLogin">
-          <div class="form-group" style="text-align: left;">
-            <label>Email Address</label>
-            <input type="email" v-model="loginForm.email" placeholder="name@campus.utm.my" required />
-          </div>
-          <div class="form-group" style="text-align: left;">
-            <label>Secure Password</label>
-            <input type="password" v-model="loginForm.password" placeholder="••••••••" required />
-          </div>
-          <button type="submit" class="submit-btn" style="margin-top: 1rem;" :disabled="loading">
-            {{ loading ? 'Logging in...' : 'Login' }}
-          </button>
-        </form>
-        
-        <p class="auth-toggle-link">
-          Don't have an account? <span @click="authMode = 'register'">Register account</span>
-        </p>
-      </div>
-
-      <div v-else>
-        <h3>Create Profile</h3>
-        <p class="auth-subtitle">Join GreenStep to protect daily tracking milestones</p>
-        
-        <div v-if="error" style="padding: 10px; margin-bottom: 15px; background: #ff6b6b; color: white; border-radius: 5px;">
-          {{ error }}
-        </div>
-        
-        <form @submit.prevent="handleRegister">
-          <div class="form-group" style="text-align: left;">
-            <label>Full Name</label>
-            <input type="text" v-model="registerForm.name" placeholder="Farish Danial" required />
-          </div>
-          <div class="form-group" style="text-align: left;">
-            <label>Email Address</label>
-            <input type="email" v-model="registerForm.email" placeholder="farish@utm.my" required />
-          </div>
-          <div class="form-group" style="text-align: left;">
-            <label>Password (Encrypted using Bcrypt via API)</label>
-            <input type="password" v-model="registerForm.password" placeholder="••••••••" required />
-          </div>
-          <button type="submit" class="submit-btn" style="margin-top: 1rem;" :disabled="loading">
-            {{ loading ? 'Registering...' : 'Complete Registration' }}
-          </button>
-        </form>
-        
-        <p class="auth-toggle-link">
-          Already have an account? <span @click="authMode = 'login'">Login here</span>
-        </p>
-      </div>
-    </div>
+       </div>
 
     <div v-else class="profile-layout-grid">
       <section class="user-identity-card">
@@ -223,14 +166,58 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Scoped Layout System Syncing Panel Boxes */
-.scrollable-badges-box {
-  max-height: 440px; /* Locks panel layout height frame */
-  overflow-y: auto;   /* Activates vertical scrolling when badges spill over */
-  padding-right: 10px; /* Leaves clean gutter buffer space for the scrollbar element */
+/* 📱 MOBILE VIEW FIRST (Default) */
+.profile-layout-grid {
+  display: flex;
+  flex-direction: column; /* Stack profile card on top of badges on small screens */
+  gap: 1.5rem;
+  padding: 1rem;
+  align-items: stretch;
 }
 
-/* Custom Scrollbar Visual Properties */
+.scrollable-badges-box {
+  max-height: 500px; /* Gives mobile viewers plenty of viewport real estate */
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* Fluid responsive grid for the individual badge items themselves */
+.badges-display-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Adaptive column reduction */
+  gap: 1rem;
+}
+
+.gamification-showcase-panel {
+  background: #ffffff;
+  padding: 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
+}
+
+
+/* 🖥️ DESKTOP VIEW UPGRADES (Triggered above 768px wide viewport) */
+@media (min-width: 768px) {
+  .profile-layout-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr; /* Snaps back into columns side-by-side */
+    gap: 2rem;
+    padding: 2rem;
+    align-items: start;
+  }
+
+  .scrollable-badges-box {
+    max-height: 440px; /* Snaps perfectly alignment-balanced with identity card */
+  }
+
+  .badges-display-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+/* Custom Webkit Scrollbar Controls */
 .scrollable-badges-box::-webkit-scrollbar {
   width: 6px;
 }
@@ -244,27 +231,5 @@ onMounted(async () => {
 }
 .scrollable-badges-box::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-/* Layout Framework Alignments */
-.profile-layout-grid {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 2rem;
-  align-items: start;
-}
-
-.gamification-showcase-panel {
-  background: #ffffff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-  border: 1px solid #f1f5f9;
-}
-
-.badges-display-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.25rem;
 }
 </style>
