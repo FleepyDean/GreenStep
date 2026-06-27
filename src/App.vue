@@ -26,7 +26,7 @@
         >
           <span class="nav-icon-wrapper">📊</span>
           <span class="nav-text-label">
-            {{ isAdmin ? 'Admin' : 'Dashboard' }}
+            {{ isAdmin ? 'Admin Dashboard' : 'Dashboard' }}
           </span>
         </router-link>
         <router-link to="/challenges" class="nav-link-btn" active-class="active">

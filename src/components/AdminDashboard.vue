@@ -49,6 +49,32 @@
         :categories="dashboard.category_breakdown"
     />
 
+    <div class="dataset-card">
+
+        <h2>🌍 Carbon Dataset</h2>
+
+        <p>
+            <strong>{{ dataset.name }}</strong>
+        </p>
+
+        <p>
+            Year: {{ dataset.year }}
+        </p>
+
+        <p>
+            Provider: {{ dataset.provider }}
+        </p>
+
+        <a
+            :href="dataset.url"
+            target="_blank"
+            class="dataset-btn"
+        >
+            View Official Dataset
+        </a>
+
+    </div>
+
     <h2 class="section-title">👥 Latest Registered Users</h2>
 
     <div class="user-grid">
@@ -147,15 +173,24 @@ const dashboard = ref({
 
 const loading = ref(true);
 
+const dataset = ref({
+  name: "",
+  year: "",
+  provider: "",
+  url: ""
+});
+
 const fetchDashboard = async () => {
   try {
     loading.value = true;
 
+    // Dashboard statistics
     const response = await adminAPI.getDashboard();
-
-    console.log(response.data);
-
     dashboard.value = response.data.data;
+
+    // Carbon dataset information
+    const datasetResponse = await adminAPI.getDataset();
+    dataset.value = datasetResponse.data.data;
 
   } catch (err) {
     console.error(err);
@@ -501,6 +536,28 @@ margin:10px 0;
 
 font-size:15px;
 
+}
+
+.dataset-card{
+  margin-top:30px;
+  padding:20px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+.dataset-btn{
+  display:inline-block;
+  margin-top:15px;
+  padding:10px 18px;
+  background:#2e7d32;
+  color:#fff;
+  text-decoration:none;
+  border-radius:8px;
+}
+
+.dataset-btn:hover{
+  background:#256428;
 }
 
 </style>
