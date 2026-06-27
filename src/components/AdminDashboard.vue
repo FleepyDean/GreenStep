@@ -3,136 +3,129 @@
 
     <h1>🛠 Admin Dashboard</h1>
 
-    <div class="cards">
+    <div class="stats-grid">
 
-      <div class="card">
-        <h3>Total Users</h3>
-        <h2>{{ dashboard.total_users }}</h2>
-      </div>
+        <div class="stat-card users">
+            <div class="icon">👥</div>
 
-      <div class="card">
-        <h3>Total Activities</h3>
-        <h2>{{ dashboard.total_activities }}</h2>
-      </div>
+            <div class="info">
+                <p>Total Users</p>
+                <h2>{{ dashboard.total_users }}</h2>
+            </div>
+        </div>
 
-      <div class="card">
-        <h3>Total Tips</h3>
-        <h2>{{ dashboard.total_tips }}</h2>
-      </div>
+        <div class="stat-card activity">
+            <div class="icon">📝</div>
 
-      <div class="card">
-        <h3>Average Footprint</h3>
-        <h2>{{ dashboard.average_footprint }} kg</h2>
-      </div>
+            <div class="info">
+                <p>Activities Logged</p>
+                <h2>{{ dashboard.total_activities }}</h2>
+            </div>
+        </div>
+
+        <div class="stat-card tips">
+            <div class="icon">💡</div>
+
+            <div class="info">
+                <p>Eco Tips</p>
+                <h2>{{ dashboard.total_tips }}</h2>
+            </div>
+        </div>
+
+        <div class="stat-card carbon">
+            <div class="icon">🌍</div>
+
+            <div class="info">
+                <p>Average Footprint</p>
+                <h2>{{ dashboard.average_footprint }} kg</h2>
+            </div>
+        </div>
 
     </div>
 
-    <h2>Category Breakdown</h2>
+    <h2>Carbon Emission Breakdown</h2>
 
-    <table>
+    <AdminCategoryChart
+        :categories="dashboard.category_breakdown"
+    />
 
-      <thead>
+    <h2 class="section-title">👥 Latest Registered Users</h2>
 
-      <tr>
+    <div class="user-grid">
 
-        <th>Category</th>
+        <div
+            class="user-card"
+            v-for="user in dashboard.latest_users"
+            :key="user.id"
+        >
 
-        <th>Total CO₂</th>
+            <div class="avatar">
+            {{ user.name.charAt(0).toUpperCase() }}
+            </div>
 
-      </tr>
+            <div class="user-info">
 
-      </thead>
+            <h3>{{ user.name }}</h3>
 
-      <tbody>
+            <p>{{ user.email }}</p>
 
-      <tr
-        v-for="item in dashboard.category_breakdown"
-        :key="item.category"
-      >
+            <span
+                class="badge"
+                :class="user.role"
+            >
+                {{ user.role }}
+            </span>
 
-        <td>{{ item.category }}</td>
+            <small>
+                Joined:
+                {{ new Date(user.joined_at).toLocaleDateString() }}
+            </small>
 
-        <td>{{ item.total }}</td>
+            </div>
 
-      </tr>
+        </div>
 
-      </tbody>
+    </div>
 
-    </table>
+    <h2 class="section-title">
+    📝 Recent Activity Logs
+    </h2>
 
-    <h2>Latest Users</h2>
+    <div class="activity-grid">
 
-    <table>
+        <div
+            class="activity-card"
+            v-for="activity in dashboard.latest_activities"
+            :key="activity.name + activity.logged_on + activity.activity_name"
+        >
 
-      <thead>
+            <div class="activity-header">
 
-      <tr>
+                <h3>{{ activity.name }}</h3>
 
-        <th>Name</th>
+                <span class="co2">
 
-        <th>Email</th>
+                    {{ activity.carbon_footprint }} kg
 
-        <th>Role</th>
+                </span>
 
-      </tr>
+            </div>
 
-      </thead>
+            <p class="activity-name">
 
-      <tbody>
+                🚶 {{ activity.activity_name }}
 
-      <tr
-        v-for="user in dashboard.latest_users"
-        :key="user.id"
-      >
+            </p>
 
-        <td>{{ user.name }}</td>
+            <small>
 
-        <td>{{ user.email }}</td>
+                {{ activity.logged_on }}
 
-        <td>{{ user.role }}</td>
+            </small>
 
-      </tr>
+        </div>
 
-      </tbody>
-
-    </table>
-
-    <h2>Latest Activities</h2>
-
-    <table>
-
-      <thead>
-
-      <tr>
-
-        <th>User</th>
-
-        <th>Activity</th>
-
-        <th>CO₂</th>
-
-      </tr>
-
-      </thead>
-
-      <tbody>
-
-      <tr
-        v-for="activity in dashboard.latest_activities"
-        :key="activity.name + activity.logged_on"
-      >
-
-        <td>{{ activity.name }}</td>
-
-        <td>{{ activity.activity_name }}</td>
-
-        <td>{{ activity.carbon_footprint }}</td>
-
-      </tr>
-
-      </tbody>
-
-    </table>
+    </div>
 
   </div>
 </template>
@@ -140,6 +133,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { adminAPI } from "@/services/api";
+import AdminCategoryChart from "./AdminCategoryChart.vue";
 
 const dashboard = ref({
   total_users: 0,
@@ -181,30 +175,57 @@ padding:30px;
 
 }
 
-.cards{
-
-display:grid;
-
-grid-template-columns:repeat(4,1fr);
-
-gap:20px;
-
-margin-bottom:30px;
-
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    margin-bottom:35px;
 }
 
-.card{
+.stat-card{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    padding:24px;
+    border-radius:16px;
+    color:white;
+    box-shadow:0 8px 18px rgba(0,0,0,.12);
+    transition:.3s;
+}
 
-padding:20px;
+.stat-card:hover{
+    transform:translateY(-5px);
+}
 
-border-radius:12px;
+.icon{
+    font-size:2.4rem;
+}
 
-background:#F3F7F4;
+.info p{
+    margin:0;
+    opacity:.9;
+    font-size:.9rem;
+}
 
-box-shadow:0 2px 8px rgba(0,0,0,.1);
+.info h2{
+    margin-top:8px;
+    font-size:2rem;
+}
 
-text-align:center;
+.users{
+    background:#2E7D32;
+}
 
+.activity{
+    background:#1565C0;
+}
+
+.tips{
+    background:#F9A825;
+}
+
+.carbon{
+    background:#D84315;
 }
 
 table{
@@ -224,6 +245,261 @@ padding:12px;
 border-bottom:1px solid #ddd;
 
 text-align:left;
+
+}
+
+.user-grid,
+.activity-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+    margin-bottom:35px;
+}
+
+.user-card,
+.activity-card{
+    background:white;
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    transition:.25s;
+}
+
+.user-card:hover,
+.activity-card:hover{
+    transform:translateY(-4px);
+}
+
+.user-card{
+    display:flex;
+    gap:18px;
+    align-items:center;
+}
+
+.avatar{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    background:#E8F5E9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:1.6rem;
+}
+
+.user-info h3{
+    margin:0;
+}
+
+.user-info p{
+    margin:6px 0;
+    color:#666;
+}
+
+.role{
+    background:#4CAF50;
+    color:white;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:.8rem;
+}
+
+.activity-card h3{
+    margin-bottom:12px;
+}
+
+.activity-card p{
+    margin:8px 0;
+}
+
+.activity-card small{
+    color:#777;
+}
+
+.section-title{
+    margin:40px 0 20px;
+    color:#1c4532;
+}
+
+.user-grid{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+
+gap:20px;
+
+margin-bottom:40px;
+
+}
+
+.user-card{
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+background:white;
+
+padding:20px;
+
+border-radius:16px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+transition:.25s;
+
+}
+
+.user-card:hover{
+
+transform:translateY(-5px);
+
+}
+
+.avatar{
+
+width:60px;
+
+height:60px;
+
+border-radius:50%;
+
+background:#2ecc71;
+
+color:white;
+
+font-size:24px;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-weight:bold;
+
+}
+
+.user-info h3{
+
+margin:0;
+
+}
+
+.user-info p{
+
+margin:5px 0;
+
+font-size:14px;
+
+color:#666;
+
+}
+
+.badge{
+
+display:inline-block;
+
+padding:4px 10px;
+
+border-radius:20px;
+
+font-size:12px;
+
+font-weight:bold;
+
+margin-bottom:8px;
+
+}
+
+.badge.admin{
+
+background:#ffdddd;
+
+color:#c0392b;
+
+}
+
+.badge.leader{
+
+background:#dbeafe;
+
+color:#2563eb;
+
+}
+
+.badge.end-user{
+
+background:#dcfce7;
+
+color:#16a34a;
+
+}
+
+.activity-grid{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+
+gap:20px;
+
+}
+
+.activity-card{
+
+background:white;
+
+padding:20px;
+
+border-radius:16px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+transition:.25s;
+
+}
+
+.activity-card:hover{
+
+transform:translateY(-5px);
+
+}
+
+.activity-header{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+margin-bottom:10px;
+
+}
+
+.co2{
+
+background:#e8f5e9;
+
+padding:6px 12px;
+
+border-radius:20px;
+
+font-weight:bold;
+
+color:#2e7d32;
+
+}
+
+.activity-name{
+
+margin:10px 0;
+
+font-size:15px;
 
 }
 
