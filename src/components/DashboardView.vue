@@ -556,8 +556,6 @@ onUnmounted(() => {
   background: #e9ecef;
   color: #1b3a4b;
 }
-</style>
-
 
 .toggle-container {
   display: flex;
