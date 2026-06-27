@@ -100,4 +100,8 @@ export const emissionFactorAPI = {
   delete: (id) => api.delete(`/admin/activity-types/${id}`)
 }
 
+export const badgeAPI = {
+  getUserBadges: () => api.get('/badges')
+}
+
 export default api

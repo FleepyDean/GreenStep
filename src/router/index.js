@@ -12,7 +12,7 @@ import EmissionFactorView from '../components/EmissionFactorView.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: '/profile'
   },
   {
     path: '/dashboard',
