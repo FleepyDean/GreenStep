@@ -6,19 +6,28 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use PDO;
 
 class BadgeController {
-    private $db;
-
-    // Slim apps typically inject container elements or PDO connections directly
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
 
     public function getUserBadges(Request $request, Response $response): Response {
-        // Grab the user id dynamically attached by your JwtMiddleware token check
-        // (Adjust attribute name string to match how AuthController::me grabs it)
-        $userId = $request->getAttribute('userId') ?? 1; 
+        // Automatically fetch the user id attached by your JwtMiddleware token check.
+        // Falls back to user_id 1 if token mapping isn't fully bound yet.
+        $userId = $request->getAttribute('userId') ?? $request->getAttribute('user_id') ?? 1; 
 
         try {
+            // 1. Manually establish a quick connection using your Laragon credentials 
+            // This completely bypasses Slim's container mapping issues
+            $host = '127.0.0.1';
+            $db   = 'greenstep_db'; // Adjust if your database name is different
+            $user = 'root';
+            $pass = ''; // Default Laragon password is blank
+            $charset = 'utf8mb4';
+
+            $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+            $pdo = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ]);
+
+            // 2. Your original LEFT JOIN milestone checking query
             $query = "
                 SELECT 
                     b.id, 
@@ -29,10 +38,11 @@ class BadgeController {
                 LEFT JOIN UserBadge ub ON b.id = ub.badge_id AND ub.user_id = :user_id
             ";
 
-            $stmt = $this->db->prepare($query);
+            $stmt = $pdo->prepare($query);
             $stmt->execute(['user_id' => $userId]);
-            $badges = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $badges = $stmt->fetchAll();
 
+            // 3. Return clean JSON payload back to your Axios Vue client
             $response->getBody()->write(json_encode($badges));
             return $response->withHeader('Content-Type', 'application/json');
 
