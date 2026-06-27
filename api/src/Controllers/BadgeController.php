@@ -1,45 +1,48 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use PDO;
 
-class BadgeController {
+class BadgeController 
+{
+    // The centralized DB connection is injected and held here
+    private PDO $db;
 
-    public function getUserBadges(Request $request, Response $response): Response {
+    // Type-hinting PDO allows your DI container to automatically inject the connection
+    public function __construct(PDO $db)
+    {
+        $this->db = $db;
+    }
+
+    public function getUserBadges(Request $request, Response $response): Response 
+    {
         // Automatically fetch the user id attached by your JwtMiddleware token check.
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? 1; 
 
+        // Define today's date uniformly using PHP's current runtime clock
+        $todayStr = date('Y-m-d');
+
         try {
-            $host = '127.0.0.1';
-            $db   = 'greenstep_db'; 
-            $dbUser = 'root';
-            $pass = ''; 
-            $charset = 'utf8mb4';
-
-            $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-            $pdo = new PDO($dsn, $dbUser, $pass, [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            ]);
-
             // ==================================================================
-            // 🔥 CONSECUTIVE DAILY STREAK CALCULATION LOGIC (Dashboard Sync)
+            // 🎯 CONSECUTIVE DAILY STREAK CALCULATION LOGIC (Dashboard Sync)
             // ==================================================================
-            $streakStmt = $pdo->prepare("
-                SELECT DISTINCT logged_on 
+            // FIXED: Changed ORDER BY clause to target logged_date to fix the DISTINCT strict-mode error 3065
+            $streakStmt = $this->db->prepare("
+                SELECT DISTINCT DATE(logged_on) as logged_date
                 FROM activitylog 
                 WHERE user_id = :userId 
-                ORDER BY logged_on DESC
+                ORDER BY logged_date DESC
             ");
             $streakStmt->execute(['userId' => $userId]);
             $loggedDates = $streakStmt->fetchAll(PDO::FETCH_COLUMN);
 
             $dailyStreak = 0;
             if (!empty($loggedDates)) {
-                $todayStr = date('Y-m-d');
                 $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
                 
                 // The streak remains alive only if they logged something today OR yesterday
@@ -88,7 +91,7 @@ class BadgeController {
                 LEFT JOIN userbadge ub ON b.id = ub.badge_id AND ub.user_id = :user_id
             ";
 
-            $stmt = $pdo->prepare($query);
+            $stmt = $this->db->prepare($query);
             $stmt->execute([
                 'streak_1'  => $dailyStreak,
                 'streak_3'  => $dailyStreak,

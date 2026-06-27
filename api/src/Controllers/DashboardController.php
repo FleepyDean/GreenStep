@@ -9,50 +9,56 @@ use PDO;
 
 class DashboardController
 {
-    private function getDB()
-    {
-        $host = '127.0.0.1'; // Standardized local database loopback configuration
-        $user = 'root';
-        $pass = '';
-        $dbname = 'greenstep_db'; 
+    private PDO $db;
 
-        $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8mb4", $user, $pass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        return $pdo;
+    // Inject your central PDO instance through the constructor
+    public function __construct(PDO $db)
+    {
+        $this->db = $db;
     }
 
     public function getMetrics(Request $request, Response $response, array $args): Response
     {
         $userId = (int)$args['userId'];
+        
+        // Define today's date uniformly using PHP's current runtime clock
+        $todayStr = date('Y-m-d');
 
         try {
-            $db = $this->getDB();
-
             // 1. Calculate Today's Footprint Summary
-            $todayStmt = $db->prepare("
+            // FIXED: Added DATE() wrapping and explicit PHP date binding to prevent midnight-matching failures
+            $todayStmt = $this->db->prepare("
                 SELECT SUM(carbon_footprint) as total FROM activitylog 
-                WHERE user_id = :userId AND logged_on = CURDATE()
+                WHERE user_id = :userId AND DATE(logged_on) = :today
             ");
-            $todayStmt->execute(['userId' => $userId]);
+            $todayStmt->execute([
+                'userId' => $userId,
+                'today'  => $todayStr
+            ]);
             $todayResult = $todayStmt->fetch();
 
             // 2. Calculate Last 7 Days Total Footprint
-            $weeklyStmt = $db->prepare("
+            $weeklyStmt = $this->db->prepare("
                 SELECT SUM(carbon_footprint) as total FROM activitylog 
-                WHERE user_id = :userId AND logged_on >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                WHERE user_id = :userId AND DATE(logged_on) >= DATE_SUB(:today, INTERVAL 7 DAY)
             ");
-            $weeklyStmt->execute(['userId' => $userId]);
+            $weeklyStmt->execute([
+                'userId' => $userId,
+                'today'  => $todayStr
+            ]);
             $weeklyResult = $weeklyStmt->fetch();
 
             // 3. Compile Data points for the Line Chart (Monday - Sunday)
-            $trendStmt = $db->prepare("
+            $trendStmt = $this->db->prepare("
                 SELECT DAYOFWEEK(logged_on) as day_num, SUM(carbon_footprint) as total 
                 FROM activitylog 
-                WHERE user_id = :userId AND YEARWEEK(logged_on, 1) = YEARWEEK(CURDATE(), 1)
+                WHERE user_id = :userId AND YEARWEEK(logged_on, 1) = YEARWEEK(:today, 1)
                 GROUP BY DAYOFWEEK(logged_on)
             ");
-            $trendStmt->execute(['userId' => $userId]);
+            $trendStmt->execute([
+                'userId' => $userId,
+                'today'  => $todayStr
+            ]);
             $trendRows = $trendStmt->fetchAll();
 
             $weeklyTrendArray = [0, 0, 0, 0, 0, 0, 0];
@@ -62,24 +68,27 @@ class DashboardController
                 $weeklyTrendArray[$targetIndex] = (float)$row['total'];
             }
 
-            // 💡 3b. NEW: Compile Data points for Monthly Trend Chart (Jan - Dec)
-            $monthlyTrendStmt = $db->prepare("
+            // 3b. Compile Data points for Monthly Trend Chart (Jan - Dec)
+            $monthlyTrendStmt = $this->db->prepare("
                 SELECT MONTH(logged_on) as month_num, SUM(carbon_footprint) as total 
                 FROM activitylog 
-                WHERE user_id = :userId AND YEAR(logged_on) = YEAR(CURDATE())
+                WHERE user_id = :userId AND YEAR(logged_on) = YEAR(:today)
                 GROUP BY MONTH(logged_on)
             ");
-            $monthlyTrendStmt->execute(['userId' => $userId]);
+            $monthlyTrendStmt->execute([
+                'userId' => $userId,
+                'today'  => $todayStr
+            ]);
             $monthlyRows = $monthlyTrendStmt->fetchAll();
 
-            $monthlyTrendArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 12 Months
+            $monthlyTrendArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; 
             foreach ($monthlyRows as $row) {
                 $monthNum = (int)$row['month_num'];
-                $monthlyTrendArray[$monthNum - 1] = (float)$row['total']; // Months are 1-12, index is 0-11
+                $monthlyTrendArray[$monthNum - 1] = (float)$row['total']; 
             }
 
             // 4. Group totals by category for the Doughnut Chart
-            $breakdownStmt = $db->prepare("
+            $breakdownStmt = $this->db->prepare("
                 SELECT t.category, SUM(a.carbon_footprint) as total 
                 FROM activitylog a
                 INNER JOIN activitytype t ON a.activity_type_id = t.id
@@ -105,20 +114,20 @@ class DashboardController
             }
 
             // ==================================================================
-            // 🔥 CONSECUTIVE DAILY STREAK CALCULATION LOGIC
+            // 🎯 CONSECUTIVE DAILY STREAK CALCULATION LOGIC
             // ==================================================================
-            $streakStmt = $db->prepare("
-                SELECT DISTINCT logged_on 
+            // FIXED: Changed ORDER BY clause from raw logged_on column to the alias logged_date to satisfy DISTINCT requirements
+            $streakStmt = $this->db->prepare("
+                SELECT DISTINCT DATE(logged_on) as logged_date 
                 FROM activitylog 
                 WHERE user_id = :userId 
-                ORDER BY logged_on DESC
+                ORDER BY logged_date DESC
             ");
             $streakStmt->execute(['userId' => $userId]);
             $loggedDates = $streakStmt->fetchAll(PDO::FETCH_COLUMN);
 
             $dailyStreak = 0;
             if (!empty($loggedDates)) {
-                $todayStr = date('Y-m-d');
                 $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
                 
                 if ($loggedDates[0] === $todayStr || $loggedDates[0] === $yesterdayStr) {
@@ -140,7 +149,7 @@ class DashboardController
             }
 
             // ==================================================================
-            // 🚀 ✨ NEW DYNAMIC SYNCHRONIZED BADGE COUNTER
+            // 🚀 DYNAMIC SYNCHRONIZED BADGE COUNTER
             // ==================================================================
             $badgeQuery = "
                 SELECT COUNT(*) as total_unlocked
@@ -154,7 +163,7 @@ class DashboardController
                     (b.id NOT IN (6,7,8,9) AND ub.earned_at IS NOT NULL)
             ";
             
-            $badgeStmt = $db->prepare($badgeQuery);
+            $badgeStmt = $this->db->prepare($badgeQuery);
             $badgeStmt->execute([
                 'user_id'   => $userId,
                 'streak_1'  => $dailyStreak,
@@ -171,7 +180,7 @@ class DashboardController
                 "dailyStreak" => $dailyStreak, 
                 "badgesCount" => $badgesUnlockedCount,
                 "weeklyTrendArray" => $weeklyTrendArray,
-                "monthlyTrendArray" => $monthlyTrendArray, // 💡 NEW: Appended structural parameter
+                "monthlyTrendArray" => $monthlyTrendArray, 
                 "categoryBreakdown" => $categoryBreakdown
             ];
 

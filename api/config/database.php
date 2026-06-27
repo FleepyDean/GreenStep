@@ -13,7 +13,7 @@ class Database
     public static function getConnection(): PDO
     {
         if (self::$instance === null) {
-            $host = $_ENV['DB_HOST'] ?? 'localhost';
+            $host = $_ENV['DB_HOST'] ?? '127.0.0.1'; // Standardized local loopback
             $port = $_ENV['DB_PORT'] ?? '3306';
             $dbname = $_ENV['DB_NAME'] ?? 'greenstep_db';
             $user = $_ENV['DB_USER'] ?? 'root';
@@ -28,7 +28,8 @@ class Database
                     PDO::ATTR_EMULATE_PREPARES => false,
                 ]);
             } catch (PDOException $e) {
-                throw new PDOException("Database connection failed: " . $e->getMessage());
+                // FIXED: Pass $e as the previous exception to preserve the complete debug stack trace
+                throw new PDOException("Database connection failed: " . $e->getMessage(), (int)$e->getCode(), $e);
             }
         }
 

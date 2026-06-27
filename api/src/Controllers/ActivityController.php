@@ -14,23 +14,14 @@ class ActivityController
 {
     private ActivityLog $activityLogModel;
     private ActivityType $activityTypeModel;
+    private PDO $db;
 
-    public function __construct()
+    // Inject PDO centrally via the Constructor 
+    public function __construct(PDO $db)
     {
-        $this->activityLogModel = new ActivityLog();
-        $this->activityTypeModel = new ActivityType();
-    }
-
-    private function getDB()
-    {
-        $host = '127.0.0.1';
-        $user = 'root';
-        $pass = '';
-        $dbname = 'greenstep_db';
-        
-        $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8mb4", $user, $pass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $pdo;
+        $this->db = $db;
+        $this->activityLogModel = new ActivityLog($db);
+        $this->activityTypeModel = new ActivityType($db);
     }
 
     /**
@@ -115,27 +106,25 @@ class ActivityController
         }
 
         // =============================================================
-        // 🎯 NEW DYNAMIC ACTION/CHALLENGE BADGES ENGINE
+        // 🎯 DYNAMIC ACTION/CHALLENGE BADGES ENGINE
         // =============================================================
         try {
-            $db = $this->getDB();
             $categoryClean = strtolower(trim((string)$activityType['category']));
 
-            // Map incoming category types directly to their explicit category target badge ids
             $categoryToBadgeMap = [
-                'transport' => 1, // Green Commuter
-                'diet'      => 2, // Plant-Based Hero
-                'energy'    => 3, // Energy Saver
-                'recycling' => 4, // Recycling Champion
-                'general'   => 5  // Eco Innovator
+                'transport' => 1, 
+                'diet'      => 2, 
+                'energy'    => 3, 
+                'recycling' => 4, 
+                'general'   => 5  
             ];
 
             if (array_key_exists($categoryClean, $categoryToBadgeMap)) {
                 $targetBadgeId = $categoryToBadgeMap[$categoryClean];
 
-                // INSERT IGNORE safely ignores if they have already unlocked it before
+                // Uses the centrally injected database instance directly
                 $unlockQuery = "INSERT IGNORE INTO userbadge (user_id, badge_id, earned_at) VALUES (:user_id, :badge_id, NOW())";
-                $unlockStmt = $db->prepare($unlockQuery);
+                $unlockStmt = $this->db->prepare($unlockQuery);
                 $unlockStmt->execute([
                     'user_id'  => $userId,
                     'badge_id' => $targetBadgeId

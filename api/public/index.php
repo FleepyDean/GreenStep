@@ -1,29 +1,41 @@
 <?php
 declare(strict_types=1);
 
+use App\Config\Database;
 use Dotenv\Dotenv;
 use Slim\Factory\AppFactory;
 use Slim\Middleware\BodyParsingMiddleware;
+use DI\Container;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Load environment variables
+// 1. Load environment variables
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
-// Create Slim app
+// 2. Initialize Dependency Injection Container and attach PDO
+$container = new Container();
+$container->set(PDO::class, function () {
+    return Database::getConnection();
+});
+
+// 3. Create Slim app using the configured container
+AppFactory::setContainer($container);
 $app = AppFactory::create();
+
 $app->addRoutingMiddleware();
 
-// Add Error Middleware (catches all errors)
+// 4. Add Error Middleware (catches all errors)
 $app->addErrorMiddleware(true, true, true);
 
-// Load routes FIRST
+// 5. Load routes AFTER setting up the container so controllers resolve properly
 require __DIR__ . '/../src/routes.php';
 
-// Add middleware in order of execution (first added runs last)
+// ==================================================================
+// MIDDLEWARE STACK (Ordered by execution: first added runs last)
+// ==================================================================
 
-// 1. Completely Updated CORS Middleware with Preflight handling
+// 6. CORS Middleware with Preflight handling
 $app->add(function ($request, $handler) {
     // If the browser sends an OPTIONS preflight request, intercept it immediately
     if ($request->getMethod() === 'OPTIONS') {
@@ -45,7 +57,7 @@ $app->add(function ($request, $handler) {
         ->withHeader('Access-Control-Allow-Credentials', 'true');
 });
 
-// 2. Add Body Parsing Middleware LAST (runs FIRST to parse JSON)
+// 7. Add Body Passing Middleware (Runs first to parse JSON bodies)
 $app->add(new BodyParsingMiddleware());
 
 $app->run();
