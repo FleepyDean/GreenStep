@@ -13,7 +13,6 @@ $dotenv->safeLoad();
 
 // Create Slim app
 $app = AppFactory::create();
-// $app->setBasePath('/GreenStep/api/public');
 $app->addRoutingMiddleware();
 
 // Add Error Middleware (catches all errors)
@@ -23,15 +22,27 @@ $app->addErrorMiddleware(true, true, true);
 require __DIR__ . '/../src/routes.php';
 
 // Add middleware in order of execution (first added runs last)
-// Execution order: CORS -> BodyParsing -> Routes
 
-// 1. Add CORS first (runs LAST before routes)
+// 1. Completely Updated CORS Middleware with Preflight handling
 $app->add(function ($request, $handler) {
+    // If the browser sends an OPTIONS preflight request, intercept it immediately
+    if ($request->getMethod() === 'OPTIONS') {
+        $response = new \Slim\Psr7\Response();
+        return $response
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+            ->withStatus(200);
+    }
+
     $response = $handler->handle($request);
+    
+    // Attach headers to standard GET/POST responses
     return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
         ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+        ->withHeader('Access-Control-Allow-Credentials', 'true');
 });
 
 // 2. Add Body Parsing Middleware LAST (runs FIRST to parse JSON)
