@@ -14,7 +14,7 @@ import { useAuthStore } from '@/stores/auth'
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: '/profile'
   },
   {
     path: '/dashboard',
