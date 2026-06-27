@@ -5,10 +5,11 @@ use App\Controllers\ActivityController;
 use App\Controllers\ActivityTypeController;
 use App\Controllers\AuthController;
 use App\Controllers\ChallengeController;
-use App\Controllers\DashboardController; // ➕ IMPORTED DASHBOARD CONTROLLER HERE
+use App\Controllers\DashboardController; 
 use App\Controllers\HealthController;
 use App\Controllers\SocialController;
 use App\Controllers\TipController;
+use App\Controllers\BadgeController; 
 use App\Middleware\JwtMiddleware;
 use Slim\App;
 
@@ -45,8 +46,12 @@ $app->group('/api', function ($group) {
         ->add(new JwtMiddleware());
 
     // Dashboard Statistics Metrics (Protected)
-    // ➕ NEW METRICS ENDPOINT CONNECTED TO SLIM ROUTER HERE:
     $group->get('/dashboard/{userId}', [DashboardController::class, 'getMetrics'])
+        ->add(new JwtMiddleware());
+        
+    // Gamification & Milestones (Protected)
+    // 2. ➕ NEW BADGES ENDPOINT CONNECTED HERE:
+    $group->get('/badges', [BadgeController::class, 'getUserBadges'])
         ->add(new JwtMiddleware());
     
     // Activity Logging (Protected)
@@ -95,15 +100,5 @@ $app->group('/api', function ($group) {
     $group->post('/challenges/{id}/join', [ChallengeController::class, 'join'])
         ->add(new JwtMiddleware());
     $group->delete('/challenges/{id}/leave', [ChallengeController::class, 'leave'])
-        ->add(new JwtMiddleware());
-
-    // ============================================
-    // Admin: Emission Factor Management (Protected + Admin Role)
-    // ============================================
-    $group->post('/admin/activity-types', [ActivityTypeController::class, 'store'])
-        ->add(new JwtMiddleware());
-    $group->put('/admin/activity-types/{id}', [ActivityTypeController::class, 'update'])
-        ->add(new JwtMiddleware());
-    $group->delete('/admin/activity-types/{id}', [ActivityTypeController::class, 'destroy'])
         ->add(new JwtMiddleware());
 });
