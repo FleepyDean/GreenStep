@@ -53,6 +53,7 @@ $app->group('/api', function ($group) {
     // Gamification & Milestones (Protected)
     // 2. ➕ NEW BADGES ENDPOINT CONNECTED HERE:
     $group->get('/badges', [BadgeController::class, 'getUserBadges'])
+        ->add(new JwtMiddleware());
 
     // Personal Goal & Projection (Protected)
     $group->get('/goal', [GoalController::class, 'getGoal'])
