@@ -62,6 +62,22 @@ class DashboardController
                 $weeklyTrendArray[$targetIndex] = (float)$row['total'];
             }
 
+            // 💡 3b. NEW: Compile Data points for Monthly Trend Chart (Jan - Dec)
+            $monthlyTrendStmt = $db->prepare("
+                SELECT MONTH(logged_on) as month_num, SUM(carbon_footprint) as total 
+                FROM activitylog 
+                WHERE user_id = :userId AND YEAR(logged_on) = YEAR(CURDATE())
+                GROUP BY MONTH(logged_on)
+            ");
+            $monthlyTrendStmt->execute(['userId' => $userId]);
+            $monthlyRows = $monthlyTrendStmt->fetchAll();
+
+            $monthlyTrendArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 12 Months
+            foreach ($monthlyRows as $row) {
+                $monthNum = (int)$row['month_num'];
+                $monthlyTrendArray[$monthNum - 1] = (float)$row['total']; // Months are 1-12, index is 0-11
+            }
+
             // 4. Group totals by category for the Doughnut Chart
             $breakdownStmt = $db->prepare("
                 SELECT t.category, SUM(a.carbon_footprint) as total 
@@ -126,7 +142,6 @@ class DashboardController
             // ==================================================================
             // 🚀 ✨ NEW DYNAMIC SYNCHRONIZED BADGE COUNTER
             // ==================================================================
-            // Evaluates how many challenge items are unlocked in the view query engine
             $badgeQuery = "
                 SELECT COUNT(*) as total_unlocked
                 FROM badge b
@@ -154,8 +169,9 @@ class DashboardController
                 "todayFootprint" => (float)($todayResult['total'] ?? 0),
                 "weeklyTotal" => (float)($weeklyResult['total'] ?? 0),
                 "dailyStreak" => $dailyStreak, 
-                "badgesCount" => $badgesUnlockedCount, // ✅ Now perfectly matches profile view definitions
+                "badgesCount" => $badgesUnlockedCount,
                 "weeklyTrendArray" => $weeklyTrendArray,
+                "monthlyTrendArray" => $monthlyTrendArray, // 💡 NEW: Appended structural parameter
                 "categoryBreakdown" => $categoryBreakdown
             ];
 
