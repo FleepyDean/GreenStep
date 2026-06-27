@@ -93,7 +93,7 @@ import CategoryBreakdownChart from '../components/CategoryBreakdownChart.vue'
 // Component & View States
 const loading = ref(true)
 const dailyTip = ref(null)
-const trendMode = ref('weekly') // Tracks active chart view context
+const trendMode = ref('weekly') 
 
 // Dashboard Primary Metrics Representation
 const metrics = ref({
@@ -132,7 +132,6 @@ const fetchDashboardDetails = async () => {
     const response = await dashboardAPI.getMetrics(user.id)
 
     if (response && response.data && response.data.success) {
-      // Unpack raw analytics values 
       metrics.value = response.data.data
       
       // Assign standard weekly tracking data points 
@@ -140,15 +139,9 @@ const fetchDashboardDetails = async () => {
         weeklyTrend.value = response.data.data.weeklyTrendArray
       }
       
-      // Map standalone monthly integers into an accumulating progressive sequence
+      // ✅ FIXED: Assign raw backend data array directly for isolated monthly totals
       if (response.data.data.monthlyTrendArray) {
-        const rawMonthlyData = response.data.data.monthlyTrendArray
-        
-        let runningTotal = 0
-        monthlyTrend.value = rawMonthlyData.map(monthValue => {
-          runningTotal += monthValue
-          return runningTotal
-        })
+        monthlyTrend.value = response.data.data.monthlyTrendArray
       }
       
       // Update distribution category parameters
@@ -217,6 +210,6 @@ onMounted(() => {
 
 .chart-box {
   flex: 1;
-  min-width: 300px; /* Safely safeguards chart aspect ratios against layout collapse */
+  min-width: 300px;
 }
 </style>
