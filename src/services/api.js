@@ -100,4 +100,8 @@ export const emissionFactorAPI = {
   delete: (id) => api.delete(`/admin/activity-types/${id}`)
 }
 
+export const adminAPI = {
+  getDashboard: () => api.get('/admin/dashboard')
+}
+
 export default api

@@ -19,9 +19,15 @@
         </div>
       </div>
       <div v-if="authStore.isAuthenticated" class="nav-links">
-        <router-link to="/dashboard" class="nav-link-btn" active-class="active">
+        <router-link
+          :to="isAdmin ? '/admin-dashboard' : '/dashboard'"
+          class="nav-link-btn"
+          active-class="active"
+        >
           <span class="nav-icon-wrapper">📊</span>
-          <span class="nav-text-label">Dashboard</span>
+          <span class="nav-text-label">
+            {{ isAdmin ? 'Admin' : 'Dashboard' }}
+          </span>
         </router-link>
         <router-link to="/challenges" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">🏆</span>
