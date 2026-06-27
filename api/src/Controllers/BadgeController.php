@@ -20,6 +20,9 @@ class BadgeController
 
     public function getUserBadges(Request $request, Response $response): Response 
     {
+        // 🛠️ FIX: Explicitly match your local runtime timezone with the Dashboard controller
+        date_default_timezone_set('Asia/Kuala_Lumpur');
+
         // Automatically fetch the user id attached by your JwtMiddleware token check.
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? 1; 
@@ -31,7 +34,6 @@ class BadgeController
             // ==================================================================
             // 🎯 CONSECUTIVE DAILY STREAK CALCULATION LOGIC (Dashboard Sync)
             // ==================================================================
-            // FIXED: Changed ORDER BY clause to target logged_date to fix the DISTINCT strict-mode error 3065
             $streakStmt = $this->db->prepare("
                 SELECT DISTINCT DATE(logged_on) as logged_date
                 FROM activitylog 

@@ -19,6 +19,9 @@ class DashboardController
 
     public function getMetrics(Request $request, Response $response, array $args): Response
     {
+        // 🛠️ FIX: Force PHP to match your local timezone environment so date evaluations map perfectly
+        date_default_timezone_set('Asia/Kuala_Lumpur');
+
         $userId = (int)$args['userId'];
         
         // Define today's date uniformly using PHP's current runtime clock
@@ -26,7 +29,6 @@ class DashboardController
 
         try {
             // 1. Calculate Today's Footprint Summary
-            // FIXED: Added DATE() wrapping and explicit PHP date binding to prevent midnight-matching failures
             $todayStmt = $this->db->prepare("
                 SELECT SUM(carbon_footprint) as total FROM activitylog 
                 WHERE user_id = :userId AND DATE(logged_on) = :today
@@ -116,7 +118,6 @@ class DashboardController
             // ==================================================================
             // 🎯 CONSECUTIVE DAILY STREAK CALCULATION LOGIC
             // ==================================================================
-            // FIXED: Changed ORDER BY clause from raw logged_on column to the alias logged_date to satisfy DISTINCT requirements
             $streakStmt = $this->db->prepare("
                 SELECT DISTINCT DATE(logged_on) as logged_date 
                 FROM activitylog 
