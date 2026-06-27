@@ -50,18 +50,31 @@ const chartData = computed(() => ({
 
 const chartOptions = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: "bottom"
+      position: "bottom",
+      labels: {
+        padding: 20,
+        font: { size: 13, family: "inherit" },
+        usePointStyle: true,
+        pointStyleWidth: 10
+      }
+    },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => ` ${ctx.label}: ${ctx.parsed} kg`
+      }
     }
   }
 };
 </script>
 
 <style scoped>
-.chart-container{
-    width:100%;
-    max-width:500px;
-    margin:auto;
+.chart-container {
+  width: 100%;
+  max-width: 480px;
+  height: 320px;
+  margin: 0 auto;
 }
 </style>

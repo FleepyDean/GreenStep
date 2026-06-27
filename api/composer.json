@@ -5,7 +5,7 @@
     "require": {
         "php": "^8.0",
         "firebase/php-jwt": "*",
-        "php-di/php-di": "^7.1",
+        "php-di/php-di": "7.1",
         "slim/psr7": "*",
         "slim/slim": "*",
         "vlucas/phpdotenv": "*"

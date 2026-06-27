@@ -1,7 +1,7 @@
 <template>
   <div class="challenges-container">
     <div class="page-title">
-      <h2>🏆 Eco Challenges</h2>
+      <h2>Eco Challenges</h2>
       <p>Join community actions and reduce your carbon footprint together</p>
     </div>
 
