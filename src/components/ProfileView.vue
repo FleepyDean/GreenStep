@@ -71,18 +71,29 @@
 
       <section class="gamification-showcase-panel">
         <h3>🏆 Earned Digital Badges & Milestones</h3>
-        <div class="badges-display-grid">
+        
+        <div v-if="loadingBadges" style="text-align: center; padding: 2rem; color: #888;">
+          Syncing milestones with the database...
+        </div>
+
+        <div v-else class="badges-display-grid">
           <div 
             v-for="badge in userBadges" 
             :key="badge.id" 
             :class="['badge-item-node', { 'locked-badge': !badge.unlocked }]"
           >
-            <span class="badge-medallion">{{ badge.unlocked ? badge.icon : '🔒' }}</span>
+            <span class="badge-medallion">
+              {{ badge.unlocked ? (badge.icon || '🏅') : '🔒' }}
+            </span>
             <h4>{{ badge.title }}</h4>
             <p>{{ badge.criterion }}</p>
             <span :class="['badge-status-stamp', badge.unlocked ? 'status-unlocked' : 'status-locked']">
               {{ badge.unlocked ? 'Unlocked' : 'Locked' }}
             </span>
+          </div>
+          
+          <div v-if="userBadges.length === 0" style="grid-column: 1/-1; text-align: center; color: #777;">
+            No milestone profiles configured in backend system.
           </div>
         </div>
       </section>
@@ -94,12 +105,14 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { badgeAPI } from '../services/api' 
 
 const authStore = useAuthStore()
 const { toast } = useToast()
 const authMode = ref('login')
 const error = ref(null)
 const loading = ref(false)
+const loadingBadges = ref(false)
 
 const loginForm = reactive({ email: '', password: '' })
 const registerForm = reactive({ name: '', email: '', password: '' })
@@ -111,30 +124,39 @@ const userProfile = computed(() => authStore.user || {
   role: 'end-user'
 })
 
-// Gamification Logic Engine Payload Mappings (FR-iv)
-const userBadges = ref([
-  {
-    id: 1,
-    title: 'Green Commuter',
-    criterion: 'Logged over 50 kilometers in non-combustion alternative transit.',
-    icon: '🚲',
-    unlocked: true
-  },
-  {
-    id: 2,
-    title: 'Conscious Eater',
-    criterion: 'Logged a streak of 7 consecutive plant-based dinner choices.',
-    icon: '🥗',
-    unlocked: true
-  },
-  {
-    id: 3,
-    title: 'Carbon Neutral Master',
-    criterion: 'Successfully drop total cumulative footprint values below regional averages.',
-    icon: '⚡',
-    unlocked: false
+const userBadges = ref([])
+
+const fetchUserBadges = async () => {
+  if (!authStore.isAuthenticated) return
+  
+  loadingBadges.value = true
+  try {
+    const response = await badgeAPI.getUserBadges()
+    const data = response.data 
+    
+    userBadges.value = data.map(badge => {
+      let dynamicIcon = '🏅'
+      if (badge.id === 1) dynamicIcon = '🚲'
+      if (badge.id === 2) dynamicIcon = '🥗'
+      if (badge.id === 3) dynamicIcon = '⚡'
+      if (badge.id === 4) dynamicIcon = '♻️'
+      if (badge.id === 5) dynamicIcon = '💡'
+      if (badge.id === 6) dynamicIcon = '🔥'
+
+      return {
+        id: badge.id,
+        title: badge.name, 
+        criterion: badge.criteria_description || 'Eco tracker milestone requirement.', 
+        icon: dynamicIcon, 
+        unlocked: badge.unlocked === 1 || badge.unlocked === true
+      }
+    })
+  } catch (err) {
+    console.error('Network failure connecting to backend tables:', err)
+  } finally {
+    loadingBadges.value = false
   }
-])
+}
 
 const handleLogin = async () => {
   error.value = null
@@ -146,6 +168,7 @@ const handleLogin = async () => {
     loginForm.email = ''
     loginForm.password = ''
     toast.success('Welcome back!')
+    await fetchUserBadges()
   } else {
     error.value = result.message
     toast.error(result.message)
@@ -169,6 +192,7 @@ const handleRegister = async () => {
     registerForm.email = ''
     registerForm.password = ''
     toast.success('Account created successfully!')
+    await fetchUserBadges()
   } else {
     error.value = result.message
     toast.error(result.message)
@@ -179,14 +203,17 @@ const handleRegister = async () => {
 
 const handleLogout = () => {
   authStore.logout()
+  userBadges.value = []
   loginForm.email = ''
   loginForm.password = ''
   toast.info('Logged out successfully')
 }
 
+// Lifecycle Hooks
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     await authStore.fetchProfile()
+    await fetchUserBadges()
   }
 })
 </script>
