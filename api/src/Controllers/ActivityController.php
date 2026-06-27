@@ -25,7 +25,7 @@ class ActivityController
     {
         $host = '127.0.0.1';
         $user = 'root';
-        $pass = 'admin123';
+        $pass = '';
         $dbname = 'greenstep_db';
         
         $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8mb4", $user, $pass);
