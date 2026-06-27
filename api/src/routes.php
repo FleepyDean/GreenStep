@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Controllers\ActivityController;
 use App\Controllers\ActivityTypeController;
+use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\ChallengeController;
 use App\Controllers\DashboardController; // ➕ IMPORTED DASHBOARD CONTROLLER HERE
@@ -43,6 +44,10 @@ $app->group('/api', function ($group) {
     
     // Auth - Get current user
     $group->get('/auth/me', [AuthController::class, 'me'])
+        ->add(new JwtMiddleware());
+
+    // Admin Dashboard
+    $group->get('/admin/dashboard', [AdminController::class, 'dashboard'])
         ->add(new JwtMiddleware());
 
     // Dashboard Statistics Metrics (Protected)
