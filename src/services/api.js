@@ -92,7 +92,7 @@ export const emissionFactorAPI = {
 }
 
 export const badgeAPI = {
-  getUserBadges: (userId) => api.get(`/badges/user/${userId}`)
+  getUserBadges: () => api.get('/badges')
 }
 
 export default api
