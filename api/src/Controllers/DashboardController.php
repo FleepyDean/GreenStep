@@ -30,7 +30,6 @@ class DashboardController
             $db = $this->getDB();
 
             // 1. Calculate Today's Footprint Summary
-            // ✅ FIXED: Table name changed to ActivityLog, column changed to carbon_footprint, date column changed to logged_on
             $todayStmt = $db->prepare("
                 SELECT SUM(carbon_footprint) as total FROM ActivityLog 
                 WHERE user_id = :userId AND logged_on = CURDATE()
@@ -39,7 +38,6 @@ class DashboardController
             $todayResult = $todayStmt->fetch();
 
             // 2. Calculate Last 7 Days Total Footprint
-            // ✅ FIXED: Using logged_on date tracking
             $weeklyStmt = $db->prepare("
                 SELECT SUM(carbon_footprint) as total FROM ActivityLog 
                 WHERE user_id = :userId AND logged_on >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
@@ -48,7 +46,6 @@ class DashboardController
             $weeklyResult = $weeklyStmt->fetch();
 
             // 3. Compile Data points for the Line Chart (Monday - Sunday)
-            // ✅ FIXED: Grouping by day using logged_on
             $trendStmt = $db->prepare("
                 SELECT DAYOFWEEK(logged_on) as day_num, SUM(carbon_footprint) as total 
                 FROM ActivityLog 
@@ -66,7 +63,6 @@ class DashboardController
             }
 
             // 4. Group totals by category for the Doughnut Chart
-            // ✅ FIXED: Added INNER JOIN on ActivityType to safely extract the category ENUM
             $breakdownStmt = $db->prepare("
                 SELECT t.category, SUM(a.carbon_footprint) as total 
                 FROM ActivityLog a
@@ -93,16 +89,55 @@ class DashboardController
             }
 
             // 5. Dynamic Badge Count Fetch
-            // ✅ BONUS: Dynamically checks your UserBadge table count
             $badgeStmt = $db->prepare("SELECT COUNT(*) as total FROM UserBadge WHERE user_id = :userId");
             $badgeStmt->execute(['userId' => $userId]);
             $badgeCount = $badgeStmt->fetch();
+
+            // ==================================================================
+            // 🔥 🔥 NEW ADDITION: DYNAMIC STREAK CALCULATION LOGIC
+            // ==================================================================
+            // Fetch unique log dates for this user, ordered newest to oldest
+            $streakStmt = $db->prepare("
+                SELECT DISTINCT logged_on 
+                FROM ActivityLog 
+                WHERE user_id = :userId 
+                ORDER BY logged_on DESC
+            ");
+            $streakStmt->execute(['userId' => $userId]);
+            $loggedDates = $streakStmt->fetchAll(PDO::FETCH_COLUMN);
+
+            $dailyStreak = 0;
+            if (!empty($loggedDates)) {
+                $todayStr = date('Y-m-d');
+                $yesterdayStr = date('Y-m-d', strtotime('-1 day'));
+                
+                // The streak remains alive only if they logged something today OR yesterday
+                if ($loggedDates[0] === $todayStr || $loggedDates[0] === $yesterdayStr) {
+                    $dailyStreak = 1; // Base case: starts at 1 day
+                    
+                    // Walk backwards through the array to check for perfect daily continuations
+                    for ($i = 0; $i < count($loggedDates) - 1; $i++) {
+                        $currentDate = strtotime($loggedDates[$i]);
+                        $nextDate = strtotime($loggedDates[$i + 1]);
+                        
+                        // Compute exact day variations
+                        $dayDifference = ($currentDate - $nextDate) / (60 * 60 * 24);
+                        
+                        if ($dayDifference == 1) {
+                            $dailyStreak++;
+                        } else {
+                            // Chain broken, terminate analysis loop early
+                            break;
+                        }
+                    }
+                }
+            }
 
             // Assemble matching payload structure
             $metrics = [
                 "todayFootprint" => (float)($todayResult['total'] ?? 0),
                 "weeklyTotal" => (float)($weeklyResult['total'] ?? 0),
-                "dailyStreak" => 5,  // Temporary mockup placeholder
+                "dailyStreak" => $dailyStreak, // ✅ UPDATED: Hooked to dynamic tracking loop
                 "badgesCount" => (int)($badgeCount['total'] ?? 0),
                 "weeklyTrendArray" => $weeklyTrendArray,
                 "categoryBreakdown" => $categoryBreakdown
