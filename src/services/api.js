@@ -101,7 +101,8 @@ export const emissionFactorAPI = {
 }
 
 export const adminAPI = {
-  getDashboard: () => api.get('/admin/dashboard')
+  getDashboard: () => api.get('/admin/dashboard'),
+  getDataset: () => api.get('/admin/dataset')
 }
 
 export default api
