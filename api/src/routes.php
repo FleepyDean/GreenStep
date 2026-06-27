@@ -50,6 +50,8 @@ $app->group('/api', function ($group) {
     $group->get('/admin/dashboard', [AdminController::class, 'dashboard'])
         ->add(new JwtMiddleware());
 
+    $group->get('/admin/dataset', [AdminController::class, 'dataset'])
+        ->add(new JwtMiddleware());    
     // Dashboard Statistics Metrics (Protected)
     // ➕ NEW METRICS ENDPOINT CONNECTED TO SLIM ROUTER HERE:
     $group->get('/dashboard/{userId}', [DashboardController::class, 'getMetrics'])
