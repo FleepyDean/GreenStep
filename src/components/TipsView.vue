@@ -1,7 +1,7 @@
 <template>
   <div class="tips-container">
     <div class="page-title">
-      <h2>💡 Eco Tips</h2>
+      <h2>Eco Tips</h2>
       <p>Discover actionable habits to systematically shrink your carbon footprints</p>
     </div>
 
@@ -191,22 +191,19 @@ const getCategoryClass = (cat) => {
   color: #008069;
 }
 
-/* Premium Green Card Styling */
+/* Form Card Styling */
 .form-card {
-  background: #F0F2F5; 
-  border: 1px solid rgba(0, 168, 132, 0.15);
-  border-radius: 6px;
-  padding: 2rem;
-  margin-top: 1rem;
-  box-shadow: 0 20px 40px rgba(4, 13, 10, 0.5);
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
 }
 
 .form-card h3 {
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: #f8fafc; 
-  margin-bottom: 1.5rem;
-  letter-spacing: -0.01em;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1b3a4b;
+  margin: 0 0 1.5rem 0;
 }
 
 .form-row {
@@ -215,39 +212,39 @@ const getCategoryClass = (cat) => {
   gap: 1rem;
 }
 
-/* Semi-transparent Glass Inputs */
+/* Form Inputs */
 .tip-input,
 .tip-select,
 .tip-textarea {
   width: 100%;
-  padding: 0.8rem 1.1rem;
-  margin-bottom: 1.2rem;
-  border: 1px solid #E9EDEF;
-  border-radius: 6px;
-  background: #F0F2F5;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
   font-size: 0.9rem;
-  color: #111B21;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #1b3a4b;
+  font-family: inherit;
+  transition: all 0.2s;
   box-sizing: border-box;
 }
 
 .tip-select option {
-  background: #F0F2F5;
-  color: #111B21;
+  background: #fff;
+  color: #1b3a4b;
 }
 
 .tip-input:focus,
 .tip-select:focus,
 .tip-textarea:focus {
   outline: none;
-  border-color: rgba(0, 168, 132, 0.4); 
-  background: #FFFFFF;
-  box-shadow: 0 0 0 4px rgba(0, 168, 132, 0.08); 
+  border-color: #00A884;
+  box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.1);
 }
 
 .tip-input::placeholder,
 .tip-textarea::placeholder {
-  color: #4b5f58;
+  color: #9ca3af;
 }
 
 .tip-textarea {
@@ -255,29 +252,27 @@ const getCategoryClass = (cat) => {
   resize: vertical;
 }
 
-/* Premium Contrast Action Button */
+/* Action Button */
 .action-row {
   display: flex;
   justify-content: flex-end;
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
 }
 
 .minimal-btn {
-  padding: 0.7rem 1.5rem;
+  padding: 0.65rem 1.5rem;
   border: none;
-  border-radius: 6px;
-  background: #00A884; 
-  color: #040d0a;
-  font-size: 0.85rem;
+  border-radius: 8px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s;
 }
 
 .minimal-btn:hover {
-  background: #25D366;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 168, 132, 0.15);
+  background: #15803d;
 }
 
 /* Animation Micro-interactions */

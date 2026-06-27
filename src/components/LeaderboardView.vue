@@ -1,7 +1,7 @@
 <template>
   <div class="leaderboard-container">
     <div class="page-title">
-      <h2>🏆 Leaderboard</h2>
+      <h2>Leaderboard</h2>
       <p>See how your carbon footprint reduction compares with others</p>
     </div>
  

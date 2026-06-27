@@ -1,7 +1,7 @@
 <template>
   <div class="ef-container">
     <div class="page-title">
-      <h2>⚡ Emission Factor Management</h2>
+      <h2>Emission Factor Management</h2>
       <p>Configure per-activity CO₂ emission factors used in carbon calculations</p>
     </div>
 
