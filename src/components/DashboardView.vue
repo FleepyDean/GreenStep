@@ -157,6 +157,41 @@
         </div>
       </div>
     </section>
+
+    <!-- Carbon Offset -->
+    <div class="offset-card">
+
+      <div class="offset-icon">
+        🌍
+      </div>
+
+      <h2>Offset Your Carbon Footprint</h2>
+
+      <p class="offset-text">
+        You've already produced
+        <strong>{{ metrics.weeklyTotal.toFixed(2) }} kg CO₂</strong>
+        this week.
+      </p>
+
+      <p class="offset-small">
+        If you cannot reduce it immediately,
+        you can support certified environmental
+        projects to compensate your emissions.
+      </p>
+
+      <a
+        href="https://www.wwf.org.my/how_you_can_help/donate_now/combat_climate_change/"
+        target="_blank"
+        class="offset-button"
+      >
+        🌱 Offset My Carbon
+      </a>
+
+      <div class="verified">
+        ✓ Verified Non-profit Conservation Organization in Malaysia
+      </div>
+
+    </div>
   </div>
 </template>
 
@@ -556,6 +591,164 @@ onUnmounted(() => {
   background: #e9ecef;
   color: #1b3a4b;
 }
+
+/* ============================= */
+/* Carbon Offset Card */
+/* ============================= */
+
+.offset-card{
+
+margin-top:35px;
+padding:30px;
+
+background:linear-gradient(135deg,#1E8E3E,#34A853);
+
+border-radius:20px;
+
+color:white;
+
+text-align:center;
+
+box-shadow:0 12px 35px rgba(0,0,0,.18);
+
+position:relative;
+
+overflow:hidden;
+
+}
+
+/* floating circles */
+
+.offset-card::before{
+
+content:"";
+
+position:absolute;
+
+width:220px;
+height:220px;
+
+background:rgba(255,255,255,.08);
+
+border-radius:50%;
+
+top:-80px;
+right:-60px;
+
+}
+
+.offset-card::after{
+
+content:"";
+
+position:absolute;
+
+width:140px;
+height:140px;
+
+background:rgba(255,255,255,.08);
+
+border-radius:50%;
+
+bottom:-60px;
+left:-40px;
+
+}
+
+.offset-icon{
+
+font-size:60px;
+
+margin-bottom:10px;
+
+animation:floatEarth 3s ease-in-out infinite;
+
+}
+
+@keyframes floatEarth{
+
+0%{
+transform:translateY(0px);
+}
+
+50%{
+transform:translateY(-8px);
+}
+
+100%{
+transform:translateY(0px);
+}
+
+}
+
+.offset-card h2{
+
+margin-bottom:15px;
+
+font-size:28px;
+
+}
+
+.offset-text{
+
+font-size:18px;
+
+margin-bottom:12px;
+
+}
+
+.offset-small{
+
+opacity:.9;
+
+line-height:1.6;
+
+margin-bottom:25px;
+
+}
+
+.offset-button{
+
+display:inline-block;
+
+padding:14px 34px;
+
+background:white;
+
+color:#1E8E3E;
+
+font-weight:bold;
+
+border-radius:50px;
+
+text-decoration:none;
+
+transition:.3s;
+
+box-shadow:0 5px 15px rgba(0,0,0,.2);
+
+}
+
+.offset-button:hover{
+
+transform:translateY(-4px) scale(1.05);
+
+box-shadow:0 12px 25px rgba(0,0,0,.25);
+
+}
+
+.verified{
+
+margin-top:20px;
+
+font-size:14px;
+
+opacity:.9;
+
+letter-spacing:1px;
+
+}
+</style>
 
 .toggle-container {
   display: flex;

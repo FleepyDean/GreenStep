@@ -100,6 +100,10 @@ export const emissionFactorAPI = {
   delete: (id) => api.delete(`/admin/activity-types/${id}`)
 }
 
+export const adminAPI = {
+  getDashboard: () => api.get('/admin/dashboard'),
+  getDataset: () => api.get('/admin/dataset')
+  
 export const badgeAPI = {
   getUserBadges: () => api.get('/badges')
 }

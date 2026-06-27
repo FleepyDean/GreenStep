@@ -8,6 +8,8 @@ import FriendsView from '../components/FriendsView.vue'
 import ChallengeDetailsView from '../components/ChallengeDetailsView.vue'
 import LeaderboardView from '../components/LeaderboardView.vue'
 import EmissionFactorView from '../components/EmissionFactorView.vue'
+import AdminDashboard from '../components/AdminDashboard.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const routes = [
   {
@@ -17,7 +19,23 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
+    beforeEnter: () => {
+      const auth = useAuthStore()
+
+      if (auth.user?.role === 'admin') {
+        return {
+          name: 'AdminDashboard'
+        }
+      }
+
+      return true
+    },
     component: DashboardView
+  },
+  {
+    path: '/admin-dashboard',
+    name: 'AdminDashboard',
+    component: AdminDashboard
   },
   {
     path: '/activity',
