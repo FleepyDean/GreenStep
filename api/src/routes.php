@@ -11,6 +11,7 @@ use App\Controllers\GoalController;
 use App\Controllers\HealthController;
 use App\Controllers\SocialController;
 use App\Controllers\TipController;
+use App\Controllers\BadgeController; 
 use App\Middleware\JwtMiddleware;
 use Slim\App;
 
@@ -53,8 +54,12 @@ $app->group('/api', function ($group) {
     $group->get('/admin/dataset', [AdminController::class, 'dataset'])
         ->add(new JwtMiddleware());    
     // Dashboard Statistics Metrics (Protected)
-    // ➕ NEW METRICS ENDPOINT CONNECTED TO SLIM ROUTER HERE:
     $group->get('/dashboard/{userId}', [DashboardController::class, 'getMetrics'])
+        ->add(new JwtMiddleware());
+        
+    // Gamification & Milestones (Protected)
+    // 2. ➕ NEW BADGES ENDPOINT CONNECTED HERE:
+    $group->get('/badges', [BadgeController::class, 'getUserBadges'])
         ->add(new JwtMiddleware());
 
     // Personal Goal & Projection (Protected)

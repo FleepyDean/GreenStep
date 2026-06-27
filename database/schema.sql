@@ -181,7 +181,7 @@ INSERT INTO ActivityType (category, name, unit, kg_co2_per_unit) VALUES
 ('Energy', 'Natural Gas', 'kWh', 0.1850),
 
 -- Recycling (negative values = carbon reduction)
-('Recycling', 'Paper Recycling', 'kg', -0.1700),
+('Recycling', 'Paper Recycling', 'kg', -0.1700),    
 ('Recycling', 'Plastic Recycling', 'kg', -0.4500),
 ('Recycling', 'Glass Recycling', 'kg', -0.3000),
 ('Recycling', 'Aluminum Recycling', 'kg', -9.1300);
@@ -213,13 +213,16 @@ INSERT INTO Challenge (name, description, start_date, end_date, target_co2_reduc
 -- ============================================
 -- SEED DATA: Badges
 -- ============================================
-INSERT INTO Badge (name, criteria_json, image_url) VALUES
-('Green Commuter', '{"type": "transport_distance", "threshold": 50, "description": "Log over 50 kilometers in non-combustion alternative transit"}', '/badges/green-commuter.png'),
-('Conscious Eater', '{"type": "diet_streak", "threshold": 7, "description": "Log a streak of 7 consecutive plant-based dinner choices"}', '/badges/conscious-eater.png'),
-('Carbon Neutral Master', '{"type": "footprint_reduction", "threshold": 50, "description": "Successfully drop total cumulative footprint values below regional averages"}', '/badges/carbon-neutral.png'),
-('Recycling Hero', '{"type": "recycling_amount", "threshold": 10, "description": "Recycle over 10kg of materials"}', '/badges/recycling-hero.png'),
-('Energy Saver', '{"type": "energy_reduction", "threshold": 20, "description": "Reduce electricity usage by 20% compared to baseline"}', '/badges/energy-saver.png'),
-('30-Day Streak', '{"type": "login_streak", "threshold": 30, "description": "Log activities for 30 consecutive days"}', '/badges/30-day-streak.png');
+INSERT INTO `badge` (`id`, `name`, `criteria_json`) VALUES
+(1, 'Green Commuter', '{"description": "Log an activity under the Transport category."}'),
+(2, 'Plant-Based Hero', '{"description": "Log an activity under the Diet category."}'),
+(3, 'Energy Saver', '{"description": "Log an activity under the Energy category."}'),
+(4, 'Recycling Champion', '{"description": "Log an activity under the Recycling category."}'),
+(5, 'Eco Innovator', '{"description": "Log an activity under the General category."}'),
+(6, 'First Steps', '{"description": "Maintain a 1-day consecutive activity logging streak."}'),
+(7, 'Habit Builder', '{"description": "Maintain a 3-day consecutive activity logging streak."}'),
+(8, 'Eco Warrior', '{"description": "Maintain a 5-day consecutive activity logging streak."}'),
+(9, 'Sustainability Master', '{"description": "Maintain a 10-day consecutive activity logging streak."}');
 
 -- ============================================
 -- Create Admin User (password: admin123 - CHANGE IN PRODUCTION!)
@@ -232,6 +235,25 @@ INSERT INTO User (name, email, password_hash, role, target_reduction_percent, go
 ('Hafiz', 'hafiz@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW()),
 ('Danish', 'danish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW()),
 ('Syaeeda', 'syaeeda@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW());
+-- ============================================
+-- Table to track which badges each user has earned
+-- ============================================
+CREATE TABLE IF NOT EXISTS `userbadge` (
+  `user_id` INT NOT NULL,
+  `badge_id` INT NOT NULL,
+  `earned_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`, `badge_id`),
+  
+  -- Foreign Key constraints automatically clean up records if a user or badge is deleted
+  CONSTRAINT `fk_userbadge_user` 
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) 
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    
+  CONSTRAINT `fk_userbadge_badge` 
+    FOREIGN KEY (`badge_id`) REFERENCES `badge` (`id`) 
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================
 -- Verification: Check all tables were created
 -- ============================================

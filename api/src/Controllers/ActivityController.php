@@ -8,44 +8,29 @@ use App\Models\ActivityType;
 use App\Services\CarbonCalculator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use PDO;
 
-/**
- * ActivityController
- * 
- * Handles activity logging API endpoints:
- * - POST /api/activities - Log new activity
- * - GET /api/activities - Get user's activities
- * - GET /api/activities/today - Get today's activities
- * - GET /api/activities/stats - Get activity statistics
- * - DELETE /api/activities/{id} - Delete activity
- */
 class ActivityController
 {
     private ActivityLog $activityLogModel;
     private ActivityType $activityTypeModel;
+    private PDO $db;
 
-    public function __construct()
+    // Inject PDO centrally via the Constructor 
+    public function __construct(PDO $db)
     {
-        $this->activityLogModel = new ActivityLog();
-        $this->activityTypeModel = new ActivityType();
+        $this->db = $db;
+        $this->activityLogModel = new ActivityLog($db);
+        $this->activityTypeModel = new ActivityType($db);
     }
 
     /**
      * POST /api/activities
-     * Log a new activity
-     * 
-     * Request body:
-     * {
-     *   "activity_type_id": 1,
-     *   "amount": 15.5,
-     *   "date": "2026-06-17"
-     * }
      */
     public function create(Request $request, Response $response): Response
     {
         $data = $request->getParsedBody();
         
-        // Validate required fields
         if (empty($data['activity_type_id']) || empty($data['amount'])) {
             $response->getBody()->write(json_encode([
                 'success' => false,
@@ -58,7 +43,6 @@ class ActivityController
         $amount = (float) $data['amount'];
         $date = $data['date'] ?? date('Y-m-d');
 
-        // Validate amount is positive
         if ($amount <= 0) {
             $response->getBody()->write(json_encode([
                 'success' => false,
@@ -67,7 +51,6 @@ class ActivityController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
-        // Get activity type and emission factor
         $activityType = $this->activityTypeModel->getById($activityTypeId);
         if (!$activityType) {
             $response->getBody()->write(json_encode([
@@ -77,11 +60,9 @@ class ActivityController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
 
-        // Calculate carbon footprint
         $emissionFactor = (float) $activityType['kg_co2_per_unit'];
         $carbonFootprint = CarbonCalculator::calculate($amount, $emissionFactor);
 
-        // Get user ID from JWT token (set by JwtMiddleware)
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? null;
 
@@ -124,7 +105,36 @@ class ActivityController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
 
-        // Return success response
+        // =============================================================
+        // 🎯 DYNAMIC ACTION/CHALLENGE BADGES ENGINE
+        // =============================================================
+        try {
+            $categoryClean = strtolower(trim((string)$activityType['category']));
+
+            $categoryToBadgeMap = [
+                'transport' => 1, 
+                'diet'      => 2, 
+                'energy'    => 3, 
+                'recycling' => 4, 
+                'general'   => 5  
+            ];
+
+            if (array_key_exists($categoryClean, $categoryToBadgeMap)) {
+                $targetBadgeId = $categoryToBadgeMap[$categoryClean];
+
+                // Uses the centrally injected database instance directly
+                $unlockQuery = "INSERT IGNORE INTO userbadge (user_id, badge_id, earned_at) VALUES (:user_id, :badge_id, NOW())";
+                $unlockStmt = $this->db->prepare($unlockQuery);
+                $unlockStmt->execute([
+                    'user_id'  => $userId,
+                    'badge_id' => $targetBadgeId
+                ]);
+            }
+        } catch (\Exception $e) {
+            error_log("Challenge badge unlock handling error: " . $e->getMessage());
+        }
+        // =============================================================
+
         $response->getBody()->write(json_encode([
             'success' => true,
             'message' => 'Activity logged successfully',
@@ -147,12 +157,6 @@ class ActivityController
 
     /**
      * GET /api/activities
-     * Get all activities for the current user
-     * 
-     * Query parameters:
-     * - start_date: YYYY-MM-DD (optional)
-     * - end_date: YYYY-MM-DD (optional)
-     * - category: Transport|Diet|Energy|Recycling (optional)
      */
     public function index(Request $request, Response $response): Response
     {
@@ -161,7 +165,6 @@ class ActivityController
         $endDate = $queryParams['end_date'] ?? null;
         $category = $queryParams['category'] ?? null;
 
-        // Get user ID from JWT token
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? null;
 
@@ -178,17 +181,14 @@ class ActivityController
 
     /**
      * GET /api/activities/today
-     * Get today's activities for the current user
      */
     public function today(Request $request, Response $response): Response
     {
-        // Get user ID from JWT token
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? null;
 
         $activities = $this->activityLogModel->getToday($userId);
         
-        // Calculate total carbon footprint for today
         $total = 0;
         foreach ($activities as $activity) {
             $total += $activity['carbon_footprint'] ?? 0;
@@ -207,11 +207,6 @@ class ActivityController
 
     /**
      * GET /api/activities/stats
-     * Get activity statistics
-     * 
-     * Query parameters:
-     * - start_date: YYYY-MM-DD (optional)
-     * - end_date: YYYY-MM-DD (optional)
      */
     public function stats(Request $request, Response $response): Response
     {
@@ -219,7 +214,6 @@ class ActivityController
         $startDate = $queryParams['start_date'] ?? null;
         $endDate = $queryParams['end_date'] ?? null;
 
-        // Get user ID from JWT token
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? null;
 
@@ -235,7 +229,6 @@ class ActivityController
 
     /**
      * DELETE /api/activities/{id}
-     * Delete an activity log
      */
     public function delete(Request $request, Response $response, array $args): Response
     {
@@ -249,11 +242,9 @@ class ActivityController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
-        // Get user ID from JWT token
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? null;
 
-        // Check if activity exists and belongs to user
         $activity = $this->activityLogModel->getById($id);
         if (!$activity) {
             $response->getBody()->write(json_encode([
@@ -271,7 +262,6 @@ class ActivityController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
         }
 
-        // Delete the activity
         $deleted = $this->activityLogModel->delete($id, $userId);
 
         if ($deleted) {

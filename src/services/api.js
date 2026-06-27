@@ -103,6 +103,9 @@ export const emissionFactorAPI = {
 export const adminAPI = {
   getDashboard: () => api.get('/admin/dashboard'),
   getDataset: () => api.get('/admin/dataset')
+  
+export const badgeAPI = {
+  getUserBadges: () => api.get('/badges')
 }
 
 export default api
