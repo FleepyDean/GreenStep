@@ -69,6 +69,7 @@
         <button class="logout-trigger-btn" @click="handleLogout">Logout</button>
       </section>
 
+      
       <section class="gamification-showcase-panel">
         <h3>🏆 Earned Digital Badges & Milestones</h3>
         
@@ -108,6 +109,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { badgeAPI } from '../services/api' 
+import { goalAPI } from '@/services/api'
 
 const authStore = useAuthStore()
 const { toast } = useToast()
@@ -213,6 +215,9 @@ const handleLogout = () => {
   loginForm.password = ''
   toast.info('Logged out successfully')
 }
+
+
+
 
 onMounted(async () => {
   if (authStore.isAuthenticated) {

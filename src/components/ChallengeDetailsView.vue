@@ -68,13 +68,32 @@
               <p class="meta-value">{{ challenge.target_category }}</p>
             </div>
           </div>
-          <div v-if="challenge.target_activity_type_name" class="meta-item">
+          <div v-if="challenge.target_activity_type_names && challenge.target_activity_type_names.length > 0" class="meta-item meta-item-full">
             <span class="meta-icon">⚡</span>
             <div>
-              <p class="meta-label">Target Activity</p>
-              <p class="meta-value font-green">{{ challenge.target_activity_type_name }}</p>
+              <p class="meta-label">Target Activity Types</p>
+              <div class="activity-type-tags">
+                <span
+                  v-for="name in challenge.target_activity_type_names"
+                  :key="name"
+                  class="activity-type-tag"
+                >{{ name }}</span>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section v-if="challenge.has_joined && !isAdmin" class="details-card">
+        <h3>Your Contribution</h3>
+        <p class="progress-description">
+          Your personal CO₂ reduction from
+          <strong>{{ challenge.target_activity_type_name || challenge.target_category }}</strong>
+          activities during this challenge.
+        </p>
+        <div class="user-contribution-stat">
+          <span class="contribution-value">{{ (challenge.user_progress || 0).toFixed(2) }} kg</span>
+          <span class="contribution-label">CO₂ reduced</span>
         </div>
       </section>
 
@@ -82,7 +101,7 @@
         <h3>Community Progress</h3>
         <p class="progress-description">
           Total CO₂ reduction from
-          <strong>{{ challenge.target_activity_type_name || challenge.target_category }}</strong>
+          <strong>{{ challenge.target_activity_type_names && challenge.target_activity_type_names.length ? challenge.target_activity_type_names.join(', ') : challenge.target_category }}</strong>
           activities logged by members during the challenge.
         </p>
         <div class="progress-section">
@@ -139,7 +158,7 @@
         >
           {{ challenge.has_joined ? 'Leave Challenge' : 'Join Challenge' }}
         </button>
-        <div v-else class="admin-actions">
+        <div v-if="canManageChallenges" class="admin-actions">
           <button class="admin-edit-btn" @click="openEditModal">
             ✏️ Edit Challenge
           </button>
@@ -177,6 +196,7 @@ const showEditModal = ref(false)
 const isLoading = ref(true)
 
 const isAdmin = computed(() => authStore.user?.role === 'admin')
+const canManageChallenges = computed(() => authStore.user?.role === 'admin' || authStore.user?.role === 'leader')
 
 const progressPercentage = computed(() => {
   if (!challenge.value) return 0
@@ -185,6 +205,7 @@ const progressPercentage = computed(() => {
   const pct = (challenge.value.current_progress / target) * 100
   return Math.min(Math.round(pct), 100)
 })
+
 
 async function loadDetails() {
   try {
@@ -399,6 +420,28 @@ onMounted(async () => {
   gap: 0.75rem;
 }
 
+.meta-item-full {
+  grid-column: 1 / -1;
+  align-items: flex-start;
+}
+
+.activity-type-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.activity-type-tag {
+  background: rgba(0, 168, 132, 0.12);
+  color: #00A884;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 168, 132, 0.3);
+}
+
 .meta-icon {
   font-size: 1.5rem;
   flex-shrink: 0;
@@ -457,6 +500,24 @@ onMounted(async () => {
   border-radius: 6px;
   transition: width 0.5s ease;
   min-width: 2px;
+}
+
+.user-contribution-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.contribution-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0EA5E9;
+}
+
+.contribution-label {
+  font-size: 0.9rem;
+  color: #8696A0;
 }
 
 .progress-percentage {
@@ -561,6 +622,10 @@ onMounted(async () => {
 .action-area {
   padding-top: 0.5rem;
   padding-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .admin-actions {

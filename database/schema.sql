@@ -15,7 +15,11 @@ CREATE TABLE User (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('end-user', 'admin') DEFAULT 'end-user',
+    role ENUM('end-user', 'admin', 'leader') DEFAULT 'end-user',
+    target_reduction_percent DECIMAL(5,2) DEFAULT 20.00,
+    goal_duration_days INT DEFAULT 30,
+    goal_start_date DATE DEFAULT NULL,
+    baseline_footprint DECIMAL(10,4) DEFAULT NULL,
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_email (email),
     INDEX idx_role (role)
@@ -26,7 +30,7 @@ CREATE TABLE User (
 -- ============================================
 CREATE TABLE ActivityType (
     id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    category ENUM('Transport', 'Diet', 'Energy', 'Recycling') NOT NULL,
+    category VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     unit VARCHAR(20) NOT NULL,
     kg_co2_per_unit DECIMAL(10, 4) NOT NULL,
@@ -43,6 +47,7 @@ CREATE TABLE ActivityLog (
     amount DECIMAL(10, 2) NOT NULL,
     carbon_footprint DECIMAL(10, 4) DEFAULT 0,
     logged_on DATE NOT NULL,
+    photo_url VARCHAR(500) NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
     FOREIGN KEY (activity_type_id) REFERENCES ActivityType(id) ON DELETE CASCADE,
@@ -57,7 +62,7 @@ CREATE TABLE Tip (
     id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     body VARCHAR(2000) NOT NULL,
-    category ENUM('Transport', 'Diet', 'Energy', 'Recycling', 'General') NOT NULL,
+    category VARCHAR(100) NOT NULL,
     source_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_category (category)
@@ -91,6 +96,7 @@ CREATE TABLE Challenge (
     target_category VARCHAR(50) NULL DEFAULT 'All',
     target_activity_type_id INT UNSIGNED NULL,
     duration_days INT NOT NULL,
+    member_limit INT UNSIGNED NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_dates (start_date, end_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -198,11 +204,11 @@ INSERT INTO Tip (title, body, category, source_url) VALUES
 -- ============================================
 -- SEED DATA: Challenges
 -- ============================================
-INSERT INTO Challenge (name, description, start_date, end_date, target_co2_reduction, target_category, target_activity_type_id, duration_days) VALUES
-('Zero Waste Week', 'Go one week minimizing plastic wrappers, composting food scraps, and refusing single-use items.', '2026-06-01', '2026-06-07', 20.00, 'Recycling', NULL, 7),
-('30-Day Eco Warrior Challenge', 'Reduce your household electricity footings by shifting to alternative transit modes and vegetarian meal tracks.', '2026-06-01', '2026-06-30', 50.00, 'All', NULL, 30),
-('Green Transport Month', 'Ditch private combustion vehicles. Rely completely on commuter electric transit systems, cycling, or shared buses.', '2026-06-01', '2026-06-30', 100.00, 'Transport', NULL, 30),
-('Plastic Free July', 'Eliminate single-use plastics from your daily routine for the entire month.', '2026-07-01', '2026-07-31', 15.00, 'Recycling', NULL, 31);
+INSERT INTO Challenge (name, description, start_date, end_date, target_co2_reduction, target_category, target_activity_type_id, duration_days, member_limit) VALUES
+('Zero Waste Week', 'Go one week minimizing plastic wrappers, composting food scraps, and refusing single-use items.', '2026-06-01', '2026-06-07', 20.00, 'Recycling', NULL, 7, 100),
+('30-Day Eco Warrior Challenge', 'Reduce your household electricity footings by shifting to alternative transit modes and vegetarian meal tracks.', '2026-06-01', '2026-06-30', 50.00, 'All', NULL, 30, 200),
+('Green Transport Month', 'Ditch private combustion vehicles. Rely completely on commuter electric transit systems, cycling, or shared buses.', '2026-06-01', '2026-06-30', 100.00, 'Transport', NULL, 30, 150),
+('Plastic Free July', 'Eliminate single-use plastics from your daily routine for the entire month.', '2026-07-01', '2026-07-31', 15.00, 'Recycling', NULL, 31, 500);
 
 -- ============================================
 -- SEED DATA: Badges
@@ -222,9 +228,13 @@ INSERT INTO `badge` (`id`, `name`, `criteria_json`) VALUES
 -- Create Admin User (password: admin123 - CHANGE IN PRODUCTION!)
 -- Password hashed with bcrypt
 -- ============================================
-INSERT INTO User (name, email, password_hash, role, joined_at) VALUES
-('Administrator', 'admin@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NOW());
-
+INSERT INTO User (name, email, password_hash, role, target_reduction_percent, goal_duration_days, goal_start_date, baseline_footprint, joined_at) VALUES
+('Administrator', 'admin@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Leader', 'leader@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'leader', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Farish', 'farish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Hafiz', 'hafiz@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Danish', 'danish@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW()),
+('Syaeeda', 'syaeeda@greenstep.my', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'end-user', 50.00, 30, '2026-06-01', 100.00, NOW());
 -- ============================================
 -- Table to track which badges each user has earned
 -- ============================================

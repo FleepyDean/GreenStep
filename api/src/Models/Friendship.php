@@ -210,4 +210,31 @@ class Friendship
             return false;
         }
     }
+
+    /**
+     * Delete a friendship or request
+     * 
+     * @param int $requestId Friendship request ID
+     * @param int $userId Authenticated user ID
+     * @return bool True on success
+     */
+    public function delete(int $requestId, int $userId): bool
+    {
+        $sql = "DELETE FROM Friendship 
+                WHERE id = :id 
+                  AND (sender_id = :sender_id OR receiver_id = :receiver_id)";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':id' => $requestId,
+                ':sender_id' => $userId,
+                ':receiver_id' => $userId
+            ]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Friendship::delete error: " . $e->getMessage());
+            return false;
+        }
+    }
 }

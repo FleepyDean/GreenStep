@@ -5,7 +5,7 @@
       <p>Join community actions and reduce your carbon footprint together</p>
     </div>
 
-    <button v-if="isAdmin" class="create-challenge-btn" @click="showCreateModal = true">
+    <button v-if="canManageChallenges" class="create-challenge-btn" @click="showCreateModal = true">
       + Create New Challenge
     </button>
 
@@ -34,8 +34,8 @@
             {{ item.is_active ? 'Active' : item.is_upcoming ? 'Upcoming' : 'Completed' }}
           </span>
           <span v-if="item.has_joined" class="joined-pill">✓ Joined</span>
-          <span class="member-count">👥 {{ item.member_count }} members</span>
-          <div v-if="isAdmin" class="admin-card-actions">
+          <!-- <span class="member-count">👥 {{ item.member_count }} members</span> -->
+          <div v-if="canManageChallenges" class="admin-card-actions">
             <button class="icon-btn edit-icon-btn" @click.stop="openEditModal(item)" title="Edit">✏️</button>
             <button class="icon-btn delete-icon-btn" @click.stop="deleteItem(item)" title="Delete">🗑️</button>
           </div>
@@ -57,6 +57,14 @@
             <span class="meta-label">Timeline:</span>
             <span class="meta-val">{{ formatDate(item.start_date) }} - {{ formatDate(item.end_date) }}</span>
           </div>
+          <div class="meta-row">
+            <span class="meta-label">Members:</span>
+            <span class="meta-val">
+              {{ item.member_count }}
+              <span v-if="item.member_limit">/ {{ item.member_limit }}</span>
+              <span v-if="item.is_full" class="full-badge">Full</span>
+            </span>
+          </div>
         </div>
 
         <div class="action-btn-group">
@@ -64,9 +72,10 @@
           <button
             v-if="!isAdmin"
             :class="['primary-action-btn', item.has_joined ? 'leave-action-btn' : '']"
+            :disabled="item.is_full && !item.has_joined"
             @click="toggleJoin(item)"
           >
-            {{ item.has_joined ? 'Leave Challenge' : 'Join Challenge' }}
+            {{ item.has_joined ? 'Leave Challenge' : (item.is_full ? 'Full' : 'Join Challenge') }}
           </button>
         </div>
       </div>
@@ -122,6 +131,7 @@ const isLoading = ref(true)
 
 
 const isAdmin = computed(() => authStore.user?.role === 'admin')
+const canManageChallenges = computed(() => authStore.user?.role === 'admin' || authStore.user?.role === 'leader')
 
 
 
@@ -157,17 +167,16 @@ async function loadChallenges() {
 
     isLoading.value = true
 
+    console.log('Loading challenges...')
     const response = await challengeAPI.getChallenges()
-
-    console.log('Challenges API response:', response.data)
+    console.log('Challenges response:', response)
 
     challenges.value = response.data.challenges || []
-
-    console.log('challenges.value set to:', challenges.value, 'length:', challenges.value.length)
 
   } catch (err) {
 
     console.error('Failed to load challenges:', err)
+    console.error('Error response:', err.response)
 
     toast.error(err.response?.data?.message || 'Failed to load challenges')
 
@@ -483,6 +492,24 @@ onMounted(async () => {
 
 }
 
+.full-badge {
+  display: inline-block;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 10px;
+  margin-left: 0.4rem;
+  text-transform: uppercase;
+}
+
+.primary-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #8696A0;
+}
+
 
 
 .empty-state {
@@ -493,6 +520,29 @@ onMounted(async () => {
 
   color: #54656F;
 
+}
+
+.meta-row-tags {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.card-type-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.card-type-tag {
+  background: rgba(0, 168, 132, 0.12);
+  color: #00A884;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 168, 132, 0.3);
 }
 
 </style>

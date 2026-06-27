@@ -70,6 +70,21 @@ export const useSocialStore = defineStore('social', () => {
     }
   }
 
+  async function removeFriend(friendshipId) {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await socialAPI.removeFriend(friendshipId)
+      await fetchFriends()
+      return { success: true, message: response.data.message }
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Failed to remove friend'
+      return { success: false, message: error.value }
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     friends,
     pendingRequests,
@@ -80,6 +95,7 @@ export const useSocialStore = defineStore('social', () => {
     fetchFriends,
     sendFriendRequest,
     respondToRequest,
+    removeFriend,
     fetchLeaderboard
   }
 })
