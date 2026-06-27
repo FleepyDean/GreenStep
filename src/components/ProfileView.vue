@@ -76,24 +76,26 @@
           Syncing milestones with the database...
         </div>
 
-        <div v-else class="badges-display-grid">
-          <div 
-            v-for="badge in userBadges" 
-            :key="badge.id" 
-            :class="['badge-item-node', { 'locked-badge': !badge.unlocked }]"
-          >
-            <span class="badge-medallion">
-              {{ badge.unlocked ? (badge.icon || '🏅') : '🔒' }}
-            </span>
-            <h4>{{ badge.title }}</h4>
-            <p>{{ badge.criterion }}</p>
-            <span :class="['badge-status-stamp', badge.unlocked ? 'status-unlocked' : 'status-locked']">
-              {{ badge.unlocked ? 'Unlocked' : 'Locked' }}
-            </span>
-          </div>
-          
-          <div v-if="userBadges.length === 0" style="grid-column: 1/-1; text-align: center; color: #777;">
-            No milestone profiles configured in backend system.
+        <div v-else class="scrollable-badges-box">
+          <div class="badges-display-grid">
+            <div 
+              v-for="badge in userBadges" 
+              :key="badge.id" 
+              :class="['badge-item-node', { 'locked-badge': !badge.unlocked }]"
+            >
+              <span class="badge-medallion">
+                {{ badge.unlocked ? (badge.icon || '🏅') : '🔒' }}
+              </span>
+              <h4>{{ badge.title }}</h4>
+              <p>{{ badge.criterion }}</p>
+              <span :class="['badge-status-stamp', badge.unlocked ? 'status-unlocked' : 'status-locked']">
+                {{ badge.unlocked ? 'Unlocked' : 'Locked' }}
+              </span>
+            </div>
+            
+            <div v-if="userBadges.length === 0" style="grid-column: 1/-1; text-align: center; color: #777; padding-top: 2rem;">
+              No milestone profiles configured in backend system.
+            </div>
           </div>
         </div>
       </section>
@@ -142,6 +144,9 @@ const fetchUserBadges = async () => {
       if (badge.id === 4) dynamicIcon = '♻️'
       if (badge.id === 5) dynamicIcon = '💡'
       if (badge.id === 6) dynamicIcon = '🔥'
+      if (badge.id === 7) dynamicIcon = '🛠️'
+      if (badge.id === 8) dynamicIcon = '🌿'
+      if (badge.id === 9) dynamicIcon = '👑'
 
       return {
         id: badge.id,
@@ -209,7 +214,6 @@ const handleLogout = () => {
   toast.info('Logged out successfully')
 }
 
-// Lifecycle Hooks
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     await authStore.fetchProfile()
@@ -217,3 +221,50 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+/* Scoped Layout System Syncing Panel Boxes */
+.scrollable-badges-box {
+  max-height: 440px; /* Locks panel layout height frame */
+  overflow-y: auto;   /* Activates vertical scrolling when badges spill over */
+  padding-right: 10px; /* Leaves clean gutter buffer space for the scrollbar element */
+}
+
+/* Custom Scrollbar Visual Properties */
+.scrollable-badges-box::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollable-badges-box::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+.scrollable-badges-box::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.scrollable-badges-box::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Layout Framework Alignments */
+.profile-layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.gamification-showcase-panel {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.badges-display-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+</style>
