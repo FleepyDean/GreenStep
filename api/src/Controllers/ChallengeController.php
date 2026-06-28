@@ -60,7 +60,7 @@ class ChallengeController
             $isActive = $today >= $c['start_date'] && $today <= $c['end_date'];
             $isUpcoming = $today < $c['start_date'];
             $typeIds = !empty($c['target_activity_type_id'])
-                ? array_values(array_filter(array_map('intval', explode(',', $c['target_activity_type_id']))))
+                ? array_values(array_filter(array_map('intval', explode(',', (string) $c['target_activity_type_id']))))
                 : [];
             $typeNames = array_values(array_filter(array_map(fn($id) => $typeNameMap[$id] ?? null, $typeIds)));
 

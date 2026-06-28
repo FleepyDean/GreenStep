@@ -102,10 +102,10 @@ class Challenge
         return (string) $ids;
     }
 
-    private function decodeActivityTypeIds(?string $ids): array
+    private function decodeActivityTypeIds(mixed $ids): array
     {
         if (empty($ids)) return [];
-        return array_values(array_filter(array_map('intval', explode(',', $ids))));
+        return array_values(array_filter(array_map('intval', explode(',', (string) $ids))));
     }
 
     public function create(array $data): int|false
