@@ -8,8 +8,7 @@
         "php-di/php-di": "^7.0",
         "slim/psr7": "*",
         "slim/slim": "*",
-        "vlucas/phpdotenv": "*",
-        "friendsofphp/proxy-manager-lts": "^1.0"
+        "vlucas/phpdotenv": "*"
     },
     "autoload": {
         "psr-4": {
