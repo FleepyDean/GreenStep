@@ -2,225 +2,283 @@
 
 **SCSM2223 Cross-Platform Application Development - Group Project**
 
-A full-stack web application to help users track and reduce their daily carbon footprint through actionable insights, gamification, and community challenges.
+A full-stack web application that helps users track and reduce their daily carbon footprint through actionable insights, gamification, social challenges, and personalized goal projections. Deployed on Railway with PHP Slim 4 backend, Vue 3 frontend, and MySQL database.
 
 ---
 
-## 🌱 Project Overview
+## Project Overview
 
 **Problem Statement:** Climate change is among the most urgent global challenges, and individuals collectively account for a large share of avoidable carbon emissions through transport, diet, and energy choices.
 
-**Solution:** GreenStep targets the gap - a friendly daily logger that estimates a user's carbon footprint, suggests one realistic action per day, and lets friends compete on streaks and reductions.
+**Solution:** GreenStep is a friendly daily logger that estimates a user's carbon footprint, suggests one realistic action per day, lets friends compete on streaks and reductions, and provides admin tools for managing emission factors, badges, challenges, and tips.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | **Frontend** | Vue 3 + Vue Router + Pinia | Dynamic, mobile-first SPA |
+| **Build Tool** | Vite | Fast dev server and production bundling |
 | **HTTP Client** | Axios | API calls with JWT interceptors |
 | **Backend API** | PHP Slim 4 + PDO | RESTful API with business logic |
-| **Database** | MySQL (via Laragon) | Persistent storage with relationships |
+| **Database** | MySQL | Persistent storage with relationships |
 | **Security** | JWT (firebase/php-jwt) + Bcrypt | Authentication & password hashing |
-| **Mobile** | Capacitor | Android native build |
+| **Deployment** | Railway (Nixpacks) | Frontend + Backend + MySQL hosting |
+| **Mobile** | Capacitor | Android native build (optional) |
 
 ---
 
-## 📁 Project Structure
+## Live Deployment
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | https://greenstep.up.railway.app |
+| **Backend API** | https://greenstep-backend-production.up.railway.app/api |
+| **Admin Login** | `admin@greenstep.my` / `admin123` |
+
+---
+
+## Project Structure
 
 ```
 GreenStep/
-├── src/                        # Vue 3 frontend
-│   ├── components/             # Page-level view components
-│   │   ├── DashboardView.vue       # Dashboard with stats overview
-│   │   ├── ActivityLogView.vue     # Activity logging (CONNECTED TO API)
-│   │   ├── ChallengesView.vue      # Eco challenges (mock data)
-│   │   ├── TipsView.vue            # Eco tips (mock data)
-│   │   └── ProfileView.vue         # Auth & profile (CONNECTED TO API)
+├── src/                            # Vue 3 frontend
+│   ├── components/                 # Page-level view components
+│   │   ├── DashboardView.vue           # User dashboard with charts & goal tracking
+│   │   ├── AdminDashboard.vue          # Admin dashboard with platform stats
+│   │   ├── ActivityLogView.vue         # Activity logging with photo upload
+│   │   ├── ChallengesView.vue          # Eco challenges listing
+│   │   ├── ChallengeDetailsView.vue    # Challenge details & join/leave
+│   │   ├── CreateChallengeModal.vue    # Admin challenge creation modal
+│   │   ├── TipsView.vue                # Eco tips management (admin CRUD)
+│   │   ├── ProfileView.vue             # Auth, profile & user badges
+│   │   ├── FriendsView.vue             # Friends & social connections
+│   │   ├── LeaderboardView.vue         # Global/friends leaderboard
+│   │   ├── AddBadgesView.vue           # Admin badge management (CRUD)
+│   │   ├── EmissionFactorView.vue      # Admin emission factor management
+│   │   ├── WeeklyTrendChart.vue        # Weekly carbon trend chart
+│   │   ├── MonthlyTrendChart.vue       # Monthly carbon trend chart
+│   │   ├── CategoryBreakdownChart.vue  # Doughnut chart for categories
+│   │   ├── AdminCategoryChart.vue      # Admin category distribution chart
+│   │   └── ToastNotification.vue       # Toast UI component
+│   ├── composables/
+│   │   └── useToast.js             # Toast notification composable
 │   ├── services/
-│   │   └── api.js              # Axios instance + API endpoint wrappers
+│   │   └── api.js                  # Axios instance + all API endpoint wrappers
 │   ├── stores/
-│   │   └── auth.js             # Pinia store for JWT auth state
+│   │   ├── auth.js                 # Pinia store for JWT auth state
+│   │   └── social.js               # Pinia store for friends/leaderboard
 │   ├── router/
-│   │   └── index.js            # Vue Router config (hash mode)
-│   ├── App.vue                 # Root layout with nav
-│   ├── main.js                 # App entry point
-│   └── style.css               # Global styles
+│   │   └── index.js                # Vue Router config (hash mode, role guards)
+│   ├── utils/
+│   │   └── eventBus.js             # Event bus for cross-component communication
+│   ├── assets/
+│   │   └── main.css                # Global styles
+│   ├── App.vue                     # Root layout with nav + drawer
+│   ├── main.js                     # App entry point
+│   └── style.css                   # Legacy global styles
 │
-├── api/                        # PHP Slim 4 backend
+├── api/                            # PHP Slim 4 backend
 │   ├── public/
-│   │   └── index.php           # App entry point (middleware, CORS, routes)
+│   │   └── index.php               # App entry (middleware, CORS, timezone, DI)
+│   ├── config/
+│   │   └── Database.php            # PDO database connection
 │   ├── src/
 │   │   ├── Controllers/
-│   │   │   ├── HealthController.php        # Health check
+│   │   │   ├── HealthController.php        # Health check endpoint
 │   │   │   ├── AuthController.php          # Register, login, profile
-│   │   │   ├── ActivityController.php      # CRUD for activity logs
-│   │   │   └── ActivityTypeController.php  # Activity types & categories
+│   │   │   ├── ActivityController.php      # CRUD for activity logs + badge engine
+│   │   │   ├── ActivityTypeController.php  # Activity types, categories, admin CRUD
+│   │   │   ├── DashboardController.php     # Dashboard metrics & charts data
+│   │   │   ├── GoalController.php          # Carbon reduction goal & projection
+│   │   │   ├── BadgeController.php         # Badge CRUD, user badge evaluation
+│   │   │   ├── ChallengeController.php     # Challenge CRUD, join/leave, progress
+│   │   │   ├── TipController.php           # Eco tips CRUD
+│   │   │   ├── SocialController.php        # Friends, requests, leaderboard
+│   │   │   └── AdminController.php         # Admin dashboard stats & dataset
 │   │   ├── Middleware/
 │   │   │   └── JwtMiddleware.php           # JWT token validation
 │   │   ├── Models/
 │   │   │   ├── User.php                    # User model (bcrypt hashing)
 │   │   │   ├── ActivityLog.php             # Activity log model
-│   │   │   └── ActivityType.php            # Activity type model
+│   │   │   ├── ActivityType.php            # Activity type model
+│   │   │   ├── Challenge.php               # Challenge model & participant logic
+│   │   │   ├── Friendship.php              # Friendship model
+│   │   │   ├── Tip.php                     # Tip model
+│   │   │   └── Admin.php                   # Admin model
 │   │   ├── Services/
 │   │   │   ├── JwtService.php              # JWT generate & verify
-│   │   │   └── CarbonCalculator.php        # Carbon footprint math
+│   │   │   ├── CarbonCalculator.php        # Carbon footprint math
+│   │   │   └── CarbonDatasetService.php    # Emission factor dataset
 │   │   └── routes.php                      # All API route definitions
-│   ├── .env.example            # Environment config template
-│   └── composer.json           # PHP dependencies
+│   ├── .env.example                # Environment config template
+│   ├── composer.json               # PHP dependencies & start script
+│   ├── nixpacks.toml               # Railway build config for backend
+│   └── railway.json                # Railway deployment config for backend
 │
 ├── database/
-│   └── schema.sql              # Full DB schema + seed data (10 tables)
+│   ├── schema.sql                  # Full DB schema + seed data (local dev)
+│   ├── schema_railway.sql          # Railway-safe schema (no DROP/CREATE DB)
+│   ├── add_dynamic_categories.sql  # Migration: add dynamic categories
+│   ├── add_photo_url.sql           # Migration: add photo_url column
+│   ├── alter_activity_type_ids.sql # Migration: alter challenge target IDs
+│   ├── fix_badge_autoincrement.sql # Migration: fix badge AUTO_INCREMENT
+│   └── migrations/                 # Additional migration scripts
 │
-└── README.md                   # You are here
+├── nixpacks.toml                   # Railway build config for frontend
+├── railway.json                    # Railway deployment config for frontend
+├── vite.config.js                  # Vite configuration
+├── package.json                    # Node dependencies & scripts
+├── .gitignore                      # Git ignore rules
+└── README.md                       # You are here
 ```
 
 ---
 
-## 👥 Team Roles & Progress
+## Features
 
-| Member | Role | Status |
-|--------|------|--------|
-| **Member 1** | Frontend Lead (Vue scaffolding, components, routing, UI/UX) | ✅ UI complete, 2 pages connected to API |
-| **Member 2** | Backend & API Lead (PHP Slim, RESTful endpoints, business logic) | ✅ Auth + Activity Logging APIs complete |
-| **Member 3** | Database & Security Lead (ER diagram, MySQL schema, JWT, validation) | ✅ Schema + seed data + JWT implemented |
-| **Member 4** | DevOps & Mobile Lead (Deployment, Capacitor, integration testing) | ⬜ Pending |
+### User Features
+- **Authentication** - Register, login, JWT-based session management
+- **Activity Logging** - Log daily activities (transport, diet, energy, recycling) with automatic carbon footprint calculation
+- **Photo Upload** - Attach photos to activity logs
+- **Dashboard** - Real-time stats with weekly/monthly trend charts, category breakdown doughnut chart, daily streak counter
+- **Carbon Reduction Goal** - Set personal reduction targets, view progress bar, pace projection, and on-track/off-track status
+- **Badges & Gamification** - Automatic badge unlocking based on activity milestones, streaks, and category totals
+- **Eco Challenges** - Browse, join, and track challenges with progress indicators
+- **Eco Tips** - Daily random tips, category-filtered browsing, admin-managed content
+- **Social** - Add friends, send/accept/reject requests, remove friends
+- **Leaderboard** - Global and friends-only rankings by carbon savings
+- **Profile** - View profile info, earned badges (non-admin), logout
 
----
-
-## ✅ What's Been Completed
-
-### Database (`database/schema.sql`)
-- **10 tables** created with proper foreign keys and indexes:
-  - `User`, `ActivityType`, `ActivityLog`, `Tip`, `Challenge`
-  - `ChallengeParticipant`, `Badge`, `UserBadge`, `Friendship`
-- **Seed data** included:
-  - 17 activity types with emission factors (Transport, Diet, Energy, Recycling)
-  - 10 eco tips across all categories
-  - 4 challenges with date ranges and targets
-  - 6 badges with criteria JSON
-  - 1 admin user (email: `admin@greenstep.my`, password: `admin123`)
-
-### Backend API (`api/`)
-- **Authentication system** with JWT:
-  - `POST /api/auth/register` - Register with name, email, password
-  - `POST /api/auth/login` - Login and receive JWT token
-  - `GET /api/auth/me` - Get current user profile (protected)
-- **Activity Logging** (all protected with JWT):
-  - `POST /api/activities` - Log a new activity (auto-calculates carbon footprint)
-  - `GET /api/activities` - Get all activities (with optional date filters)
-  - `GET /api/activities/today` - Get today's activities + total footprint
-  - `GET /api/activities/stats` - Get aggregated statistics
-  - `DELETE /api/activities/{id}` - Delete an activity
-- **Activity Types** (public):
-  - `GET /api/activity-types` - All types grouped by category
-  - `GET /api/activity-types/categories` - List of categories
-  - `GET /api/activity-types/category/{category}` - Types filtered by category
-- **Middleware**:
-  - `BodyParsingMiddleware` - JSON body parsing
-  - `JwtMiddleware` - Token validation for protected routes
-  - CORS headers - `Access-Control-Allow-Origin: *`
-- **Services**:
-  - `JwtService` - Token generation & verification with firebase/php-jwt
-  - `CarbonCalculator` - Multiplies amount by emission factor per activity type
-
-### Frontend (`src/`)
-- **API service layer** (`src/services/api.js`):
-  - Axios instance with baseURL `http://localhost:8080/api`
-  - Request interceptor: auto-attaches JWT token from localStorage
-  - Response interceptor: auto-redirects to `/profile` on 401
-  - Pre-built API wrappers: `authAPI` and `activityAPI`
-- **Auth store** (`src/stores/auth.js`):
-  - Pinia store managing token + user state
-  - `register()`, `login()`, `logout()`, `fetchProfile()` actions
-  - Persists token + user to localStorage
-- **Connected pages**:
-  - `ProfileView.vue` - Real registration, login, logout, profile display
-  - `ActivityLogView.vue` - Real activity logging, today's list, delete, carbon totals
-- **Not yet connected** (still using mock data):
-  - `DashboardView.vue` - Needs stats from `GET /api/activities/stats`
-  - `ChallengesView.vue` - Needs `GET /api/challenges` endpoint
-  - `TipsView.vue` - Needs `GET /api/tips` endpoint
+### Admin Features
+- **Admin Dashboard** - Platform-wide statistics and user dataset overview
+- **Badge Management** - Create custom badges with category rules, activity type targeting, and threshold values; delete badges
+- **Emission Factor Management** - Add/edit/delete activity types and categories with custom emission factors
+- **Challenge Management** - Create, update, and delete challenges
+- **Tips Management** - Create and delete eco tips
 
 ---
 
-## ⬜ What's Left To Do
+## API Reference
 
-### For Frontend Lead (Member 1)
-1. **Dashboard** (`DashboardView.vue`):
-   - Connect to `GET /api/activities/stats` for real statistics
-   - Show total footprint, category breakdown, daily/weekly trends
-   - Use charts (consider Chart.js or similar)
+### Authentication (Public)
 
-2. **Challenges** (`ChallengesView.vue`):
-   - Needs backend endpoints first (see Member 2 below)
-   - Display available challenges from `GET /api/challenges`
-   - Show user's joined challenges from `GET /api/challenges/my`
-   - Join/leave challenge buttons
+| Method | Endpoint | Body | Description |
+|--------|----------|------|-------------|
+| `POST` | `/api/auth/register` | `{name, email, password}` | Register new user, returns JWT |
+| `POST` | `/api/auth/login` | `{email, password}` | Login, returns JWT |
+| `GET` | `/api/auth/me` | — | Get current user (protected) |
 
-3. **Tips** (`TipsView.vue`):
-   - Needs backend endpoint `GET /api/tips`
-   - Display tips from database, filter by category
-   - Optional: admin can add tips via `POST /api/tips`
+### Activity Types (Public)
 
-4. **Navigation guards**:
-   - Add router guard to redirect unauthenticated users from `/activity`, `/dashboard` to `/profile`
-   - Example in `src/router/index.js`:
-   ```js
-   router.beforeEach((to, from, next) => {
-     const token = localStorage.getItem('auth_token')
-     const publicPages = ['/profile']
-     if (!token && !publicPages.includes(to.path)) {
-       next('/profile')
-     } else {
-       next()
-     }
-   })
-   ```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/activity-types` | All types grouped by category |
+| `GET` | `/api/activity-types/categories` | List of categories |
+| `GET` | `/api/activity-types/category/{category}` | Types filtered by category |
 
-### For Backend Lead (Member 2)
-1. **Challenge endpoints** (needed by ChallengesView):
-   - `GET /api/challenges` - List all active challenges
-   - `GET /api/challenges/{id}` - Get single challenge details
-   - `POST /api/challenges/{id}/join` - Join a challenge (protected)
-   - `DELETE /api/challenges/{id}/leave` - Leave a challenge (protected)
-   - `GET /api/challenges/my` - Get user's joined challenges (protected)
-   - Create `ChallengeController.php` and `ChallengeModel.php`
+### Activity Logging (Protected)
 
-2. **Tip endpoints** (needed by TipsView):
-   - `GET /api/tips` - List all tips (optional: filter by category via query param)
-   - `GET /api/tips/category/{category}` - Tips by category
-   - `POST /api/tips` - Create tip (admin only)
-   - Create `TipController.php` and `TipModel.php`
+| Method | Endpoint | Body | Description |
+|--------|----------|------|-------------|
+| `GET` | `/api/activities` | — (query: `start_date`, `end_date`) | Get user's activities |
+| `GET` | `/api/activities/today` | — | Get today's activities + total footprint |
+| `GET` | `/api/activities/stats` | — (query: `start_date`, `end_date`) | Get aggregated stats |
+| `POST` | `/api/activities` | `{activity_type_id, amount, date}` or `multipart/form-data` | Log new activity (with optional photo) |
+| `DELETE` | `/api/activities/{id}` | — | Delete an activity |
 
-3. **Badge endpoints** (needed by ProfileView gamification):
-   - `GET /api/badges` - List all badges
-   - `GET /api/badges/my` - Get user's earned badges (protected)
-   - `POST /api/badges/check` - Check and award badges based on activity (protected)
-   - Create `BadgeController.php` and `BadgeModel.php`
+### Dashboard & Goals (Protected)
 
-4. **Admin endpoints** (optional):
-   - `GET /api/admin/users` - List all users (admin only)
-   - `POST /api/admin/activity-types` - Add activity type (admin only)
-   - `POST /api/admin/tips` - Add tip (admin only)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/dashboard/{userId}` | Dashboard metrics, charts data, streak, badge count |
+| `GET` | `/api/goal` | Get user's goal + projection (progress, pace, savings) |
+| `PUT` | `/api/goal` | Update goal target, duration, baseline, or reset cycle |
 
-### For DevOps Lead (Member 4)
-1. **Capacitor setup**:
-   - `npm install @capacitor/core @capacitor/cli`
-   - `npx cap init GreenStep com.greenstep.app`
-   - `npm run build && npx cap add android`
-   - `npx cap sync` after each build
-   - Test on Android Studio emulator
+### Badges (Protected)
 
-2. **Deployment** (optional):
-   - Backend: Deploy `api/` to a PHP host (e.g., shared hosting, VPS)
-   - Frontend: Deploy `dist/` to Netlify/Vercel
-   - Database: Use production MySQL with updated `.env`
+| Method | Endpoint | Body | Description |
+|--------|----------|------|-------------|
+| `GET` | `/api/badges` | — | Get user's badges with unlock status |
+| `GET` | `/api/admin/badges` | — | Get all badges (admin only) |
+| `POST` | `/api/admin/badges` | `{name, description, icon, category_rule, activity_type_ids, threshold_value}` | Create custom badge (admin only) |
+| `DELETE` | `/api/admin/badges/{id}` | — | Delete badge (admin only) |
+
+### Challenges (Protected)
+
+| Method | Endpoint | Body | Description |
+|--------|----------|------|-------------|
+| `GET` | `/api/challenges` | — | List all challenges |
+| `GET` | `/api/challenges/{id}/details` | — | Get challenge details + participant status |
+| `POST` | `/api/challenges` | `{title, description, ...}` | Create challenge (admin only) |
+| `PUT` | `/api/challenges/{id}` | `{...}` | Update challenge (admin only) |
+| `DELETE` | `/api/challenges/{id}` | — | Delete challenge (admin only) |
+| `POST` | `/api/challenges/{id}/join` | — | Join a challenge |
+| `DELETE` | `/api/challenges/{id}/leave` | — | Leave a challenge |
+
+### Tips (Protected)
+
+| Method | Endpoint | Body | Description |
+|--------|----------|------|-------------|
+| `GET` | `/api/tips` | — | List all tips |
+| `GET` | `/api/tips/random` | — | Get a random tip |
+| `POST` | `/api/tips` | `{title, content, category}` | Create tip (admin only) |
+| `DELETE` | `/api/tips/{id}` | — | Delete tip (admin only) |
+
+### Social (Protected)
+
+| Method | Endpoint | Body | Description |
+|--------|----------|------|-------------|
+| `GET` | `/api/friends` | — | Get friends list + pending requests |
+| `POST` | `/api/friends/request` | `{email}` | Send friend request |
+| `PUT` | `/api/friends/request/{id}` | `{status}` | Accept/reject request |
+| `DELETE` | `/api/friends/{id}` | — | Remove friend |
+| `GET` | `/api/leaderboard` | — (query: `filter`) | Get leaderboard (global/friends) |
+
+### Admin (Protected + Admin Role)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/admin/dashboard` | Platform statistics |
+| `GET` | `/api/admin/dataset` | Full user dataset |
+| `POST` | `/api/admin/categories` | Create activity category |
+| `POST` | `/api/admin/activity-types` | Create activity type |
+| `PUT` | `/api/admin/activity-types/{id}` | Update activity type |
+| `DELETE` | `/api/admin/activity-types/{id}` | Delete activity type |
+
+### Request Headers (for protected routes)
+```
+Authorization: Bearer <your_jwt_token>
+Content-Type: application/json
+```
 
 ---
 
-## 🚀 Setup Instructions (Full Stack)
+## Database Schema Overview
+
+| Table | Purpose | Key Relationships |
+|-------|---------|-------------------|
+| `User` | User accounts with goal settings | → ActivityLog, ChallengeParticipant, UserBadge, Friendship |
+| `ActivityType` | Activity types with emission factors | → ActivityLog |
+| `ActivityLog` | Individual activity entries with carbon footprint | → User, ActivityType |
+| `Tip` | Eco tips | — |
+| `Challenge` | Eco challenges with targets | → ChallengeParticipant |
+| `ChallengeParticipant` | User-challenge joins | → Challenge, User |
+| `Badge` | Achievement badges with rules | → UserBadge |
+| `UserBadge` | Earned badges | → User, Badge |
+| `Friendship` | Social connections | → User (sender, receiver) |
+
+### Seed Data
+- 17+ activity types with emission factors (Transport, Diet, Energy, Recycling)
+- 10 eco tips across all categories
+- 4 challenges with date ranges and targets
+- 6+ badges (streak + category-based)
+- 1 admin user (`admin@greenstep.my` / `admin123`)
+
+---
+
+## Setup Instructions
 
 ### Prerequisites
 - **Node.js** 18+ and npm
@@ -235,7 +293,7 @@ GreenStep/
 2. Open `http://localhost/phpmyadmin`
 3. Create database: `greenstep_db` (collation: `utf8mb4_general_ci`)
 4. Click Import → Choose `database/schema.sql` → Import
-5. Verify: `ActivityType` table should have 17 rows
+5. Verify: `ActivityType` table should have 17+ rows
 
 **Using command line:**
 ```bash
@@ -262,6 +320,17 @@ composer start
 # API runs at http://localhost:8080
 ```
 
+**Environment variables (`.env`):**
+```
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=greenstep_db
+DB_USER=root
+DB_PASS=
+JWT_SECRET=your_secret_key
+FRONTEND_URL=http://localhost:5173
+```
+
 **Verify backend is running:**
 ```bash
 curl http://localhost:8080/api/health
@@ -271,7 +340,7 @@ curl http://localhost:8080/api/health
 ### 3. Frontend Setup
 
 ```bash
-# Install dependencies (including axios)
+# Install dependencies
 npm install
 
 # Run development server
@@ -279,134 +348,102 @@ npm run dev
 # Frontend runs at http://localhost:5173
 ```
 
+**Environment variable (`.env`):**
+```
+VITE_API_URL=http://localhost:8080/api
+```
+
 ### 4. Test the Full Flow
 
 1. Open `http://localhost:5173/profile`
-2. Register a new user (e.g., name: Danish, email: danish@utm.my, password: Test123456)
-3. Go to `/activity` - you should see the activity log form
-4. Select a category, activity type, enter amount, and submit
-5. Activity appears in "Today's Activities" with real carbon footprint
-6. Click "Refresh" to reload, "Delete" to remove an activity
+2. Register a new user or login as admin (`admin@greenstep.my` / `admin123`)
+3. Go to `/activity` — log an activity (select category, type, amount, date)
+4. Go to `/dashboard` — view charts, stats, and goal progress
+5. Go to `/challenges` — browse and join challenges
+6. Go to `/tips` — view eco tips
+7. Go to `/friends` — add friends and view leaderboard
+8. Go to `/profile` — view profile and earned badges
 
 ---
 
-## 📡 API Reference
+## Railway Deployment
 
-### Authentication (Public)
+### Architecture
+- **Frontend** service: Vue 3 SPA built with Vite, served as static files
+- **Backend** service: PHP Slim 4 API running with `php -S` built-in server
+- **Database** service: MySQL on Railway
 
-| Method | Endpoint | Body | Description |
-|--------|----------|------|-------------|
-| `POST` | `/api/auth/register` | `{name, email, password}` | Register new user, returns JWT |
-| `POST` | `/api/auth/login` | `{email, password}` | Login, returns JWT |
-| `GET` | `/api/auth/me` | — | Get current user (requires `Authorization: Bearer <token>`) |
+### Configuration Files
+- `nixpacks.toml` (root) — Frontend build config (Node 20, npm build, serve dist)
+- `railway.json` (root) — Frontend Railway deployment config
+- `api/nixpacks.toml` — Backend build config (PHP 8.3, Composer)
+- `api/railway.json` — Backend Railway deployment config
 
-### Activity Types (Public)
+### Environment Variables on Railway
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/activity-types` | All types grouped by category |
-| `GET` | `/api/activity-types/categories` | List of categories |
-| `GET` | `/api/activity-types/category/{category}` | Types filtered by category |
-
-### Activity Logging (Protected - requires JWT)
-
-| Method | Endpoint | Body | Description |
-|--------|----------|------|-------------|
-| `GET` | `/api/activities` | — (query: `start_date`, `end_date`) | Get user's activities |
-| `GET` | `/api/activities/today` | — | Get today's activities + total footprint |
-| `GET` | `/api/activities/stats` | — (query: `start_date`, `end_date`) | Get aggregated stats |
-| `POST` | `/api/activities` | `{activity_type_id, amount, date}` | Log new activity |
-| `DELETE` | `/api/activities/{id}` | — | Delete an activity |
-
-### Request Headers (for protected routes)
+**Frontend service:**
 ```
-Authorization: Bearer <your_jwt_token>
-Content-Type: application/json
+VITE_API_URL=https://greenstep-backend-production.up.railway.app/api
 ```
 
----
-
-## 🗄️ Database Schema Overview
-
-| Table | Purpose | Key Relationships |
-|-------|---------|-------------------|
-| `User` | User accounts | → ActivityLog, ChallengeParticipant, UserBadge, Friendship |
-| `ActivityType` | Activity types with emission factors | → ActivityLog |
-| `ActivityLog` | Individual activity entries | → User, ActivityType |
-| `Tip` | Eco tips | — |
-| `Challenge` | Eco challenges | → ChallengeParticipant |
-| `ChallengeParticipant` | User-challenge joins | → Challenge, User |
-| `Badge` | Achievement badges | → UserBadge |
-| `UserBadge` | Earned badges | → User, Badge |
-| `Friendship` | Social connections | → User (sender, receiver) |
-
----
-
-## 🧪 Testing with curl (PowerShell)
-
-**Note:** PowerShell's `curl` is an alias for `Invoke-WebRequest`. For JSON payloads, use a file:
-
-```bash
-# Create test-register.json
-@'
-{"name": "Test User", "email": "test@utm.my", "password": "TestPass123"}
-'@ | Set-Content test-register.json
-
-# Register
-curl -X POST http://localhost:8080/api/auth/register -H "Content-Type: application/json" --data-binary "@test-register.json"
-
-# Login (create test-login.json similarly)
-curl -X POST http://localhost:8080/api/auth/login -H "Content-Type: application/json" --data-binary "@test-login.json"
-
-# Get profile (replace TOKEN)
-curl http://localhost:8080/api/auth/me -H "Authorization: Bearer TOKEN"
-
-# Get activity types
-curl http://localhost:8080/api/activity-types
-
-# Log activity (create test-activity.json)
-curl -X POST http://localhost:8080/api/activities -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN" --data-binary "@test-activity.json"
-
-# Get today's activities
-curl http://localhost:8080/api/activities/today -H "Authorization: Bearer TOKEN"
+**Backend service:**
+```
+DB_HOST=<railway-mysql-host>
+DB_PORT=<railway-mysql-port>
+DB_NAME=railway
+DB_USER=root
+DB_PASS=<railway-mysql-password>
+JWT_SECRET=<your-secret-key>
+FRONTEND_URL=https://greenstep.up.railway.app
+PORT=<railway-assigned-port>
 ```
 
+### Database Initialization on Railway
+1. Open the Railway MySQL service in the dashboard
+2. Go to the **MySQL** tab and open the query console
+3. Run the contents of `database/schema_railway.sql` (this is the Railway-safe version without `DROP DATABASE`/`CREATE DATABASE`/`USE` statements)
+4. Run `database/fix_badge_autoincrement.sql` if needed
+
+### Important Notes for Railway
+- The backend sets `date_default_timezone_set('Asia/Kuala_Lumpur')` globally so dates match the user's local time (UTC+8)
+- MySQL on Linux is case-sensitive — all SQL queries use exact table name casing (`ActivityLog`, `ActivityType`, `Badge`, `UserBadge`, `User`, etc.)
+- CORS is configured via the `FRONTEND_URL` environment variable
+- The PHP server binds to `0.0.0.0:$PORT` as required by Railway
+
 ---
 
-## 🔑 Key Files for Team Members
+## Key Files Reference
 
 | If you're working on... | Start here |
 |------------------------|------------|
 | Frontend pages | `src/components/` — each view is a `.vue` file |
-| API calls | `src/services/api.js` — add new endpoint wrappers here |
-| Auth state | `src/stores/auth.js` — Pinia store, already handles JWT |
+| API calls | `src/services/api.js` — all endpoint wrappers |
+| Auth state | `src/stores/auth.js` — Pinia store, handles JWT |
+| Social state | `src/stores/social.js` — Pinia store for friends/leaderboard |
 | New API endpoints | `api/src/routes.php` — add routes, then create controller |
 | New DB tables | `database/schema.sql` — add table + seed data |
 | JWT middleware | `api/src/Middleware/JwtMiddleware.php` — protects routes |
 | Carbon calculation | `api/src/Services/CarbonCalculator.php` — amount × emission factor |
+| Goal projection | `api/src/Controllers/GoalController.php` — baseline, pace, progress |
+| Badge engine | `api/src/Controllers/BadgeController.php` — unlock logic |
+| Railway config | `nixpacks.toml`, `railway.json`, `api/nixpacks.toml`, `api/railway.json` |
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| "Loading..." stuck on Activity page | Make sure you're logged in (check localStorage for `auth_token`) |
+| "Loading..." stuck on a page | Make sure you're logged in (check localStorage for `auth_token`) |
 | Empty activity type dropdown | Import `database/schema.sql` into MySQL |
-| `getParsedBody() returns null` | Use `--data-binary "@file.json"` with curl in PowerShell |
-| CORS error | Backend has CORS middleware, ensure `index.php` middleware order is correct |
+| CORS error | Ensure `FRONTEND_URL` env var matches your frontend URL on Railway |
 | 401 Unauthorized | Token expired or missing — login again |
 | 405 Method Not Allowed | Check `api/src/routes.php` — endpoint may only accept certain methods |
-| Database connection error | Check `api/.env` — ensure DB credentials match your Laragon setup |
-
----
-
-## 📖 Additional Documentation
-
-- `api/AUTH_API_GUIDE.md` - Detailed auth endpoint testing guide
-- `api/ACTIVITY_API_GUIDE.md` - Activity endpoint testing guide
-- `FRONTEND_SETUP.md` - Frontend-backend integration guide
-- `DATABASE_SETUP.md` - Database import instructions
+| 500 Internal Server Error | Check if SQL table names match case (Linux MySQL is case-sensitive) |
+| Date mismatch on Railway | Backend timezone is set to `Asia/Kuala_Lumpur` — ensure activities use today's date |
+| Goal progress bar not updating | Progress tracks carbon reduction vs baseline — logging activities increases footprint |
+| Database connection error | Check `api/.env` — ensure DB credentials match your MySQL setup |
+| Badge 500 error | Ensure all SQL queries use correct table name casing (`ActivityLog`, not `activitylog`) |
 
 ---
 
@@ -420,9 +457,3 @@ curl http://localhost:8080/api/activities/today -H "Authorization: Bearer TOKEN"
   - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
 - Firefox:
   - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-
-## 📖 Documentation
-
-- **Frontend**: See `src/` directory
-- **Backend API**: See `api/README.md`
-- **Database**: See `database/` directory
