@@ -33,7 +33,7 @@
           <span class="nav-icon-wrapper">🏆</span>
           <span class="nav-text-label">Challenges</span>
         </router-link>
-        <router-link to="/activity" class="nav-link-btn" active-class="active">
+        <router-link v-if="!isAdmin" to="/activity" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">📝</span>
           <span class="nav-text-label">Activity</span>
         </router-link>
