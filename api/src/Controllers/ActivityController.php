@@ -106,32 +106,79 @@ class ActivityController
         }
 
         // =============================================================
-        // 🎯 DYNAMIC ACTION/CHALLENGE BADGES ENGINE
+        // 🎯 Dynamic Badge Unlock Engine
         // =============================================================
         try {
-            $categoryClean = strtolower(trim((string)$activityType['category']));
 
-            $categoryToBadgeMap = [
-                'transport' => 1, 
-                'diet'      => 2, 
-                'energy'    => 3, 
-                'recycling' => 4, 
-                'general'   => 5  
-            ];
+            // User totals by category
+            $statsStmt = $this->db->prepare("
+                SELECT act.category, SUM(al.amount) as total_amount
+                FROM activitylog al
+                JOIN activitytype act ON al.activity_type_id = act.id
+                WHERE al.user_id = :userId
+                GROUP BY act.category
+            ");
+            $statsStmt->execute(['userId' => $userId]);
+            $userCategoryTotals = $statsStmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
 
-            if (array_key_exists($categoryClean, $categoryToBadgeMap)) {
-                $targetBadgeId = $categoryToBadgeMap[$categoryClean];
+            // User totals by activity type
+            $typeStmt = $this->db->prepare("
+                SELECT activity_type_id, SUM(amount) as total_amount
+                FROM activitylog
+                WHERE user_id = :userId
+                GROUP BY activity_type_id
+            ");
+            $typeStmt->execute(['userId' => $userId]);
+            $userTypeTotals = $typeStmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
 
-                // Uses the centrally injected database instance directly
-                $unlockQuery = "INSERT IGNORE INTO userbadge (user_id, badge_id, earned_at) VALUES (:user_id, :badge_id, NOW())";
-                $unlockStmt = $this->db->prepare($unlockQuery);
-                $unlockStmt->execute([
-                    'user_id'  => $userId,
-                    'badge_id' => $targetBadgeId
-                ]);
+            // All badges
+            $badges = $this->db->query("SELECT * FROM badge")->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($badges as $badge) {
+
+                $unlock = false;
+
+                if (!empty($badge['activity_type_ids'])) {
+
+                    $typeIds = array_filter(array_map('intval', explode(',', $badge['activity_type_ids'])));
+
+                    $total = 0;
+
+                    foreach ($typeIds as $id) {
+                        $total += (float)($userTypeTotals[$id] ?? 0);
+                    }
+
+                    if ($total >= $badge['threshold_value']) {
+                        $unlock = true;
+                    }
+
+                } elseif (!empty($badge['category_rule'])) {
+
+                    $categoryTotal = (float)($userCategoryTotals[$badge['category_rule']] ?? 0);
+
+                    if ($categoryTotal >= $badge['threshold_value']) {
+                        $unlock = true;
+                    }
+                }
+
+                if ($unlock) {
+
+                    $insert = $this->db->prepare("
+                        INSERT IGNORE INTO userbadge
+                        (user_id,badge_id,earned_at)
+                        VALUES
+                        (:user,:badge,NOW())
+                    ");
+
+                    $insert->execute([
+                        'user' => $userId,
+                        'badge' => $badge['id']
+                    ]);
+                }
             }
+
         } catch (\Exception $e) {
-            error_log("Challenge badge unlock handling error: " . $e->getMessage());
+            error_log($e->getMessage());
         }
         // =============================================================
 
