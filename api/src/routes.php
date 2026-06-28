@@ -65,7 +65,11 @@ $app->group('/api', function ($group) {
     // Personal Goal & Projection (Protected)
     $group->get('/goal', [GoalController::class, 'getGoal'])
         ->add(new JwtMiddleware());
+    $group->get('/admin/badges', [BadgeController::class, 'getAllBadges'])
+        ->add(new JwtMiddleware());
     $group->post('/admin/badges', [BadgeController::class, 'createCustomBadge'])
+        ->add(new JwtMiddleware());
+    $group->delete('/admin/badges/{id}', [BadgeController::class, 'deleteBadge'])
         ->add(new JwtMiddleware());
     
     // Activity Logging (Protected)

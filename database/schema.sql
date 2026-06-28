@@ -125,6 +125,7 @@ CREATE TABLE Badge (
     description TEXT NOT NULL,
     icon VARCHAR(255) NOT NULL,
     category_rule VARCHAR(100) DEFAULT NULL,
+    activity_type_ids VARCHAR(500) DEFAULT NULL,
     threshold_value INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -215,16 +216,16 @@ INSERT INTO `Challenge` (name, description, start_date, end_date, target_co2_red
 -- ============================================
 -- SEED DATA: Badges
 -- ============================================
-INSERT INTO `badge` (`id`, `name`, `description`, `icon`, `category_rule`, `threshold_value`) VALUES
-(1, 'Green Commuter', 'Log an activity under the Transport category.', '🚲', 'Transport', 1),
-(2, 'Plant-Based Hero', 'Log an activity under the Diet category.', '🥗', 'Diet', 1),
-(3, 'Energy Saver', 'Log an activity under the Energy category.', '💡', 'Energy', 1),
-(4, 'Recycling Champion', 'Log an activity under the Recycling category.', '🔋', 'Recycling', 1),
-(5, 'Eco Innovator', 'Log an activity under the General category.', '🌲', 'General', 1),
-(6, 'First Steps', 'Maintain a 1-day consecutive activity logging streak.', '🏃', NULL, NULL),
-(7, 'Habit Builder', 'Maintain a 3-day consecutive activity logging streak.', '🥈', NULL, NULL),
-(8, 'Eco Warrior', 'Maintain a 5-day consecutive activity logging streak.', '🥇', NULL, NULL),
-(9, 'Sustainability Master', 'Maintain a 10-day consecutive activity logging streak.', '🏆', NULL, NULL);
+INSERT INTO `badge` (`id`, `name`, `description`, `icon`, `category_rule`, `activity_type_ids`, `threshold_value`) VALUES
+(1, 'Green Commuter', 'Log an activity under the Transport category.', '🚲', 'Transport', NULL, 1),
+(2, 'Plant-Based Hero', 'Log an activity under the Diet category.', '🥗', 'Diet', NULL, 1),
+(3, 'Energy Saver', 'Log an activity under the Energy category.', '💡', 'Energy', NULL, 1),
+(4, 'Recycling Champion', 'Log an activity under the Recycling category.', '🔋', 'Recycling', NULL, 1),
+(5, 'Eco Innovator', 'Log an activity under the General category.', '🌲', 'General', NULL, 1),
+(6, 'First Steps', 'Maintain a 1-day consecutive activity logging streak.', '🏃', NULL, NULL, NULL),
+(7, 'Habit Builder', 'Maintain a 3-day consecutive activity logging streak.', '🥈', NULL, NULL, NULL),
+(8, 'Eco Warrior', 'Maintain a 5-day consecutive activity logging streak.', '🥇', NULL, NULL, NULL),
+(9, 'Sustainability Master', 'Maintain a 10-day consecutive activity logging streak.', '🏆', NULL, NULL, NULL);
 
 -- ============================================
 -- Create Admin User (password: admin123 - CHANGE IN PRODUCTION!)

@@ -108,7 +108,9 @@ export const adminAPI = {
 
 export const badgeAPI = {
   getUserBadges: () => api.get('/badges'),
-  createBadge: (data) => api.post('/admin/badges', data)
+  getAllBadges: () => api.get('/admin/badges'),
+  createBadge: (data) => api.post('/admin/badges', data),
+  deleteBadge: (id) => api.delete(`/admin/badges/${id}`)
 }
 
 export default api

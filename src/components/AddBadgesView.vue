@@ -1,9 +1,11 @@
 <template>
   <div class="admin-badges-container">
     <div class="page-title">
-      <h2>🏆 Badge Management</h2>
+      <h2>Badge Management</h2>
       <p>Create and distribute new achievement rewards for platform users</p>
     </div>
+
+    
 
     <div class="split-layout">
       <section class="form-card">
@@ -60,6 +62,27 @@
             </div>
           </div>
 
+          <div class="form-group" v-if="form.categoryRule">
+            <label>Target Activity Types <span class="label-hint">(optional — leave all unchecked to count entire category)</span></label>
+            <div class="types-loading" v-if="loadingTypes">Loading activity types...</div>
+            <div class="type-checkbox-list" v-else-if="activityTypes.length">
+              <label
+                v-for="type in activityTypes"
+                :key="type.id"
+                class="type-checkbox-item"
+                :class="{ selected: form.activityTypeIds.includes(type.id) }"
+              >
+                <input
+                  type="checkbox"
+                  :value="type.id"
+                  v-model="form.activityTypeIds"
+                />
+                {{ type.name }}
+              </label>
+            </div>
+            <div class="types-empty" v-else>No specific activity types found for this category.</div>
+          </div>
+
           <div class="form-group">
             <label>Minimum Threshold Value (e.g. Total km / counts / kWh)</label>
             <input 
@@ -105,10 +128,33 @@
       </section>
     </div>
   </div>
+
+  <div class="badges-list-section">
+      <div class="section-header">
+        <h3 class="section-title">All Badges</h3>
+        <span class="badge-count">{{ allBadges.length }} total</span>
+      </div>
+      <div class="badges-grid" v-if="allBadges.length">
+        <div class="badge-item" v-for="badge in allBadges" :key="badge.id">
+          <div class="badge-item-icon">{{ badge.icon }}</div>
+          <div class="badge-item-info">
+            <div class="badge-item-name">{{ badge.name }}</div>
+            <div class="badge-item-meta" v-if="badge.category_rule">
+              <span class="badge-tag">{{ badge.category_rule }}</span>
+              <span class="badge-tag types" v-if="badge.activity_type_ids">{{ badge.activity_type_ids }}</span>
+              <span class="badge-threshold" v-if="badge.threshold_value">≥ {{ badge.threshold_value }} units</span>
+            </div>
+            <div class="badge-item-desc">{{ badge.description }}</div>
+          </div>
+          <button class="delete-btn" @click="deleteBadge(badge)" title="Delete badge">✕</button>
+        </div>
+      </div>
+      <div class="badges-empty" v-else>No badges found.</div>
+    </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
@@ -121,16 +167,19 @@ const { toast } = useToast()
 const loading = ref(false)
 const error = ref(null)
 const categories = ref([])
+const activityTypes = ref([])
+const loadingTypes = ref(false)
+const allBadges = ref([])
 
 const form = reactive({
   name: '',
   description: '',
   icon: '',
   categoryRule: '',
+  activityTypeIds: [],
   thresholdValue: null
 })
 
-// Fetch dynamic valid categories from your endpoint config rules
 async function loadCategories() {
   try {
     const response = await activityAPI.getCategories()
@@ -142,6 +191,45 @@ async function loadCategories() {
   } catch (err) {
     console.error('Failed to load activity metrics reference:', err)
     toast.error('Failed to fetch activity configuration options')
+  }
+}
+
+async function loadActivityTypes(category) {
+  activityTypes.value = []
+  form.activityTypeIds = []
+  if (!category) return
+  loadingTypes.value = true
+  try {
+    const response = await activityAPI.getTypesByCategory(category)
+    activityTypes.value = response.data?.activity_types || []
+  } catch (err) {
+    console.error('Failed to load activity types:', err)
+  } finally {
+    loadingTypes.value = false
+  }
+}
+
+watch(() => form.categoryRule, (newCat) => {
+  loadActivityTypes(newCat)
+})
+
+async function loadAllBadges() {
+  try {
+    const response = await badgeAPI.getAllBadges()
+    allBadges.value = response.data?.badges || []
+  } catch (err) {
+    console.error('Failed to load badges:', err)
+  }
+}
+
+async function deleteBadge(badge) {
+  if (!confirm(`Delete badge "${badge.name}"?`)) return
+  try {
+    await badgeAPI.deleteBadge(badge.id)
+    toast.success(`Badge "${badge.name}" deleted`)
+    await loadAllBadges()
+  } catch (err) {
+    toast.error(err.response?.data?.message || 'Failed to delete badge')
   }
 }
 
@@ -161,6 +249,7 @@ async function submitBadge() {
       description: form.description,
       icon: form.icon,
       category_rule: form.categoryRule,
+      activity_type_ids: form.activityTypeIds,
       threshold_value: form.thresholdValue
     })
 
@@ -172,7 +261,10 @@ async function submitBadge() {
       form.description = ''
       form.icon = ''
       form.categoryRule = ''
+      form.activityTypeIds = []
       form.thresholdValue = null
+      activityTypes.value = []
+      await loadAllBadges()
     }
   } catch (err) {
     console.error('Failed to save badge schema configuration:', err)
@@ -190,7 +282,7 @@ onMounted(async () => {
     router.push('/dashboard')
     return
   }
-  await loadCategories()
+  await Promise.all([loadCategories(), loadAllBadges()])
 })
 </script>
 
@@ -211,6 +303,138 @@ onMounted(async () => {
   margin: 0;
   color: #54656F;
   font-size: 14px;
+}
+
+.badges-list-section {
+  background: #fff;
+  border: 1px solid #E9EDEF;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111B21;
+  margin: 0;
+}
+
+.badge-count {
+  font-size: 12px;
+  background: #F0F2F5;
+  color: #54656F;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.badges-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: #F0F2F5;
+  border-radius: 10px;
+  border: 1px solid #E9EDEF;
+}
+
+.badge-item-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.badge-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge-item-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111B21;
+  margin-bottom: 4px;
+}
+
+.badge-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.badge-tag {
+  font-size: 11px;
+  background: rgba(0, 168, 132, 0.12);
+  color: #00A884;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.badge-tag.types {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.badge-threshold {
+  font-size: 11px;
+  color: #54656F;
+  background: #fff;
+  border: 1px solid #E9EDEF;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.badge-item-desc {
+  font-size: 12.5px;
+  color: #54656F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.delete-btn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid #E9EDEF;
+  color: #ef4444;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #ef4444;
+}
+
+.badges-empty {
+  font-size: 13px;
+  color: #8696A0;
+  text-align: center;
+  padding: 20px;
 }
 
 .split-layout {
@@ -266,6 +490,68 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: #00A884;
+}
+
+.types-loading, .types-empty {
+  font-size: 13px;
+  color: #8696A0;
+  padding: 10px 12px;
+  background: #F0F2F5;
+  border: 1px solid #E9EDEF;
+  border-radius: 8px;
+}
+
+.label-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: #8696A0;
+}
+
+.type-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #E9EDEF;
+  border-radius: 8px;
+  padding: 8px;
+  background: #F0F2F5;
+}
+
+.type-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: #111B21;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: 1px solid transparent;
+}
+
+.type-checkbox-item:hover {
+  background: #E9EDEF;
+}
+
+.type-checkbox-item.selected {
+  background: rgba(0, 168, 132, 0.1);
+  border-color: #00A884;
+  color: #00A884;
+  font-weight: 600;
+}
+
+.type-checkbox-item input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #00A884;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  flex-shrink: 0;
 }
 
 .error-message {

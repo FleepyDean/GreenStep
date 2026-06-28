@@ -35,6 +35,14 @@ class BadgeController
         $icon = $data['icon'] ?? '';
         $categoryRule = $data['category_rule'] ?? '';
         $thresholdValue = $data['threshold_value'] ?? 0;
+        $activityTypeIds = $data['activity_type_ids'] ?? [];
+
+        // Encode activity type IDs as comma-separated string
+        if (is_array($activityTypeIds) && !empty($activityTypeIds)) {
+            $activityTypeIds = implode(',', array_filter(array_map('intval', $activityTypeIds)));
+        } else {
+            $activityTypeIds = null;
+        }
 
         if (empty($name) || empty($description) || empty($icon) || empty($categoryRule) || $thresholdValue <= 0) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'All badge requirement fields are mandatory']));
@@ -42,10 +50,9 @@ class BadgeController
         }
 
         try {
-            // Check if schema columns exist or alter table command was run. We save requirements metadata inside the badge model structure.
             $stmt = $this->db->prepare("
-                INSERT INTO badge (name, description, icon, category_rule, threshold_value) 
-                VALUES (:name, :description, :icon, :category_rule, :threshold_value)
+                INSERT INTO badge (name, description, icon, category_rule, activity_type_ids, threshold_value) 
+                VALUES (:name, :description, :icon, :category_rule, :activity_type_ids, :threshold_value)
             ");
             
             $stmt->execute([
@@ -53,11 +60,68 @@ class BadgeController
                 'description' => $description,
                 'icon' => $icon,
                 'category_rule' => $categoryRule,
+                'activity_type_ids' => $activityTypeIds,
                 'threshold_value' => $thresholdValue
             ]);
 
             $response->getBody()->write(json_encode(['success' => true, 'message' => 'Custom badge added successfully']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+        } catch (\Exception $e) {
+            $response->getBody()->write(json_encode(['success' => false, 'error' => $e->getMessage()]));
+            return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+        }
+    }
+
+    /**
+     * GET /api/admin/badges
+     * Get all badges for admin management
+     */
+    public function getAllBadges(Request $request, Response $response): Response
+    {
+        $user = $request->getAttribute('user');
+        if (($user['role'] ?? '') !== 'admin') {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Admin access required']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
+        try {
+            $stmt = $this->db->query("SELECT * FROM badge ORDER BY id ASC");
+            $badges = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $response->getBody()->write(json_encode(['success' => true, 'badges' => $badges]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            $response->getBody()->write(json_encode(['success' => false, 'error' => $e->getMessage()]));
+            return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+        }
+    }
+
+    /**
+     * DELETE /api/admin/badges/{id}
+     * Delete a badge (admin only)
+     */
+    public function deleteBadge(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        if (($user['role'] ?? '') !== 'admin') {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Admin access required']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
+        $id = (int) ($args['id'] ?? 0);
+        if (!$id) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Invalid badge ID']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        try {
+            $stmt = $this->db->prepare("DELETE FROM badge WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            if ($stmt->rowCount() === 0) {
+                $response->getBody()->write(json_encode(['success' => false, 'message' => 'Badge not found']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+            }
+            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Badge deleted']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
         } catch (\Exception $e) {
             $response->getBody()->write(json_encode(['success' => false, 'error' => $e->getMessage()]));
             return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
@@ -108,7 +172,7 @@ class BadgeController
                 }
             }
 
-            // 2. Aggregate user summary stats grouped by activity category rule matching parameters
+            // 2. Aggregate user summary stats grouped by activity category
             $statsStmt = $this->db->prepare("
                 SELECT act.category, SUM(al.amount) as total_amount
                 FROM activitylog al
@@ -118,6 +182,16 @@ class BadgeController
             ");
             $statsStmt->execute(['userId' => $userId]);
             $userCategoryTotals = $statsStmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
+
+            // 2b. Aggregate per activity_type_id totals for specific-type badge checks
+            $typeStmt = $this->db->prepare("
+                SELECT al.activity_type_id, SUM(al.amount) as total_amount
+                FROM activitylog al
+                WHERE al.user_id = :userId
+                GROUP BY al.activity_type_id
+            ");
+            $typeStmt->execute(['userId' => $userId]);
+            $userTypeTotals = $typeStmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
 
             // 3. Select all system badges and evaluate conditional status
             $allBadgesStmt = $this->db->query("SELECT * FROM badge");
@@ -134,9 +208,21 @@ class BadgeController
                 elseif ($badge['id'] == 9 && $dailyStreak >= 10) $unlocked = 1;
                 
                 // Evaluate Dynamic Admin Created Category Rule Badge
-                if (!empty($badge['category_rule']) && isset($userCategoryTotals[$badge['category_rule']])) {
-                    if ($userCategoryTotals[$badge['category_rule']] >= $badge['threshold_value']) {
-                        $unlocked = 1;
+                if (!empty($badge['category_rule'])) {
+                    // If specific activity types are set, sum only those
+                    if (!empty($badge['activity_type_ids'])) {
+                        $typeIds = array_filter(array_map('intval', explode(',', (string) $badge['activity_type_ids'])));
+                        $totalForTypes = 0;
+                        foreach ($typeIds as $tid) {
+                            $totalForTypes += (float) ($userTypeTotals[$tid] ?? 0);
+                        }
+                        if ($totalForTypes >= $badge['threshold_value']) {
+                            $unlocked = 1;
+                        }
+                    } elseif (isset($userCategoryTotals[$badge['category_rule']])) {
+                        if ($userCategoryTotals[$badge['category_rule']] >= $badge['threshold_value']) {
+                            $unlocked = 1;
+                        }
                     }
                 }
 
