@@ -64,7 +64,7 @@
       </Transition>
     </div>
 
-    <div class="page-title" style="margin-top: 2rem;">
+    <div class="page-title" style="margin-top: 1rem;">
       <h3>Browse by Category</h3>
     </div>
 
