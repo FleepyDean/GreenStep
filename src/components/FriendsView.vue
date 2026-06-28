@@ -1,7 +1,7 @@
 <template>
   <div class="friends-container">
     <div class="page-title">
-      <h2>🤝 Friends</h2>
+      <h2>Friends</h2>
       <p>Connect with others and grow your eco community together</p>
     </div>
  

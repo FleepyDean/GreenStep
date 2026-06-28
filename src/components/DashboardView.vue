@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-wrapper">
     <div class="dashboard-title">
-      <h2>🌱 Your Carbon Dashboard</h2>
+      <h2>Carbon Dashboard</h2>
       <p>Track your environmental impact and progress</p>
     </div>
 
@@ -82,7 +82,7 @@
     </div>
 
     <section class="goal-projection-card">
-      <h3>🎯 Carbon Reduction Goal</h3>
+      <h3>Carbon Reduction Goal</h3>
 
       <div v-if="goalLoading" class="goal-loading">
         <p>Loading your projection...</p>
