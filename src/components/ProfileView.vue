@@ -138,25 +138,13 @@ const fetchUserBadges = async () => {
     const response = await badgeAPI.getUserBadges()
     const data = response.data 
     
-    userBadges.value = data.map(badge => {
-      let dynamicIcon = '🏅'
-      if (badge.id === 1) dynamicIcon = '🚲'
-      if (badge.id === 2) dynamicIcon = '🥗'
-      if (badge.id === 3) dynamicIcon = '⚡'
-      if (badge.id === 4) dynamicIcon = '♻️'
-      if (badge.id === 5) dynamicIcon = '💡'
-      if (badge.id === 6) dynamicIcon = '🔥'
-      if (badge.id === 7) dynamicIcon = '🛠️'
-      if (badge.id === 8) dynamicIcon = '🌿'
-      if (badge.id === 9) dynamicIcon = '👑'
-
-      return {
-        id: badge.id,
+    userBadges.value = data.map(badge => { 
+      return { 
+        id: badge.id, 
         title: badge.name, 
-        criterion: badge.criteria_description || 'Eco tracker milestone requirement.', 
-        icon: dynamicIcon, 
-        unlocked: badge.unlocked === 1 || badge.unlocked === true
-      }
+        criterion: badge.description || 'Eco tracker milestone requirement.', 
+        icon: badge.icon || '🏅', unlocked: badge.unlocked === 1 || badge.unlocked === true 
+      } 
     })
   } catch (err) {
     console.error('Network failure connecting to backend tables:', err)
