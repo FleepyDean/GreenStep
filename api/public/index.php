@@ -26,7 +26,17 @@ $app = AppFactory::create();
 $app->addRoutingMiddleware();
 
 // 4. Add Error Middleware (catches all errors)
-$app->addErrorMiddleware(true, true, true);
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+$errorMiddleware->setDefaultErrorHandler(function ($request, $exception, $displayErrorDetails) use ($app) {
+    $allowedOrigin = $_ENV['FRONTEND_URL'] ?? 'http://localhost:5173';
+    $response = $app->getResponseFactory()->createResponse(500);
+    $response->getBody()->write(json_encode(['success' => false, 'error' => $exception->getMessage()]));
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withHeader('Access-Control-Allow-Origin', $allowedOrigin)
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+});
 
 // 5. Load routes AFTER setting up the container so controllers resolve properly
 require __DIR__ . '/../src/routes.php';
