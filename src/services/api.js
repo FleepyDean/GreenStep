@@ -82,8 +82,9 @@ export const challengeAPI = {
   leaveChallenge: (id) => api.delete(`/challenges/${id}/leave`)
 }
 
+// Fixed the missing forward slash here
 export const dashboardAPI = {
-  getMetrics: (userId) => api.get(`dashboard/${userId}`)
+  getMetrics: (userId) => api.get(`/dashboard/${userId}`)
 }
 
 export const goalAPI = {
@@ -106,7 +107,8 @@ export const adminAPI = {
 }
 
 export const badgeAPI = {
-  getUserBadges: () => api.get('/badges')
+  getUserBadges: () => api.get('/badges'),
+  createBadge: (data) => api.post('/admin/badges', data)
 }
 
 export default api
