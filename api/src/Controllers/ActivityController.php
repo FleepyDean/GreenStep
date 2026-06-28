@@ -138,6 +138,47 @@ class ActivityController
 
                 $unlock = false;
 
+                // Handle streak badges
+                $streakStmt = $this->db->prepare("
+                    SELECT DISTINCT DATE(logged_on) as logged_date
+                    FROM activitylog
+                    WHERE user_id = :userId
+                    ORDER BY logged_date DESC
+                ");
+                $streakStmt->execute(['userId' => $userId]);
+                $dates = $streakStmt->fetchAll(PDO::FETCH_COLUMN);
+
+                $dailyStreak = 0;
+
+                if (!empty($dates)) {
+                    $today = new \DateTime();
+                    $yesterday = new \DateTime('yesterday');
+                    $latest = new \DateTime($dates[0]);
+
+                    if (
+                        $latest->format('Y-m-d') === $today->format('Y-m-d') ||
+                        $latest->format('Y-m-d') === $yesterday->format('Y-m-d')
+                    ) {
+                        $dailyStreak = 1;
+
+                        for ($i = 0; $i < count($dates) - 1; $i++) {
+                            $current = new \DateTime($dates[$i]);
+                            $next = new \DateTime($dates[$i + 1]);
+
+                            if ($current->diff($next)->days == 1) {
+                                $dailyStreak++;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if ($badge['id'] == 6 && $dailyStreak >= 1) $unlock = true;
+                elseif ($badge['id'] == 7 && $dailyStreak >= 3) $unlock = true;
+                elseif ($badge['id'] == 8 && $dailyStreak >= 5) $unlock = true;
+                elseif ($badge['id'] == 9 && $dailyStreak >= 10) $unlock = true;
+
                 if (!empty($badge['activity_type_ids'])) {
 
                     $typeIds = array_filter(array_map('intval', explode(',', $badge['activity_type_ids'])));
