@@ -98,13 +98,6 @@
                 </div>
               </router-link>
 
-              <router-link v-if="isAdmin" to="/admin/add-badges" class="drawer-item" @click="drawerOpen = false">
-                <span class="drawer-icon">🎖</span>
-                <div class="drawer-item-text">
-                  <span class="drawer-label">Add Badges</span>
-                  <span class="drawer-sub">Manage user achievements</span>
-                </div>
-              </router-link>
             </nav>
           </div>
         </Transition>

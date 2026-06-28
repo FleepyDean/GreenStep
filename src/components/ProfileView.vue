@@ -70,7 +70,7 @@
       </section>
 
       
-      <section class="gamification-showcase-panel">
+      <section v-if="userProfile.role !== 'admin'" class="gamification-showcase-panel">
         <h3>🏆 Earned Digital Badges & Milestones</h3>
         
         <div v-if="loadingBadges" class="loading-placeholder">
