@@ -13,6 +13,9 @@ require __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
+// Set timezone to Malaysia (UTC+8) so date() matches user's local time
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
 // 2. Initialize Dependency Injection Container and attach PDO
 $container = new Container();
 $container->set(PDO::class, function () {
