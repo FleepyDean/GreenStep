@@ -59,8 +59,15 @@ input, select, button {
 }
 
 .brand-logo {
-  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
   filter: drop-shadow(0 0 8px rgba(0, 168, 132, 0.3));
+}
+
+.brand-logo svg {
+  width: 28px;
+  height: 28px;
+  color: #00A884;
 }
 
 .brand-text h1 {
