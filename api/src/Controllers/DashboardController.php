@@ -30,7 +30,7 @@ class DashboardController
         try {
             // 1. Calculate Today's Footprint Summary
             $todayStmt = $this->db->prepare("
-                SELECT SUM(carbon_footprint) as total FROM activitylog 
+                SELECT SUM(carbon_footprint) as total FROM ActivityLog 
                 WHERE user_id = :userId AND DATE(logged_on) = :today
             ");
             $todayStmt->execute([
@@ -41,7 +41,7 @@ class DashboardController
 
             // 2. Calculate Last 7 Days Total Footprint
             $weeklyStmt = $this->db->prepare("
-                SELECT SUM(carbon_footprint) as total FROM activitylog 
+                SELECT SUM(carbon_footprint) as total FROM ActivityLog 
                 WHERE user_id = :userId AND DATE(logged_on) >= DATE_SUB(:today, INTERVAL 7 DAY)
             ");
             $weeklyStmt->execute([
@@ -53,7 +53,7 @@ class DashboardController
             // 3. Compile Data points for the Line Chart (Monday - Sunday)
             $trendStmt = $this->db->prepare("
                 SELECT DAYOFWEEK(logged_on) as day_num, SUM(carbon_footprint) as total 
-                FROM activitylog 
+                FROM ActivityLog 
                 WHERE user_id = :userId AND YEARWEEK(logged_on, 1) = YEARWEEK(:today, 1)
                 GROUP BY DAYOFWEEK(logged_on)
             ");
@@ -73,7 +73,7 @@ class DashboardController
             // 3b. Compile Data points for Monthly Trend Chart (Jan - Dec)
             $monthlyTrendStmt = $this->db->prepare("
                 SELECT MONTH(logged_on) as month_num, SUM(carbon_footprint) as total 
-                FROM activitylog 
+                FROM ActivityLog 
                 WHERE user_id = :userId AND YEAR(logged_on) = YEAR(:today)
                 GROUP BY MONTH(logged_on)
             ");
@@ -92,8 +92,8 @@ class DashboardController
             // 4. Group totals by category for the Doughnut Chart
             $breakdownStmt = $this->db->prepare("
                 SELECT t.category, SUM(a.carbon_footprint) as total 
-                FROM activitylog a
-                INNER JOIN activitytype t ON a.activity_type_id = t.id
+                FROM ActivityLog a
+                INNER JOIN ActivityType t ON a.activity_type_id = t.id
                 WHERE a.user_id = :userId 
                 GROUP BY t.category
             ");
@@ -120,7 +120,7 @@ class DashboardController
             // ==================================================================
             $streakStmt = $this->db->prepare("
                 SELECT DISTINCT DATE(logged_on) as logged_date 
-                FROM activitylog 
+                FROM ActivityLog 
                 WHERE user_id = :userId 
                 ORDER BY logged_date DESC
             ");
@@ -154,8 +154,8 @@ class DashboardController
             // ==================================================================
             $badgeQuery = "
                 SELECT COUNT(*) as total_unlocked
-                FROM badge b
-                LEFT JOIN userbadge ub ON b.id = ub.badge_id AND ub.user_id = :user_id
+                FROM Badge b
+                LEFT JOIN UserBadge ub ON b.id = ub.badge_id AND ub.user_id = :user_id
                 WHERE 
                     (b.id = 6 AND :streak_1 >= 1) OR
                     (b.id = 7 AND :streak_3 >= 3) OR

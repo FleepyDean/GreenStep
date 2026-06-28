@@ -51,7 +51,7 @@ class BadgeController
 
         try {
             $stmt = $this->db->prepare("
-                INSERT INTO badge (name, description, icon, category_rule, activity_type_ids, threshold_value) 
+                INSERT INTO Badge (name, description, icon, category_rule, activity_type_ids, threshold_value) 
                 VALUES (:name, :description, :icon, :category_rule, :activity_type_ids, :threshold_value)
             ");
             
@@ -85,7 +85,7 @@ class BadgeController
         }
 
         try {
-            $stmt = $this->db->query("SELECT * FROM badge ORDER BY id ASC");
+            $stmt = $this->db->query("SELECT * FROM Badge ORDER BY id ASC");
             $badges = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $response->getBody()->write(json_encode(['success' => true, 'badges' => $badges]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
@@ -114,7 +114,7 @@ class BadgeController
         }
 
         try {
-            $stmt = $this->db->prepare("DELETE FROM badge WHERE id = :id");
+            $stmt = $this->db->prepare("DELETE FROM Badge WHERE id = :id");
             $stmt->execute([':id' => $id]);
             if ($stmt->rowCount() === 0) {
                 $response->getBody()->write(json_encode(['success' => false, 'message' => 'Badge not found']));
@@ -143,7 +143,7 @@ class BadgeController
             // 1. Calculate user streaks
             $streakStmt = $this->db->prepare("
                 SELECT DISTINCT DATE(logged_on) as logged_date
-                FROM activitylog 
+                FROM ActivityLog 
                 WHERE user_id = :userId 
                 ORDER BY logged_date DESC
             ");
@@ -175,8 +175,8 @@ class BadgeController
             // 2. Aggregate user summary stats grouped by activity category
             $statsStmt = $this->db->prepare("
                 SELECT act.category, SUM(al.amount) as total_amount
-                FROM activitylog al
-                JOIN activitytype act ON al.activity_type_id = act.id
+                FROM ActivityLog al
+                JOIN ActivityType act ON al.activity_type_id = act.id
                 WHERE al.user_id = :userId
                 GROUP BY act.category
             ");
@@ -186,7 +186,7 @@ class BadgeController
             // 2b. Aggregate per activity_type_id totals for specific-type badge checks
             $typeStmt = $this->db->prepare("
                 SELECT al.activity_type_id, SUM(al.amount) as total_amount
-                FROM activitylog al
+                FROM ActivityLog al
                 WHERE al.user_id = :userId
                 GROUP BY al.activity_type_id
             ");
@@ -194,7 +194,7 @@ class BadgeController
             $userTypeTotals = $typeStmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
 
             // 3. Select all system badges and evaluate conditional status
-            $allBadgesStmt = $this->db->query("SELECT * FROM badge");
+            $allBadgesStmt = $this->db->query("SELECT * FROM Badge");
             $allBadges = $allBadgesStmt->fetchAll(PDO::FETCH_ASSOC);
 
             $finalBadges = [];

@@ -113,8 +113,8 @@ class ActivityController
             // User totals by category
             $statsStmt = $this->db->prepare("
                 SELECT act.category, SUM(al.amount) as total_amount
-                FROM activitylog al
-                JOIN activitytype act ON al.activity_type_id = act.id
+                FROM ActivityLog al
+                JOIN ActivityType act ON al.activity_type_id = act.id
                 WHERE al.user_id = :userId
                 GROUP BY act.category
             ");
@@ -124,7 +124,7 @@ class ActivityController
             // User totals by activity type
             $typeStmt = $this->db->prepare("
                 SELECT activity_type_id, SUM(amount) as total_amount
-                FROM activitylog
+                FROM ActivityLog
                 WHERE user_id = :userId
                 GROUP BY activity_type_id
             ");
@@ -132,7 +132,7 @@ class ActivityController
             $userTypeTotals = $typeStmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
 
             // All badges
-            $badges = $this->db->query("SELECT * FROM badge")->fetchAll(PDO::FETCH_ASSOC);
+            $badges = $this->db->query("SELECT * FROM Badge")->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($badges as $badge) {
 
@@ -141,7 +141,7 @@ class ActivityController
                 // Handle streak badges
                 $streakStmt = $this->db->prepare("
                     SELECT DISTINCT DATE(logged_on) as logged_date
-                    FROM activitylog
+                    FROM ActivityLog
                     WHERE user_id = :userId
                     ORDER BY logged_date DESC
                 ");
@@ -205,7 +205,7 @@ class ActivityController
                 if ($unlock) {
 
                     $insert = $this->db->prepare("
-                        INSERT IGNORE INTO userbadge
+                        INSERT IGNORE INTO UserBadge
                         (user_id,badge_id,earned_at)
                         VALUES
                         (:user,:badge,NOW())
