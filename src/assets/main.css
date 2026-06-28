@@ -439,6 +439,13 @@ input, select, button {
   margin-bottom: 0.4rem;
 }
 
+.guide-icon {
+  width: 24px;
+  height: 24px;
+  color: #25D366;
+  margin-bottom: 0.5rem;
+}
+
 .guide-item p {
   font-size: 0.82rem;
   color: #54656F;
