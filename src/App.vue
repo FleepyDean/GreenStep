@@ -53,6 +53,10 @@
           <span class="nav-icon-wrapper">⚡</span>
           <span class="nav-text-label">Factors</span>
         </router-link>
+        <router-link v-if="isAdmin" to="/admin/add-badges" class="nav-link-btn" active-class="active">
+          <span class="nav-icon-wrapper">🎖</span>
+          <span class="nav-text-label">Badges</span>
+        </router-link>
         <router-link to="/profile" class="nav-link-btn" active-class="active">
           <span class="nav-icon-wrapper">👤</span>
           <span class="nav-text-label">Profile</span>
@@ -91,6 +95,14 @@
                 <div class="drawer-item-text">
                   <span class="drawer-label">Friends</span>
                   <span class="drawer-sub">Connect and compare progress</span>
+                </div>
+              </router-link>
+
+              <router-link v-if="isAdmin" to="/admin/add-badges" class="drawer-item" @click="drawerOpen = false">
+                <span class="drawer-icon">🎖</span>
+                <div class="drawer-item-text">
+                  <span class="drawer-label">Add Badges</span>
+                  <span class="drawer-sub">Manage user achievements</span>
                 </div>
               </router-link>
             </nav>
