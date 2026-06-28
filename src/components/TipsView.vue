@@ -172,7 +172,7 @@ const getCategoryClass = (cat) => {
 <style scoped>
 /* Admin Architecture Framework */
 .admin-panel {
-  margin: 1.5rem 0;
+  margin: -0.5rem 0;
 }
 
 .toggle-panel-btn {

@@ -5,8 +5,6 @@
       <p>Create and distribute new achievement rewards for platform users</p>
     </div>
 
-    
-
     <div class="split-layout">
       <section class="form-card">
         <h3>Add New Custom Badge</h3>
@@ -127,9 +125,8 @@
         </div>
       </section>
     </div>
-  </div>
 
-  <div class="badges-list-section">
+    <div class="badges-list-section">
       <div class="section-header">
         <h3 class="section-title">All Badges</h3>
         <span class="badge-count">{{ allBadges.length }} total</span>
@@ -151,6 +148,7 @@
       </div>
       <div class="badges-empty" v-else>No badges found.</div>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -288,12 +286,14 @@ onMounted(async () => {
 
 <style scoped>
 .admin-badges-container {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   animation: fadeIn 0.3s ease;
 }
 
 .page-title {
-  margin-bottom: 24px;
+  margin: 0;
 }
 .page-title h2 {
   margin: 0 0 4px;
@@ -310,7 +310,6 @@ onMounted(async () => {
   border: 1px solid #E9EDEF;
   border-radius: 12px;
   padding: 24px;
-  margin-bottom: 24px;
 }
 
 .section-header {
