@@ -9,6 +9,7 @@ import ChallengeDetailsView from '../components/ChallengeDetailsView.vue'
 import LeaderboardView from '../components/LeaderboardView.vue'
 import EmissionFactorView from '../components/EmissionFactorView.vue'
 import AdminDashboard from '../components/AdminDashboard.vue'
+import AddBadgesView from '../components/AddBadgesView.vue' 
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -36,6 +37,18 @@ const routes = [
     path: '/admin-dashboard',
     name: 'AdminDashboard',
     component: AdminDashboard
+  },
+  {
+    path: '/admin/add-badges',
+    name: 'AddBadges',
+    component: AddBadgesView,
+    beforeEnter: () => {
+      const auth = useAuthStore()
+      if (!auth.isAuthenticated || auth.user?.role !== 'admin') {
+        return { name: 'Dashboard' }
+      }
+      return true
+    }
   },
   {
     path: '/activity',
@@ -74,14 +87,29 @@ const routes = [
   },
   {
     path: '/emission-factors',
-    name: 'EmissionFactors',
+    name: 'EmissionFactor',
     component: EmissionFactorView
   }
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(), // Safe for Capacitor native environments
+  history: createWebHashHistory(),
   routes
+})
+
+// Modernized global routing guard matching standard Vue Router specifications
+router.beforeEach((to) => {
+  const auth = useAuthStore()
+  
+  // Guard admin layout routes securely
+  if (to.meta.requiresAdmin && (!auth.isAuthenticated || auth.user?.role !== 'admin')) {
+    return { name: 'Dashboard' }
+  }
+
+  // Guard standard user routes securely
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    return { name: 'Profile' }
+  }
 })
 
 export default router
