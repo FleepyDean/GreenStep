@@ -196,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, onActivated } from 'vue'
 // 🔄 FIXED: Cleanly import the operational API wrappers from your services layer
 import { tipAPI, dashboardAPI, goalAPI } from '../services/api'
 import { useAuthStore } from '@/stores/auth'
@@ -369,8 +369,8 @@ const resetGoal = async () => {
 }
 
 const handleActivityLogged = async () => {
-  console.log('Activity logged event received, refreshing goal...')
-  await fetchGoal()
+  console.log('Activity logged event received, refreshing goal and dashboard...')
+  await Promise.all([fetchGoal(), fetchDashboardDetails()])
 }
 
 onMounted(async () => {
@@ -381,6 +381,12 @@ onMounted(async () => {
   } else {
     console.warn('Dashboard view execution halted: Active user identity trace unavailable.')
     loading.value = false
+  }
+})
+
+onActivated(async () => {
+  if (user && user.id) {
+    await Promise.all([fetchDashboardDetails(), fetchGoal()])
   }
 })
 
