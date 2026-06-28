@@ -37,21 +37,21 @@ require __DIR__ . '/../src/routes.php';
 
 // 6. CORS Middleware with Preflight handling
 $app->add(function ($request, $handler) {
-    // If the browser sends an OPTIONS preflight request, intercept it immediately
+    $allowedOrigin = $_ENV['FRONTEND_URL'] ?? 'http://localhost:5173';
+
     if ($request->getMethod() === 'OPTIONS') {
         $response = new \Slim\Psr7\Response();
         return $response
-            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
+            ->withHeader('Access-Control-Allow-Origin', $allowedOrigin)
             ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
             ->withStatus(200);
     }
 
     $response = $handler->handle($request);
-    
-    // Attach headers to standard GET/POST responses
+
     return $response
-        ->withHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
+        ->withHeader('Access-Control-Allow-Origin', $allowedOrigin)
         ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
         ->withHeader('Access-Control-Allow-Credentials', 'true');
