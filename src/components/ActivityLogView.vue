@@ -1,7 +1,6 @@
 <template>
   <div class="activity-container">
 
-    <!-- Tab Navigation -->
     <div class="tab-navigation">
       <button 
         :class="['tab-btn', { active: activeTab === 'log' }]" 
@@ -17,7 +16,6 @@
       </button>
     </div>
 
-    <!-- Activity Log Tab -->
     <div v-if="activeTab === 'log'" class="tab-content">
       <div class="split-layout">
         <slot>
@@ -49,7 +47,7 @@
 
               <div class="form-group">
                 <label>Date</label>
-                <input type="date" v-model="form.date" required />
+                <input type="date" v-model="form.date" :max="todayStr" required />
               </div>
 
               <div class="form-group">
@@ -109,12 +107,9 @@
       </div>
     </div>
 
-    <!-- Activity Track Tab -->
     <div v-else class="tab-content">
-      <!-- Compact Filter Card -->
       <section class="filter-card">
         <div class="filter-inner">
-          <!-- Date Range -->
           <div class="filter-group">
             <label class="filter-label">📅 Date Range</label>
             <div class="date-range-row">
@@ -124,10 +119,8 @@
             </div>
           </div>
 
-          <!-- Divider -->
           <div class="filter-divider"></div>
 
-          <!-- Category Options -->
           <div class="filter-group">
             <label class="filter-label">🏷️ Category</label>
             <div class="category-options">
@@ -154,7 +147,6 @@
             </div>
           </div>
 
-          <!-- Action Buttons -->
           <div class="filter-actions">
             <button class="btn-reset" @click="clearFilters" :disabled="historyLoading">Reset</button>
             <button class="btn-apply" @click="handleApplyFilters" :disabled="historyLoading">Apply</button>
@@ -162,7 +154,6 @@
         </div>
       </section>
 
-      <!-- Summary Stats Bar -->
       <div v-if="!historyLoading && !historyError && historyActivities.length > 0" class="summary-bar">
         <div class="summary-item">
           <span class="summary-value">{{ historyActivities.length }}</span>
@@ -180,28 +171,23 @@
         </div>
       </div>
 
-      <!-- History List -->
       <section class="history-list-section">
-        <!-- Loading State -->
         <div v-if="historyLoading" class="state-box">
           <div class="spinner"></div>
           <p>Loading history...</p>
         </div>
 
-        <!-- Error State -->
         <div v-else-if="historyError" class="state-box error">
           <span class="state-icon">⚠️</span>
           <p>{{ historyError }}</p>
         </div>
 
-        <!-- Empty State -->
         <div v-else-if="historyActivities.length === 0" class="state-box">
           <span class="state-icon">📭</span>
           <p>No activities found</p>
           <p class="state-subtext">Try adjusting your filters</p>
         </div>
 
-        <!-- Activity Cards -->
         <div v-else class="history-cards">
           <div class="history-card" v-for="log in historyActivities" :key="log.id" @click="openDetail(log)">
             <div class="history-card-icon" :class="getCategoryClass(log.category)">
@@ -230,7 +216,6 @@
     </div>
   </div>
 
-  <!-- Activity Detail Modal -->
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="detailActivity" class="detail-overlay" @click.self="closeDetail">
@@ -279,7 +264,6 @@
     </Transition>
   </Teleport>
 
-  <!-- Webcam Modal -->
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="showWebcam" class="detail-overlay" @click.self="closeWebcam">
@@ -315,6 +299,17 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { toast } = useToast()
 
+// Helper function to safely get local today string formatted as YYYY-MM-DD
+function getLocalDateString() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const todayStr = getLocalDateString()
+
 // Tab state
 const activeTab = ref('log')
 
@@ -324,7 +319,7 @@ const form = reactive({
   type: '',
   activityTypeId: null,
   amount: null,
-  date: new Date().toISOString().substr(0, 10)
+  date: todayStr
 })
 
 const photoFile = ref(null)
@@ -516,7 +511,7 @@ async function submitActivity() {
       form.type = ''
       form.activityTypeId = null
       form.amount = null
-      form.date = new Date().toISOString().substr(0, 10)
+      form.date = getLocalDateString()
       removePhoto()
 
       await loadTodayActivities()
