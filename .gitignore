@@ -2,9 +2,11 @@
 .env
 .env.*
 !.env.example
+!.env.production
 api/.env
 api/.env.*
 !api/.env.example
+!api/.env.production
 
 # Logs
 logs
