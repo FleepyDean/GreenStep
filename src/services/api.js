@@ -61,6 +61,7 @@ export const tipAPI = {
   getRandom: () => api.get('/tips/random'),
   getAll: () => api.get('/tips'),
   create: (data) => api.post('/tips', data),
+  update: (id, data) => api.put(`/tips/${id}`, data),
   delete: (id) => api.delete(`/tips/${id}`)
 }
 

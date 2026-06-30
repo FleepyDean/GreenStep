@@ -54,6 +54,24 @@ class Tip
         ]);
     }
 
+    // Update tip
+    public function update($id, $title, $body, $category, $source_url)
+    {
+        $stmt = $this->db->prepare("
+            UPDATE Tip
+            SET title = ?, body = ?, category = ?, source_url = ?
+            WHERE id = ?
+        ");
+
+        return $stmt->execute([
+            $title,
+            $body,
+            $category,
+            $source_url,
+            $id
+        ]);
+    }
+
     // Delete tip
     public function delete($id)
     {

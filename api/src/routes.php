@@ -91,6 +91,8 @@ $app->group('/api', function ($group) {
         ->add(new JwtMiddleware());
     $group->post('/tips', [TipController::class, 'create'])
         ->add(new JwtMiddleware());
+    $group->put('/tips/{id}', [TipController::class, 'update'])
+        ->add(new JwtMiddleware());
     $group->delete('/tips/{id}', [TipController::class, 'delete'])
         ->add(new JwtMiddleware());
     

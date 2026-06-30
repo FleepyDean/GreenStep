@@ -22,7 +22,7 @@
 
       <Transition name="fade-slide">
         <div v-if="showAdminForm" class="form-card">
-          <h3>New Eco Tip</h3>
+          <h3>{{ editingTip ? 'Edit Eco Tip' : 'New Eco Tip' }}</h3>
 
           <div class="form-row">
             <input
@@ -57,7 +57,7 @@
 
           <div class="action-row">
             <button class="minimal-btn" @click="addTip">
-              Publish Tip
+              {{ editingTip ? 'Update Tip' : 'Publish Tip' }}
             </button>
           </div>
         </div>
@@ -86,13 +86,33 @@
         </div>
         <h4>{{ tip.title }}</h4>
         <p>{{ tip.body }}</p>
-        <button
-          v-if="isAdmin"
-          class="delete-btn"
-          @click="deleteTip(tip.id)"
-        >
-          <Trash2 :size="14" /> Delete
-        </button>
+        
+        <div class="tip-actions">
+          <a
+            v-if="tip.source_url"
+            :href="tip.source_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="source-btn"
+          >
+            <ExternalLink :size="14" /> Source
+          </a>
+          
+          <div v-if="isAdmin" class="admin-actions">
+            <button
+              class="edit-btn"
+              @click="editTip(tip)"
+            >
+              <Edit :size="14" /> Edit
+            </button>
+            <button
+              class="delete-btn"
+              @click="deleteTip(tip.id)"
+            >
+              <Trash2 :size="14" /> Delete
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -101,7 +121,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { tipAPI } from '../services/api'
-import { Trash2 } from 'lucide-vue-next'
+import { Trash2, ExternalLink, Edit } from 'lucide-vue-next'
 
 const selectedCategory = ref('All')
 const showAdminForm = ref(false) 
@@ -143,9 +163,29 @@ const newTip = ref({
     source_url: ''
 })
 
+const editingTip = ref(null)
+
+const editTip = (tip) => {
+    editingTip.value = tip.id
+    newTip.value = {
+        title: tip.title,
+        body: tip.body,
+        category: tip.category,
+        source_url: tip.source_url || ''
+    }
+    showAdminForm.value = true
+}
+
 const addTip = async () => {
     try {
-        await tipAPI.create(newTip.value)
+        if (editingTip.value) {
+            // Update existing tip
+            await tipAPI.update(editingTip.value, newTip.value)
+            editingTip.value = null
+        } else {
+            // Create new tip
+            await tipAPI.create(newTip.value)
+        }
         newTip.value = {
             title: '',
             body: '',
@@ -288,8 +328,69 @@ const getCategoryClass = (cat) => {
   transform: translateY(-8px);
 }
 
-/* Standalone Delete Button Overhaul */
+/* Tip Actions Container */
+.tip-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Source Button */
+.source-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: #00A884;
+  border: 1px solid #00A884;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.source-btn:hover {
+  background: #e0f7f3;
+  color: #008069;
+  border-color: #008069;
+}
+
+/* Edit Button */
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: #00A884;
+  border: 1px solid #E9EDEF;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.edit-btn:hover {
+  background: #e0f7f3;
+  color: #008069;
+  border-color: #00A884;
+}
+
+/* Delete Button */
 .delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: transparent;
   color: #54656F;
   border: 1px solid #E9EDEF;
@@ -297,8 +398,8 @@ const getCategoryClass = (cat) => {
   border-radius: 6px;
   font-size: 0.8rem;
   cursor: pointer;
-  margin-top: 15px;
   transition: all 0.2s ease;
+  flex: 1;
 }
 
 .delete-btn:hover {

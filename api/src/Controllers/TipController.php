@@ -84,6 +84,47 @@ class TipController
         );
     }
 
+    public function update(Request $request, Response $response, array $args)
+    {
+        $user = $request->getAttribute('user');
+
+        if (($user['role'] ?? '') !== 'admin') {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Admin access required'
+            ]));
+
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(403);
+        }
+
+        $data = json_decode(
+            $request->getBody()->getContents(),
+            true
+        );
+
+        $this->tip->update(
+            $args['id'],
+            $data['title'],
+            $data['body'],
+            $data['category'],
+            $data['source_url'] ?? null
+        );
+
+        $response->getBody()->write(
+            json_encode([
+                "success" => true,
+                "message" => "Tip updated"
+            ])
+        );
+
+        return $response->withHeader(
+            'Content-Type',
+            'application/json'
+        );
+    }
+
     public function delete(Request $request, Response $response, array $args)
     {
         $user = $request->getAttribute('user');
