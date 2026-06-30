@@ -168,12 +168,35 @@ class GoalController
         $startDate = $row['goal_start_date'];
         $baseline = isset($row['baseline_footprint']) ? (float) $row['baseline_footprint'] : null;
 
+        // Initialize start date if empty
         if (empty($startDate)) {
             $startDate = date('Y-m-d');
             $this->db->prepare('UPDATE User SET goal_start_date = :start_date WHERE id = :user_id')
                 ->execute([':start_date' => $startDate, ':user_id' => $userId]);
         }
 
+        // Auto-reset: Check if goal cycle has ended and start a new cycle
+        $today = date('Y-m-d');
+        $endDate = date('Y-m-d', strtotime($startDate . ' + ' . ($durationDays - 1) . ' days'));
+        
+        if ($today > $endDate) {
+            // Goal period has ended - start a new cycle
+            error_log("Goal auto-reset: Previous cycle ended on $endDate, starting new cycle on $today for user $userId");
+            
+            $startDate = $today;
+            
+            // Calculate new baseline from the previous cycle's actual performance
+            $newBaseline = $this->calculateBaseline($userId, $startDate);
+            $baseline = $newBaseline;
+            
+            // Update database with new cycle
+            $this->db->prepare('UPDATE User SET goal_start_date = :start_date, baseline_footprint = :baseline WHERE id = :user_id')
+                ->execute([':start_date' => $startDate, ':baseline' => $baseline, ':user_id' => $userId]);
+            
+            error_log("Goal auto-reset complete: New start=$startDate, baseline=$baseline");
+        }
+
+        // Initialize baseline if still not set
         if ($baseline === null || $baseline <= 0) {
             $baseline = $this->calculateBaseline($userId, $startDate);
             $this->db->prepare('UPDATE User SET baseline_footprint = :baseline WHERE id = :user_id')
