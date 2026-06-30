@@ -196,7 +196,7 @@ async function loadCategories() {
   try {
     const { data } = await activityAPI.getCategories()
     if (data.success) categories.value = data.categories || []
-  } catch (e) {
+  } catch {
     categories.value = []
   }
 }
@@ -209,7 +209,7 @@ async function loadActivityTypes() {
   try {
     const { data } = await activityAPI.getTypesByCategory(form.target_category)
     activityTypes.value = data.activity_types || []
-  } catch (e) {
+  } catch {
     activityTypes.value = []
   }
 }

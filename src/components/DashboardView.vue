@@ -328,42 +328,6 @@ const updateGoal = async () => {
   }
 }
 
-const resetGoal = async () => {
-  if (!authStore.isAuthenticated) return
-  try {
-    goalUpdating.value = true
-    console.log('Resetting goal with:', {
-      target_reduction_percent: goalForm.target_reduction_percent,
-      baseline_footprint: goalForm.baseline_footprint,
-      reset_start_date: true
-    })
-    
-    const response = await goalAPI.updateGoal({
-      target_reduction_percent: goalForm.target_reduction_percent,
-      baseline_footprint: goalForm.baseline_footprint,
-      reset_start_date: true
-    })
-    
-    console.log('Reset goal response:', response.data)
-    
-    if (response.data.success) {
-      goal.value = {
-        goal: response.data.goal || {},
-        projection: response.data.projection || null
-      }
-      console.log('Updated goal state:', goal.value)
-      toast.success('New goal cycle started')
-    } else {
-      toast.error(response.data.message || 'Failed to reset goal')
-    }
-  } catch (err) {
-    console.error('Failed to reset goal:', err)
-    toast.error('Failed to reset goal')
-  } finally {
-    goalUpdating.value = false
-  }
-}
-
 const handleActivityLogged = async () => {
   console.log('Activity logged event received, refreshing goal and dashboard...')
   await Promise.all([fetchGoal(), fetchDashboardDetails()])

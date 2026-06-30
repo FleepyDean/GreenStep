@@ -109,7 +109,6 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { badgeAPI } from '../services/api' 
-import { goalAPI } from '@/services/api'
 
 const authStore = useAuthStore()
 const { toast } = useToast()

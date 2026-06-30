@@ -372,7 +372,7 @@ async function openWebcam() {
       videoRef.value.srcObject = webcamStream
       videoRef.value.play()
     }
-  } catch (err) {
+  } catch {
     toast.error('Camera access denied or not available')
     showWebcam.value = false
   }
@@ -528,25 +528,6 @@ async function submitActivity() {
     console.error('Failed to log activity:', err)
     error.value = err.response?.data?.message || 'Failed to log activity'
     toast.error('Failed to log activity')
-  } finally {
-    loading.value = false
-  }
-}
-
-async function removeLog(id) {
-  if (!confirm('Are you sure you want to delete this activity?')) return
-  
-  try {
-    loading.value = true
-    await activityAPI.deleteActivity(id)
-    await loadTodayActivities()
-    await loadHistory()
-    eventBus.emit('activity-logged')
-    toast.success('Activity deleted')
-  } catch (err) {
-    console.error('Failed to delete activity:', err)
-    error.value = 'Failed to delete activity'
-    toast.error('Failed to delete activity')
   } finally {
     loading.value = false
   }

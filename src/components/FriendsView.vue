@@ -109,7 +109,7 @@
 </template>
  
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSocialStore } from '@/stores/socialStore'
 import { useToast } from '@/composables/useToast'
  
