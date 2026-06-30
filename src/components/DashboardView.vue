@@ -7,22 +7,18 @@
 
     <div class="metrics-grid">
       <div class="metric-card">
-        <span class="card-icon">📊</span>
         <h3 class="value font-green">{{ metrics.todayFootprint ? metrics.todayFootprint.toFixed(2) : '0.00' }} kg</h3>
         <p class="label">Today's Footprint</p>
       </div>
       <div class="metric-card">
-        <span class="card-icon">📝</span>
         <h3 class="value font-green">{{ metrics.weeklyTotal ? metrics.weeklyTotal.toFixed(2) : '0.00' }} kg</h3>
         <p class="label">Weekly Total</p>
       </div>
       <div class="metric-card">
-        <span class="card-icon">🔥</span>
         <h3 class="value font-orange">{{ metrics.dailyStreak || 0 }}</h3>
         <p class="label">Daily Streak</p>
       </div>
       <div class="metric-card">
-        <span class="card-icon">🏆</span>
         <h3 class="value font-gold">{{ metrics.badgesCount || 0 }}</h3>
         <p class="label">Badges Earned</p>
       </div>
@@ -74,7 +70,7 @@
     </div>
 
     <div class="eco-tip-card" v-if="dailyTip">
-      <div class="tip-header">💡 Today's Eco Tip</div>
+      <div class="tip-header">Today's Eco Tip</div>
       <div class="tip-content">
         <h5>{{ dailyTip.title }}</h5>
         <p>{{ dailyTip.body }}</p>
@@ -184,7 +180,7 @@
         target="_blank"
         class="offset-button"
       >
-        🌱 Offset My Carbon
+        Offset My Carbon
       </a>
 
       <div class="verified">

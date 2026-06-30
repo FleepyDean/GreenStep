@@ -71,7 +71,7 @@
 
       
       <section v-if="userProfile.role !== 'admin'" class="gamification-showcase-panel">
-        <h3>🏆 Earned Digital Badges & Milestones</h3>
+        <h3>Earned Digital Badges & Milestones</h3>
         
         <div v-if="loadingBadges" class="loading-placeholder">
           Syncing milestones with the database...

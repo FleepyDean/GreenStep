@@ -8,7 +8,6 @@
     <div class="stats-grid">
 
         <div class="stat-card users">
-            <div class="icon">👥</div>
 
             <div class="info">
                 <p>Total Users</p>
@@ -17,7 +16,6 @@
         </div>
 
         <div class="stat-card activity">
-            <div class="icon">📝</div>
 
             <div class="info">
                 <p>Activities Logged</p>
@@ -26,7 +24,6 @@
         </div>
 
         <div class="stat-card tips">
-            <div class="icon">💡</div>
 
             <div class="info">
                 <p>Eco Tips</p>
@@ -35,7 +32,6 @@
         </div>
 
         <div class="stat-card carbon">
-            <div class="icon">🌍</div>
 
             <div class="info">
                 <p>Average Footprint</p>
@@ -55,7 +51,7 @@
 
     <div class="dataset-card">
 
-        <h2>🌍 Carbon Dataset</h2>
+        <h2>Carbon Dataset</h2>
 
         <p>
             <strong>{{ dataset.name }}</strong>
@@ -141,7 +137,7 @@
 
             <p class="activity-name">
 
-                🚶 {{ activity.activity_name }}
+                {{ activity.activity_name }}
 
             </p>
 

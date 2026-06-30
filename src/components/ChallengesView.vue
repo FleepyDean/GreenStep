@@ -36,8 +36,8 @@
           <span v-if="item.has_joined" class="joined-pill">✓ Joined</span>
           <!-- <span class="member-count">👥 {{ item.member_count }} members</span> -->
           <div v-if="canManageChallenges" class="admin-card-actions">
-            <button class="icon-btn edit-icon-btn" @click.stop="openEditModal(item)" title="Edit">✏️</button>
-            <button class="icon-btn delete-icon-btn" @click.stop="deleteItem(item)" title="Delete">🗑️</button>
+            <button class="icon-btn edit-icon-btn" @click.stop="openEditModal(item)" title="Edit"><Pencil :size="14" /></button>
+            <button class="icon-btn delete-icon-btn" @click.stop="deleteItem(item)" title="Delete"><Trash2 :size="14" /></button>
           </div>
         </div>
 
@@ -105,6 +105,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 
 import CreateChallengeModal from './CreateChallengeModal.vue'
+import { Pencil, Trash2 } from 'lucide-vue-next'
 
 
 
