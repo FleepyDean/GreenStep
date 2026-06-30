@@ -61,13 +61,13 @@
                 >
                   <img v-if="photoPreview" :src="photoPreview" class="photo-preview" alt="Activity photo preview" />
                   <div v-else class="photo-placeholder">
-                    <span class="photo-icon">📷</span>
+                    <Camera class="photo-icon" :size="36" />
                     <span class="photo-hint">Tap to upload a photo</span>
                   </div>
-                  <button v-if="photoPreview" type="button" class="photo-remove-btn" @click.stop="removePhoto">✕</button>
+                  <button v-if="photoPreview" type="button" class="photo-remove-btn" @click.stop="removePhoto"><X :size="14" /></button>
                 </div>
                 <button type="button" class="webcam-btn" @click.stop="openWebcam">
-                  📷 Use Camera
+                  <Camera :size="15" /> Use Camera
                 </button>
                 <input
                   ref="fileInputRef"
@@ -115,7 +115,7 @@
       <section class="filter-card">
         <div class="filter-inner">
           <div class="filter-group">
-            <label class="filter-label">📅 Date Range</label>
+            <label class="filter-label"><CalendarDays :size="14" /> Date Range</label>
             <div class="date-range-row">
               <input type="date" v-model="filters.startDate" />
               <span class="dash">→</span>
@@ -126,7 +126,7 @@
           <div class="filter-divider"></div>
 
           <div class="filter-group">
-            <label class="filter-label">🏷️ Category</label>
+            <label class="filter-label"><Tag :size="14" /> Category</label>
             <div class="category-options">
               <label class="category-radio">
                 <input type="radio" v-model="filters.category" value="" />
@@ -134,19 +134,19 @@
               </label>
               <label class="category-radio">
                 <input type="radio" v-model="filters.category" value="Transport" />
-                <span>🚗 Transport</span>
+                <span><Car :size="13" /> Transport</span>
               </label>
               <label class="category-radio">
                 <input type="radio" v-model="filters.category" value="Diet" />
-                <span>🍽️ Diet</span>
+                <span><Utensils :size="13" /> Diet</span>
               </label>
               <label class="category-radio">
                 <input type="radio" v-model="filters.category" value="Energy" />
-                <span>⚡ Energy</span>
+                <span><Zap :size="13" /> Energy</span>
               </label>
               <label class="category-radio">
                 <input type="radio" v-model="filters.category" value="Recycling" />
-                <span>♻️ Recycling</span>
+                <span><Recycle :size="13" /> Recycling</span>
               </label>
             </div>
           </div>
@@ -207,12 +207,12 @@
                 <span class="meta-dot">·</span>
                 <span class="meta-date">{{ formatDate(log.logged_on) }}</span>
                 <span v-if="log.photo_url" class="meta-dot">·</span>
-                <span v-if="log.photo_url" class="photo-indicator">📷</span>
+                <span v-if="log.photo_url" class="photo-indicator"><Image :size="12" /></span>
               </div>
             </div>
             <div class="history-card-right">
               <div class="carbon-badge">{{ Number(log.carbon_footprint).toFixed(2) }}<small>kg CO₂e</small></div>
-              <button class="delete-btn-icon" @click.stop="removeHistoryLog(log.id)" :disabled="historyLoading" title="Delete">🗑️</button>
+              <button class="delete-btn-icon" @click.stop="removeHistoryLog(log.id)" :disabled="historyLoading" title="Delete"><Trash2 :size="15" /></button>
             </div>
           </div>
         </div>
@@ -232,12 +232,12 @@
                 <span class="category-pill" :class="getCategoryClass(detailActivity.category)">{{ detailActivity.category }}</span>
               </div>
             </div>
-            <button class="detail-close" @click="closeDetail">✕</button>
+            <button class="detail-close" @click="closeDetail"><X :size="16" /></button>
           </div>
 
           <img v-if="detailActivity.photo_url" :src="resolvePhotoUrl(detailActivity.photo_url)" class="detail-photo" alt="Activity photo" />
           <div v-else class="detail-no-photo">
-            <span>📷</span>
+            <Camera :size="32" style="opacity:0.3" />
             <p>No photo attached</p>
           </div>
 
@@ -261,7 +261,7 @@
             @click="deleteFromDetail"
             :disabled="historyLoading"
           >
-            🗑️ Delete Activity
+            <Trash2 :size="15" /> Delete Activity
           </button>
         </div>
       </div>
@@ -274,7 +274,7 @@
         <div class="webcam-sheet">
           <div class="webcam-header">
             <h3>Take a Photo</h3>
-            <button class="detail-close" @click="closeWebcam">✕</button>
+            <button class="detail-close" @click="closeWebcam"><X :size="16" /></button>
           </div>
           <div class="webcam-preview-wrap">
             <video ref="videoRef" class="webcam-video" autoplay playsinline muted></video>
@@ -294,6 +294,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue'
 import { activityAPI } from '@/services/api'
+import { Camera, CalendarDays, Tag, Car, Utensils, Zap, Recycle, Trash2, X, Image } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
@@ -741,6 +742,13 @@ onMounted(async () => {
   color: #54656F;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-label svg {
+  color: #25D366;
 }
 
 .filter-divider {
@@ -806,6 +814,13 @@ onMounted(async () => {
   font-size: 13px;
   color: #54656F;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.category-radio span svg {
+  color: #25D366;
 }
 
 .category-radio input[type="radio"]:checked + span {
@@ -1276,6 +1291,9 @@ onMounted(async () => {
 /* Photo indicator on card */
 .photo-indicator {
   font-size: 0.75rem;
+  color: #25D366;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Modal transition */
@@ -1455,6 +1473,7 @@ onMounted(async () => {
 
 .photo-icon {
   font-size: 2rem;
+  color: #25D366;
 }
 
 .photo-hint {

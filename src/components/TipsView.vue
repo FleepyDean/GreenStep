@@ -6,7 +6,7 @@
     </div>
 
     <div class="featured-tip-banner">
-      <div class="featured-badge">✨ Today's Featured Tip</div>
+      <div class="featured-badge">Today's Featured Tip</div>
       <h3>{{ dailyFeaturedTip.title }}</h3>
       <p>{{ dailyFeaturedTip.body }}</p>
     </div>
@@ -91,7 +91,7 @@
           class="delete-btn"
           @click="deleteTip(tip.id)"
         >
-          🗑 Delete
+          <Trash2 :size="14" /> Delete
         </button>
       </div>
     </div>
@@ -101,6 +101,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { tipAPI } from '../services/api'
+import { Trash2 } from 'lucide-vue-next'
 
 const selectedCategory = ref('All')
 const showAdminForm = ref(false) 
