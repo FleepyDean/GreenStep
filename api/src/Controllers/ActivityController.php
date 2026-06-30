@@ -6,6 +6,7 @@ namespace App\Controllers;
 use App\Models\ActivityLog;
 use App\Models\ActivityType;
 use App\Services\CarbonCalculator;
+use App\Services\CloudinaryUploader;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use PDO;
@@ -66,7 +67,7 @@ class ActivityController
         $user = $request->getAttribute('user');
         $userId = $user['id'] ?? null;
 
-        // Handle optional photo upload
+        // Handle optional photo upload to Cloudinary
         $photoUrl = null;
         $uploadedFiles = $request->getUploadedFiles();
         if (!empty($uploadedFiles['photo'])) {
@@ -75,14 +76,23 @@ class ActivityController
                 $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                 $mimeType = $photo->getClientMediaType();
                 if (in_array($mimeType, $allowed)) {
-                    $uploadDir = __DIR__ . '/../../public/uploads/activities/';
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0755, true);
+                    // Save to temporary file first
+                    $tmpDir = sys_get_temp_dir();
+                    $tmpFile = $tmpDir . '/activity_' . uniqid() . '.tmp';
+                    $photo->moveTo($tmpFile);
+                    
+                    // Upload to Cloudinary
+                    $cloudinary = new CloudinaryUploader();
+                    $photoUrl = $cloudinary->upload($tmpFile, 'greenstep/activities');
+                    
+                    // Clean up temp file
+                    if (file_exists($tmpFile)) {
+                        unlink($tmpFile);
                     }
-                    $ext = pathinfo($photo->getClientFilename(), PATHINFO_EXTENSION);
-                    $filename = 'activity_' . $userId . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-                    $photo->moveTo($uploadDir . $filename);
-                    $photoUrl = '/uploads/activities/' . $filename;
+                    
+                    if (!$photoUrl) {
+                        error_log('Failed to upload photo to Cloudinary for user ' . $userId);
+                    }
                 }
             }
         }
