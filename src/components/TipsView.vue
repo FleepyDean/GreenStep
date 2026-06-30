@@ -6,7 +6,7 @@
     </div>
 
     <div class="featured-tip-banner">
-      <div class="featured-badge">✨ Today's Featured Tip</div>
+      <div class="featured-badge">Today's Featured Tip</div>
       <h3>{{ dailyFeaturedTip.title }}</h3>
       <p>{{ dailyFeaturedTip.body }}</p>
     </div>

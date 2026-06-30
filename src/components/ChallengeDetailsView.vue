@@ -34,42 +34,42 @@
         <h3>Timeline & Goals</h3>
         <div class="meta-grid">
           <div class="meta-item">
-            <span class="meta-icon">📅</span>
+            <CalendarDays class="meta-icon" :size="18" />
             <div>
               <p class="meta-label">Start Date</p>
               <p class="meta-value">{{ formatDate(challenge.start_date) }}</p>
             </div>
           </div>
           <div class="meta-item">
-            <span class="meta-icon">🏁</span>
+            <Flag class="meta-icon" :size="18" />
             <div>
               <p class="meta-label">End Date</p>
               <p class="meta-value">{{ formatDate(challenge.end_date) }}</p>
             </div>
           </div>
           <div class="meta-item">
-            <span class="meta-icon">⏱️</span>
+            <Timer class="meta-icon" :size="18" />
             <div>
               <p class="meta-label">Duration</p>
               <p class="meta-value">{{ challenge.duration_days }} days</p>
             </div>
           </div>
           <div class="meta-item">
-            <span class="meta-icon">🎯</span>
+            <Target class="meta-icon" :size="18" />
             <div>
               <p class="meta-label">Target Reduction</p>
               <p class="meta-value font-green">{{ challenge.target_co2_reduction }} kg CO₂</p>
             </div>
           </div>
           <div class="meta-item">
-            <span class="meta-icon">🏷️</span>
+            <Tag class="meta-icon" :size="18" />
             <div>
               <p class="meta-label">Target Category</p>
               <p class="meta-value">{{ challenge.target_category }}</p>
             </div>
           </div>
           <div v-if="challenge.target_activity_type_names && challenge.target_activity_type_names.length > 0" class="meta-item meta-item-full">
-            <span class="meta-icon">⚡</span>
+            <Zap class="meta-icon" :size="18" />
             <div>
               <p class="meta-label">Target Activity Types</p>
               <div class="activity-type-tags">
@@ -138,7 +138,7 @@
             :key="member.user_id"
             :class="['participant-item', { 'is-you': member.is_current_user }]"
           >
-            <span class="participant-avatar">👤</span>
+            <UserCircle2 class="participant-avatar" :size="28" />
             <div class="participant-info">
               <span class="participant-name">
                 {{ member.name }}
@@ -160,10 +160,10 @@
         </button>
         <div v-if="canManageChallenges" class="admin-actions">
           <button class="admin-edit-btn" @click="openEditModal">
-            ✏️ Edit Challenge
+            <Pencil :size="14" /> Edit Challenge
           </button>
           <button class="admin-delete-btn" @click="deleteChallenge">
-            🗑️ Delete Challenge
+            <Trash2 :size="14" /> Delete Challenge
           </button>
         </div>
       </div>
@@ -180,6 +180,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { CalendarDays, Flag, Timer, Target, Tag, Zap, UserCircle2, Pencil, Trash2 } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 import { challengeAPI } from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
@@ -445,6 +446,7 @@ onMounted(async () => {
 .meta-icon {
   font-size: 1.5rem;
   flex-shrink: 0;
+  color: #25D366;
 }
 
 .meta-label {

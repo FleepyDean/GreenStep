@@ -53,7 +53,7 @@
               </td>
               <td class="col-user">
                 <div class="user-cell">
-                  <span class="user-avatar">👤</span>
+                  <UserCircle2 class="user-avatar" :size="28" />
                   <div>
                     <p class="user-name">{{ entry.name }}</p>
                     <p v-if="entry.is_current_user" class="you-badge">You</p>
@@ -75,6 +75,7 @@
  
 <script setup>
 import { ref, onMounted } from 'vue'
+import { UserCircle2 } from 'lucide-vue-next'
 import { useSocialStore } from '@/stores/socialStore'
 import { useAuthStore } from '@/stores/auth'
 
@@ -208,6 +209,7 @@ onMounted(async () => {
 .user-avatar {
   font-size: 1.5rem;
   flex-shrink: 0;
+  color: #8696A0;
 }
  
 .user-name {
