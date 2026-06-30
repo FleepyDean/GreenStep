@@ -7,14 +7,14 @@
 
     <!-- Access denied for non-admins -->
     <div v-if="!isAdmin" class="access-denied">
-      <span class="denied-icon">🔒</span>
+      <Lock class="denied-icon" :size="48" />
       <p>This page is restricted to administrators only.</p>
     </div>
 
     <template v-else>
       <!-- Add / Edit Activity Type -->
       <div class="ef-card">
-        <h3>{{ editingId ? '✏️ Edit Activity Type' : '➕ Add New Activity Type' }}</h3>
+        <h3><component :is="editingId ? Pencil : PlusCircle" :size="18" /> {{ editingId ? 'Edit Activity Type' : 'Add New Activity Type' }}</h3>
         <form @submit.prevent="editingId ? submitUpdate() : submitCreate()" class="ef-form">
           <div class="form-row">
             <div class="form-group">
@@ -66,7 +66,6 @@
       <template v-else>
         <div v-for="(items, category) in grouped" :key="category" class="ef-card">
           <div class="category-header">
-            <span class="category-icon">{{ categoryIcon(category) }}</span>
             <h3>{{ category }}</h3>
             <span class="count-badge">{{ items.length }}</span>
           </div>
@@ -92,8 +91,8 @@
                   </td>
                   <td>
                     <div class="action-btns">
-                      <button class="icon-action-btn edit-icon-btn" @click="startEdit(item)" title="Edit">✏️</button>
-                      <button class="icon-action-btn del-icon-btn" @click="confirmDelete(item)" title="Delete">🗑️</button>
+                      <button class="icon-action-btn edit-icon-btn" @click="startEdit(item)" title="Edit"><Pencil :size="14" /></button>
+                      <button class="icon-action-btn del-icon-btn" @click="confirmDelete(item)" title="Delete"><Trash2 :size="14" /></button>
                     </div>
                   </td>
                 </tr>
@@ -128,6 +127,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { emissionFactorAPI } from '@/services/api'
 import { useToast } from '@/composables/useToast'
+import { Lock, Pencil, PlusCircle, Trash2 } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const { toast } = useToast()
@@ -153,8 +153,6 @@ const grouped = computed(() => {
   }
   return g
 })
-
-const categoryIcon = (cat) => ({ Transport: '🚗', Diet: '🥗', Energy: '⚡', Recycling: '♻️' }[cat] ?? '📋')
 
 async function loadCategories() {
   try {
