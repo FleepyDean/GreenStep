@@ -12,7 +12,7 @@
         <form @submit.prevent="handleLogin">
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" v-model="loginForm.email" placeholder="name@campus.utm.my" required />
+            <input type="email" v-model="loginForm.email" placeholder="example@greenstep.my" required />
           </div>
           <div class="form-group">
             <label>Secure Password</label>
@@ -39,11 +39,11 @@
         <form @submit.prevent="handleRegister">
           <div class="form-group">
             <label>Full Name</label>
-            <input type="text" v-model="registerForm.name" placeholder="Farish Danial" required />
+            <input type="text" v-model="registerForm.name" placeholder="Your Name" required />
           </div>
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" v-model="registerForm.email" placeholder="farish@utm.my" required />
+            <input type="email" v-model="registerForm.email" placeholder="example@greenstep.my" required />
           </div>
           <div class="form-group">
             <label>Password</label>
