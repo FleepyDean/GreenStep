@@ -106,7 +106,18 @@ class ActivityController
                     error_log('Invalid photo MIME type: ' . $mimeType);
                 }
             } else {
-                error_log('Photo upload error: ' . $photo->getError());
+                $errorCode = $photo->getError();
+                $errorMessages = [
+                    UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize (check .user.ini)',
+                    UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE',
+                    UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+                    UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+                    UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+                    UPLOAD_ERR_EXTENSION => 'A PHP extension stopped the upload',
+                ];
+                $errorMsg = $errorMessages[$errorCode] ?? 'Unknown error';
+                error_log("Photo upload error code $errorCode: $errorMsg");
             }
         } else {
             error_log('No photo in uploaded files');
