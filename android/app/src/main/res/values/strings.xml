@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GreenStep</string>
+    <string name="title_activity_main">GreenStep</string>
+    <string name="package_name">com.greenstep.app</string>
+    <string name="custom_url_scheme">com.greenstep.app</string>
+</resources>
