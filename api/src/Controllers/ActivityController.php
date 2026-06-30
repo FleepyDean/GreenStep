@@ -71,17 +71,24 @@ class ActivityController
         $photoUrl = null;
         $uploadedFiles = $request->getUploadedFiles();
         if (!empty($uploadedFiles['photo'])) {
+            error_log('Photo upload detected for user ' . $userId);
             $photo = $uploadedFiles['photo'];
+            error_log('Photo upload error code: ' . $photo->getError());
+            
             if ($photo->getError() === UPLOAD_ERR_OK) {
                 $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                 $mimeType = $photo->getClientMediaType();
+                error_log('Photo MIME type: ' . $mimeType);
+                
                 if (in_array($mimeType, $allowed)) {
                     // Save to temporary file first
                     $tmpDir = sys_get_temp_dir();
                     $tmpFile = $tmpDir . '/activity_' . uniqid() . '.tmp';
+                    error_log('Saving photo to temp file: ' . $tmpFile);
                     $photo->moveTo($tmpFile);
                     
                     // Upload to Cloudinary
+                    error_log('Uploading to Cloudinary...');
                     $cloudinary = new CloudinaryUploader();
                     $photoUrl = $cloudinary->upload($tmpFile, 'greenstep/activities');
                     
@@ -90,11 +97,19 @@ class ActivityController
                         unlink($tmpFile);
                     }
                     
-                    if (!$photoUrl) {
+                    if ($photoUrl) {
+                        error_log('Photo uploaded successfully: ' . $photoUrl);
+                    } else {
                         error_log('Failed to upload photo to Cloudinary for user ' . $userId);
                     }
+                } else {
+                    error_log('Invalid photo MIME type: ' . $mimeType);
                 }
+            } else {
+                error_log('Photo upload error: ' . $photo->getError());
             }
+        } else {
+            error_log('No photo in uploaded files');
         }
 
         // Create activity log
