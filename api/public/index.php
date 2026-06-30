@@ -24,6 +24,18 @@ $dotenv->safeLoad();
 // Set timezone to Malaysia (UTC+8) so date() matches user's local time
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
+// Helper function to resolve the allowed origin dynamically
+$getOrigin = function ($request) {
+    $origin = $request->getHeaderLine('Origin');
+    $allowedOrigins = [
+        $_ENV['FRONTEND_URL'] ?? 'http://localhost:5173',
+        'https://localhost',       // Capacitor Android
+        'capacitor://localhost'    // Capacitor iOS/Fallback
+    ];
+    
+    return in_array($origin, $allowedOrigins, true) ? $origin : ($allowedOrigins[0]);
+};
+
 // 2. Initialize Dependency Injection Container and attach PDO
 $container = new Container();
 $container->set(PDO::class, function () {
@@ -38,15 +50,16 @@ $app->addRoutingMiddleware();
 
 // 4. Add Error Middleware (catches all errors)
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
-$errorMiddleware->setDefaultErrorHandler(function ($request, $exception, $displayErrorDetails) use ($app) {
-    $allowedOrigin = $_ENV['FRONTEND_URL'] ?? 'http://localhost:5173';
+$errorMiddleware->setDefaultErrorHandler(function ($request, $exception, $displayErrorDetails) use ($app, $getOrigin) {
+    $allowedOrigin = $getOrigin($request); // Dynamic origin check
     $response = $app->getResponseFactory()->createResponse(500);
     $response->getBody()->write(json_encode(['success' => false, 'error' => $exception->getMessage()]));
     return $response
         ->withHeader('Content-Type', 'application/json')
         ->withHeader('Access-Control-Allow-Origin', $allowedOrigin)
         ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+        ->withHeader('Access-Control-Allow-Credentials', 'true');
 });
 
 // 5. Load routes AFTER setting up the container so controllers resolve properly
@@ -57,8 +70,8 @@ require __DIR__ . '/../src/routes.php';
 // ==================================================================
 
 // 6. CORS Middleware with Preflight handling
-$app->add(function ($request, $handler) {
-    $allowedOrigin = $_ENV['FRONTEND_URL'] ?? 'http://localhost:5173';
+$app->add(function ($request, $handler) use ($getOrigin) {
+    $allowedOrigin = $getOrigin($request); // Dynamic origin check
 
     if ($request->getMethod() === 'OPTIONS') {
         $response = new \Slim\Psr7\Response();
@@ -66,6 +79,7 @@ $app->add(function ($request, $handler) {
             ->withHeader('Access-Control-Allow-Origin', $allowedOrigin)
             ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+            ->withHeader('Access-Control-Allow-Credentials', 'true')
             ->withStatus(200);
     }
 
